@@ -1,0 +1,22 @@
+{
+    "configurations": [
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:horse-racing-fundraiser}/backend",
+            "name": "Debug HorseRacingBackend (backend)",
+            "program": "${workspaceFolder:horse-racing-fundraiser}/backend/.build/debug/HorseRacingBackend",
+            "preLaunchTask": "swift: Build Debug HorseRacingBackend (backend)"
+        },
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:horse-racing-fundraiser}/backend",
+            "name": "Release HorseRacingBackend (backend)",
+            "program": "${workspaceFolder:horse-racing-fundraiser}/backend/.build/release/HorseRacingBackend",
+            "preLaunchTask": "swift: Build Release HorseRacingBackend (backend)"
+        }
+    ]
+}
