@@ -16,6 +16,24 @@ final class User: Model, Content, @unchecked Sendable {
 	@Field(key: "last_name")
 	var lastName: String
 
+	@Field(key: "is_admin")
+	var isAdmin: Bool
+
+	@Children(for: \.$owner)
+	var tickets: [Ticket]
+
+	@Children(for: \.$owner)
+	var horses: [Horse]
+
+	@Children(for: \.$user)
+	var sponsorInterests: [SponsorInterest]
+
+	@Children(for: \.$user)
+	var giftBasketInterests: [GiftBasketInterest]
+
+	@Children(for: \.$user)
+	var payments: [Payment]
+
 	@Timestamp(key: "created_at", on: .create)
 	var createdAt: Date?
 
@@ -24,11 +42,12 @@ final class User: Model, Content, @unchecked Sendable {
 
 	init() { }
 
-	init(id: UUID? = nil, email: String, firstName: String, lastName: String) {
+	init(id: UUID? = nil, email: String, firstName: String, lastName: String, isAdmin: Bool = false) {
 		self.id = id
 		self.email = email
 		self.firstName = firstName
 		self.lastName = lastName
+		self.isAdmin = isAdmin
 	}
 }
 
@@ -42,6 +61,7 @@ struct MigrateUsers: Migration {
 			.field("email", .string, .required)
 			.field("first_name", .string, .required)
 			.field("last_name", .string, .required)
+			.field("is_admin", .bool, .required, .sql(.default(false)))
 			.unique(on: "email")
 			.field("created_at", .datetime)
 			.field("updated_at", .datetime)

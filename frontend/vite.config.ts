@@ -4,5 +4,12 @@ import tailwindcss from '@tailwindcss/vite'
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react(), tailwindcss()],
+  plugins: [
+    react({
+      babel: {
+        plugins: [['babel-plugin-relay', { artifactDirectory: './src/__generated__' }]],
+      },
+    }),
+    tailwindcss(),
+  ],
 })

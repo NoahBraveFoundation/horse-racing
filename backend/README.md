@@ -1,118 +1,143 @@
 # Horse Racing Backend
 
-A Swift Vapor server with GraphQL support for the Horse Racing Fundraiser application.
+A Swift Vapor backend with GraphQL for the Horse Racing Fundraiser application.
 
-## Features
+## Prerequisites
 
-- **Vapor 4**: Modern Swift web framework
-- **GraphQL**: API with GraphQLKit
-- **Models**: Horse and Race data models
-- **Sample Data**: Pre-populated with sample horses and races
+- Swift 5.9+
+- PostgreSQL 12+
+- Vapor 4
 
-## Requirements
+## Database Setup
 
-- Swift 6.2+
-- macOS 13.0+
-- PostgreSQL 13+ (running locally or accessible via network)
+### 1. Install PostgreSQL
+
+**macOS (using Homebrew):**
+```bash
+brew install postgresql
+brew services start postgresql
+```
+
+**Ubuntu/Debian:**
+```bash
+sudo apt update
+sudo apt install postgresql postgresql-contrib
+sudo systemctl start postgresql
+sudo systemctl enable postgresql
+```
+
+### 2. Create Database
+
+
+```bash
+createdb horse_racing_db -O vapor_username
+```
+
+### 3. Environment Configuration
+
+Copy the example environment file and configure your database connection:
+
+```bash
+cp Database.env.example .env
+```
+
+Edit `.env` with your database credentials:
+```env
+DATABASE_HOST=localhost
+DATABASE_PORT=5432
+DATABASE_USERNAME=postgres
+DATABASE_PASSWORD=your_password
+DATABASE_NAME=horse_racing_db
+```
 
 ## Installation
 
-1. Make sure you have Swift installed
-2. Install and start PostgreSQL
-3. Create a database for the application:
-   ```bash
-   createdb horse_racing_db
-   ```
-4. Navigate to the backend directory
-5. Configure your database connection by setting environment variables or copying the example:
-   ```bash
-   cp .env.example .env
-   # Edit .env with your database credentials
-   ```
-6. Build the project:
-   ```bash
-   swift build
-   ```
+1. Clone the repository and navigate to the backend directory:
+```bash
+cd backend
+```
 
-## Running the Server
+2. Install dependencies:
+```bash
+swift package resolve
+```
 
+3. Build the project:
+```bash
+swift build
+```
+
+4. Run the application:
 ```bash
 swift run
 ```
 
 The server will start on `http://localhost:8080`
 
-## API Endpoints
+## GraphQL Endpoints
 
-- `GET /health` - Health check
-- `GET /graphql` - GraphQL Playground (development)
-- `POST /graphql` - GraphQL endpoint
+- **GraphQL**: `POST /graphql`
+- **GraphiQL**: `GET /graphiql` (development only)
+- **Health Check**: `GET /health`
 
-## GraphQL Schema
+## Authentication
 
-### Queries
+The application uses session-based authentication with magic links:
 
-- `horses` - Get all horses
-- `horse(id: ID!)` - Get a specific horse
-- `races` - Get all races
-- `race(id: ID!)` - Get a specific race
+1. **Request Magic Link**: `POST /auth/magic-link`
+   - Body: `{"email": "user@example.com"}`
 
-### Mutations
+2. **Login via Magic Link**: `GET /auth/callback?token=<token>`
 
-- `createHorse(name: String!, breed: String!, age: Int!, jockey: String!, odds: Float!)` - Create a new horse
+## Database Migrations
 
-### Types
+The application automatically runs migrations on startup. Current migrations include:
 
-#### Horse
-- `id: ID!`
-- `name: String!`
-- `breed: String!`
-- `age: Int!`
-- `jockey: String!`
-- `odds: Float!`
-
-#### Race
-- `id: ID!`
-- `name: String!`
-- `date: String!`
-- `distance: Int!`
-- `horses: [Horse!]!`
-- `status: String!`
-
-## Development
-
-The project uses Swift Package Manager for dependency management. Dependencies are defined in `Package.swift`.
-
-### Database Configuration
-
-The application uses environment variables for database configuration:
-
-- `DATABASE_HOST` - PostgreSQL host (default: localhost)
-- `DATABASE_PORT` - PostgreSQL port (default: 5432)
-- `DATABASE_USERNAME` - Database username (default: postgres)
-- `DATABASE_PASSWORD` - Database password (default: empty)
-- `DATABASE_NAME` - Database name (default: horse_racing_db)
-
-### Migrations
-
-The application automatically runs migrations on startup. The following tables are created:
-
-- `horses` - Stores horse information with timestamps
-- `races` - Stores race information with timestamps
+- `MigrateUsers` - User accounts with admin support
+- `MigrateLoginTokens` - Magic link authentication tokens
+- `MigrateRounds` - Racing rounds with timestamps
+- `MigrateLanes` - Lanes within each round
+- `MigrateHorses` - Horse entries with ownership
+- `MigrateTickets` - Event tickets
+- `MigrateSponsorInterests` - Company sponsorship
+- `MigrateGiftBasketInterests` - Gift basket raffle
+- `MigratePayments` - Payment tracking
 
 ## Sample Data
 
-The application comes with sample data including:
-- 4 sample horses with different breeds and odds
-- 2 sample races (Kentucky Derby and Preakness Stakes)
+The application seeds sample data on first run:
+- Admin user: `austinjevans@me.com` / `Austin Evans`
+- 10 racing rounds starting at 8:00 PM ET on November 22, 2025
+- 10 lanes per round
 
-## Next Steps
+## Development
 
-- Implement authentication and authorization
-- Add more complex GraphQL operations (subscriptions, complex queries)
-- Add real-time updates with WebSockets
-- Implement betting functionality
-- Add database indexing for performance
-- Add comprehensive error handling
-- Add API rate limiting
-- Add logging and monitoring
+### Adding New Models
+
+1. Create the model file in `Sources/HorseRacingBackend/Models/`
+2. Add the migration to `HorseRacingBackend.swift`
+3. Update the GraphQL schema in `GraphQL/Schema.swift`
+4. Add resolver methods in `Resolvers/HorseResolver.swift`
+
+### GraphQL Schema
+
+The schema uses GraphQLKit's built-in helpers for Fluent relationships:
+- `Field("relation", with: \.$relation)` for Parent/Children fields
+- Automatic N+1 query prevention (though DataLoaders can be added later)
+
+## Troubleshooting
+
+### Common Issues
+
+**Database Connection Failed:**
+- Ensure PostgreSQL is running
+- Check database credentials in `.env`
+- Verify database `horse_racing_db` exists
+
+**Migration Errors:**
+- Drop and recreate the database if schema is corrupted
+- Check migration order in `HorseRacingBackend.swift`
+
+**Build Errors:**
+- Run `swift package reset` to clear build cache
+- Ensure all dependencies are resolved with `swift package resolve`

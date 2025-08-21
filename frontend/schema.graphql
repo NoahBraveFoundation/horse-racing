@@ -1,0 +1,104 @@
+"""Exposes a URL that specifies the behavior of this scalar."""
+directive @specifiedBy(
+  """The URL that specifies the behavior of this scalar."""
+  url: String!
+) on SCALAR
+
+"""
+Indicates exactly one field must be supplied and this field must not be `null`.
+"""
+directive @oneOf on INPUT_OBJECT
+
+scalar Date
+
+type GiftBasketInterest {
+  description: String!
+  id: UUID
+  user: User!
+}
+
+type Horse {
+  horseName: String!
+  id: UUID
+  lane: Lane!
+  owner: User!
+  ownershipLabel: String!
+  round: Round!
+  state: HorseEntryState!
+}
+
+enum HorseEntryState {
+  on_hold
+  pending_payment
+  confirmed
+}
+
+type Lane {
+  horse: Horse
+  id: UUID
+  number: Int!
+  round: Round!
+}
+
+type Mutation {
+  createUser(email: String!, firstName: String!, lastName: String!): User!
+  markPaymentReceived(paymentId: UUID!): Payment!
+  purchaseHorse(roundId: UUID!, laneId: UUID!, horseName: String!, ownershipLabel: String!): Horse!
+  purchaseTicket(attendeeFirst: String!, attendeeLast: String!): Ticket!
+  registerGiftBasketInterest(description: String!): GiftBasketInterest!
+  registerSponsorInterest(companyName: String!): SponsorInterest!
+  selectHorseLane(horseId: UUID!, roundId: UUID!, laneId: UUID!): Horse!
+  updateHorseState(horseId: UUID!, state: HorseEntryState!): Horse!
+}
+
+type Payment {
+  id: UUID
+  paymentReceived: Boolean!
+  paymentReceivedAt: Date
+  totalCents: Int!
+  user: User!
+}
+
+type Query {
+  lanes(roundId: UUID!): [Lane!]!
+  paymentStatus: Payment
+  rounds: [Round!]!
+}
+
+type Round {
+  endAt: Date!
+  horses: [Horse!]!
+  id: UUID
+  lanes: [Lane!]!
+  name: String!
+  startAt: Date!
+}
+
+type SponsorInterest {
+  companyName: String!
+  id: UUID
+  user: User!
+}
+
+type Ticket {
+  attendeeFirst: String!
+  attendeeLast: String!
+  id: UUID
+  owner: User!
+}
+
+type User {
+  email: String!
+  firstName: String!
+  giftBasketInterests: [GiftBasketInterest!]!
+  horses: [Horse!]!
+  id: UUID
+  isAdmin: Boolean!
+  lastName: String!
+  payment: [Payment!]!
+  sponsorInterests: [SponsorInterest!]!
+  tickets: [Ticket!]!
+}
+
+scalar UUID
+

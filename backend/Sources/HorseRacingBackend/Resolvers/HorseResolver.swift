@@ -1,94 +1,204 @@
 import Vapor
 import Graphiti
+import Fluent
 
-final class HorseResolver {
-    // Horse methods
-    func getAllHorses(request: Request, _: NoArguments) throws -> EventLoopFuture<[Horse]> {
-        Horse.query(on: request.db).all()
+private let ticketPriceCents = 7500
+private let horsePriceCents = 3000
+private let sponsorPriceCents = 10000
+
+final class HorseResolver: @unchecked Sendable {
+    // Rounds
+    func getRounds(request: Request, _: NoArguments) throws -> EventLoopFuture<[Round]> {
+        Round.query(on: request.db).all()
     }
-    
-    func getHorse(request: Request, arguments: GetHorseArguments) throws -> EventLoopFuture<Horse?> {
-        Horse.find(arguments.id, on: request.db)
+
+    func getLanes(request: Request, arguments: GetLanesArguments) throws -> EventLoopFuture<[Lane]> {
+        Lane.query(on: request.db).filter(\.$round.$id == arguments.roundId).all()
     }
-    
-    func createHorse(request: Request, arguments: CreateHorseArguments) throws -> EventLoopFuture<Horse> {
-        let horse = Horse(
-            name: arguments.name,
-            breed: arguments.breed,
-            age: arguments.age,
-            jockey: arguments.jockey,
-            odds: arguments.odds
-        )
-        return horse.create(on: request.db).map { horse }
+
+    // Tickets
+    func purchaseTicket(request: Request, arguments: PurchaseTicketArguments) throws -> EventLoopFuture<Ticket> {
+        guard let user = request.auth.get(User.self) else { throw Abort(.unauthorized, reason: "User must be authenticated") }
+        let ticket = Ticket(ownerID: user.id!, attendeeFirst: arguments.attendeeFirst, attendeeLast: arguments.attendeeLast)
+        return ticket.create(on: request.db).flatMap { _ in
+            self.updatePaymentTotal(request: request, userID: user.id!, additionalCents: ticketPriceCents)
+        }.map { ticket }
     }
-    
-    func deleteHorse(request: Request, arguments: DeleteHorseArguments) throws -> EventLoopFuture<Bool> {
-        Horse.find(arguments.id, on: request.db)
+
+    // Horse purchases
+    func purchaseHorse(request: Request, arguments: PurchaseHorseArguments) throws -> EventLoopFuture<Horse> {
+        guard let user = request.auth.get(User.self) else { throw Abort(.unauthorized, reason: "User must be authenticated") }
+        
+        // Check if user already has a horse in this round
+        return Horse.query(on: request.db)
+            .filter(\.$owner.$id == user.id!)
+            .filter(\.$round.$id == arguments.roundId)
+            .first()
+            .flatMap { existingUserHorse in
+                guard existingUserHorse == nil else { 
+                    return request.eventLoop.makeFailedFuture(Abort(.conflict, reason: "User already has a horse in this round")) 
+                }
+                
+                // Check if lane is already occupied in this round
+                return Horse.query(on: request.db)
+                    .filter(\.$round.$id == arguments.roundId)
+                    .filter(\.$lane.$id == arguments.laneId)
+                    .first()
+                    .flatMap { existingLaneHorse in
+                        guard existingLaneHorse == nil else { 
+                            return request.eventLoop.makeFailedFuture(Abort(.conflict, reason: "Lane is already occupied in this round")) 
+                        }
+                        
+                        let horse = Horse(ownerID: user.id!, roundID: arguments.roundId, laneID: arguments.laneId, horseName: arguments.horseName, ownershipLabel: arguments.ownershipLabel, state: .onHold)
+                        return horse.create(on: request.db).flatMap { _ in
+                            self.updatePaymentTotal(request: request, userID: user.id!, additionalCents: horsePriceCents)
+                        }.map { horse }
+                    }
+            }
+    }
+
+    func selectHorseLane(request: Request, arguments: SelectHorseLaneArguments) throws -> EventLoopFuture<Horse> {
+        guard let user = request.auth.get(User.self) else { throw Abort(.unauthorized, reason: "User must be authenticated") }
+        // Ensure lane is not taken in that round
+        return Horse.query(on: request.db)
+            .filter(\.$round.$id == arguments.roundId)
+            .filter(\.$lane.$id == arguments.laneId)
+            .first()
+            .flatMap { existing in
+                if let _ = existing { return request.eventLoop.makeFailedFuture(Abort(.conflict, reason: "Lane already taken")) }
+                return Horse.find(arguments.horseId, on: request.db)
+                    .unwrap(or: Abort(.notFound))
+                    .flatMap { horse in
+                        // Ensure user owns this horse
+                        guard horse.$owner.id == user.id! else { return request.eventLoop.makeFailedFuture(Abort(.forbidden, reason: "Not your horse")) }
+                        guard horse.$round.id == arguments.roundId else { return request.eventLoop.makeFailedFuture(Abort(.badRequest, reason: "Round mismatch")) }
+                        horse.$lane.id = arguments.laneId
+                        return horse.save(on: request.db).map { horse }
+                    }
+            }
+    }
+
+    func updateHorseState(request: Request, arguments: UpdateHorseStateArguments) throws -> EventLoopFuture<Horse> {
+        guard let user = request.auth.get(User.self) else { throw Abort(.unauthorized, reason: "User must be authenticated") }
+        return Horse.find(arguments.horseId, on: request.db)
             .unwrap(or: Abort(.notFound))
-            .flatMap({ $0.delete(on: request.db) })
-            .transform(to: true)
+            .flatMap { (horse: Horse) -> EventLoopFuture<Horse> in
+                // Ensure user owns this horse
+                guard horse.$owner.id == user.id! else { return request.eventLoop.makeFailedFuture(Abort(.forbidden, reason: "Not your horse")) }
+                horse.state = arguments.state
+                return horse.save(on: request.db).map { horse }
+            }
     }
-    
-    // Race methods
-    func getAllRaces(request: Request, _: NoArguments) throws -> EventLoopFuture<[Race]> {
-        Race.query(on: request.db).all()
+
+    // Sponsor interest
+    func registerSponsorInterest(request: Request, arguments: SponsorInterestArguments) throws -> EventLoopFuture<SponsorInterest> {
+        guard let user = request.auth.get(User.self) else { throw Abort(.unauthorized, reason: "User must be authenticated") }
+        let si = SponsorInterest(userID: user.id!, companyName: arguments.companyName)
+        return si.create(on: request.db).flatMap { _ in
+            self.updatePaymentTotal(request: request, userID: user.id!, additionalCents: sponsorPriceCents)
+        }.map { si }
     }
-    
-    func getRace(request: Request, arguments: GetRaceArguments) throws -> EventLoopFuture<Race?> {
-        Race.find(arguments.id, on: request.db)
+
+    // Gift basket interest
+    func registerGiftBasketInterest(request: Request, arguments: GiftBasketInterestArguments) throws -> EventLoopFuture<GiftBasketInterest> {
+        guard let user = request.auth.get(User.self) else { throw Abort(.unauthorized, reason: "User must be authenticated") }
+        let gi = GiftBasketInterest(userID: user.id!, descriptionText: arguments.description)
+        return gi.create(on: request.db).map { gi }
     }
-    
-    func createRace(request: Request, arguments: CreateRaceArguments) throws -> EventLoopFuture<Race> {
-        let race = Race(
-            name: arguments.name,
-            date: arguments.date,
-            distance: arguments.distance,
-            status: arguments.status
-        )
-        return race.create(on: request.db).map { race }
+
+    // Payment tracking
+    func getPaymentStatus(request: Request, _: NoArguments) throws -> EventLoopFuture<Payment?> {
+        guard let user = request.auth.get(User.self) else { throw Abort(.unauthorized, reason: "User must be authenticated") }
+        return Payment.query(on: request.db).filter(\.$user.$id == user.id!).first()
     }
-    
-    func updateRaceStatus(request: Request, arguments: UpdateRaceStatusArguments) throws -> EventLoopFuture<Race> {
-        Race.find(arguments.id, on: request.db)
+
+    func markPaymentReceived(request: Request, arguments: MarkPaymentReceivedArguments) throws -> EventLoopFuture<Payment> {
+        // Admin-only
+        guard let currentUser = request.auth.get(User.self), currentUser.isAdmin else { throw Abort(.forbidden, reason: "Admin only") }
+        return Payment.find(arguments.paymentId, on: request.db)
             .unwrap(or: Abort(.notFound))
-            .flatMap { race in
-                race.status = arguments.status
-                return race.save(on: request.db).map { race }
+            .flatMap { payment in
+                payment.paymentReceived = true
+                payment.paymentReceivedAt = Date()
+                return payment.save(on: request.db).map { payment }
+            }
+    }
+
+    // Users
+    func createUser(request: Request, arguments: CreateUserArguments) throws -> EventLoopFuture<User> {
+        let email = arguments.email.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !email.isEmpty else { throw Abort(.badRequest, reason: "Email required") }
+        
+        // Check if user already exists
+        return User.query(on: request.db)
+            .filter(\.$email == email)
+            .first()
+            .flatMap { existingUser in
+                if let _ = existingUser {
+                    return request.eventLoop.makeFailedFuture(Abort(.conflict, reason: "User with this email already exists"))
+                }
+                
+                let user = User(email: email, firstName: arguments.firstName, lastName: arguments.lastName)
+                return user.create(on: request.db).map { user }
+            }
+    }
+
+    // Helper method to update payment total
+    private func updatePaymentTotal(request: Request, userID: UUID, additionalCents: Int) -> EventLoopFuture<Void> {
+        return Payment.query(on: request.db).filter(\.$user.$id == userID).first()
+            .flatMap { existingPayment in
+                if let payment = existingPayment {
+                    payment.totalCents += additionalCents
+                    return payment.save(on: request.db).map { _ in }
+                } else {
+                    let newPayment = Payment(userID: userID, totalCents: additionalCents)
+                    return newPayment.create(on: request.db).map { _ in }
+                }
             }
     }
 }
 
-// Argument types for GraphQL
 extension HorseResolver {
-    struct GetHorseArguments: Codable {
-        let id: UUID
+    struct GetLanesArguments: Codable { let roundId: UUID }
+
+    struct PurchaseTicketArguments: Codable {
+        let attendeeFirst: String
+        let attendeeLast: String
     }
-    
-    struct CreateHorseArguments: Codable {
-        let name: String
-        let breed: String
-        let age: Int
-        let jockey: String
-        let odds: Double
+
+    struct PurchaseHorseArguments: Codable {
+        let roundId: UUID
+        let laneId: UUID
+        let horseName: String
+        let ownershipLabel: String
     }
-    
-    struct DeleteHorseArguments: Codable {
-        let id: UUID
+
+    struct SelectHorseLaneArguments: Codable {
+        let horseId: UUID
+        let roundId: UUID
+        let laneId: UUID
     }
-    
-    struct GetRaceArguments: Codable {
-        let id: UUID
+
+    struct UpdateHorseStateArguments: Codable {
+        let horseId: UUID
+        let state: HorseEntryState
     }
-    
-    struct CreateRaceArguments: Codable {
-        let name: String
-        let date: Date
-        let distance: Int
-        let status: RaceStatus
+
+    struct SponsorInterestArguments: Codable {
+        let companyName: String
     }
-    
-    struct UpdateRaceStatusArguments: Codable {
-        let id: UUID
-        let status: RaceStatus
+
+    struct GiftBasketInterestArguments: Codable {
+        let description: String
+    }
+
+    struct MarkPaymentReceivedArguments: Codable {
+        let paymentId: UUID
+    }
+
+    struct CreateUserArguments: Codable {
+        let email: String
+        let firstName: String
+        let lastName: String
     }
 }

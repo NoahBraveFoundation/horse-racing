@@ -1,60 +1,73 @@
 import Fluent
 import Vapor
 
-final class Horse: Model, @unchecked Sendable {
-    static let schema = "horses"
+enum HorseEntryState: String, Codable, CaseIterable {
+	case onHold = "on_hold"
+	case pendingPayment = "pending_payment"
+	case confirmed = "confirmed"
+}
 
-    @ID(key: .id)
-    var id: UUID?
+final class Horse: Model, Content, @unchecked Sendable {
+	static let schema = "horses"
 
-    @Field(key: "name")
-    var name: String
+	@ID(key: .id)
+	var id: UUID?
 
-    @Field(key: "breed")
-    var breed: String
+	@Parent(key: "owner_id")
+	var owner: User
 
-    @Field(key: "age")
-    var age: Int
+	@Parent(key: "round_id")
+	var round: Round
 
-    @Field(key: "jockey")
-    var jockey: String
+	@Parent(key: "lane_id")
+	var lane: Lane
 
-    @Field(key: "odds")
-    var odds: Double
+	@Field(key: "horse_name")
+	var horseName: String
 
-    @Timestamp(key: "created_at", on: .create)
-    var createdAt: Date?
+	@Field(key: "ownership_label")
+	var ownershipLabel: String
 
-    @Timestamp(key: "updated_at", on: .update)
-    var updatedAt: Date?
+	@Enum(key: "state")
+	var state: HorseEntryState
 
-    init() { }
+	@Timestamp(key: "created_at", on: .create)
+	var createdAt: Date?
 
-    init(id: UUID? = nil, name: String, breed: String, age: Int, jockey: String, odds: Double) {
-        self.id = id
-        self.name = name
-        self.breed = breed
-        self.age = age
-        self.jockey = jockey
-        self.odds = odds
-    }
+	@Timestamp(key: "updated_at", on: .update)
+	var updatedAt: Date?
+
+	init() {}
+
+	init(id: UUID? = nil, ownerID: UUID, roundID: UUID, laneID: UUID, horseName: String, ownershipLabel: String, state: HorseEntryState) {
+		self.id = id
+		self.$owner.id = ownerID
+		self.$round.id = roundID
+		self.$lane.id = laneID
+		self.horseName = horseName
+		self.ownershipLabel = ownershipLabel
+		self.state = state
+	}
 }
 
 struct MigrateHorses: Migration {
-    func prepare(on database: Database) -> EventLoopFuture<Void> {
-        return database.schema("horses")
-            .id()
-            .field("name", .string, .required)
-            .field("breed", .string, .required)
-            .field("age", .int, .required)
-            .field("jockey", .string, .required)
-            .field("odds", .double, .required)
-            .field("created_at", .datetime)
-            .field("updated_at", .datetime)
-            .create()
-    }
+	func prepare(on database: Database) -> EventLoopFuture<Void> {
+		database.schema("horses")
+			.id()
+			.field("owner_id", .uuid, .required, .references("users", "id", onDelete: .cascade))
+			.field("round_id", .uuid, .required, .references("rounds", "id", onDelete: .cascade))
+			.field("lane_id", .uuid, .required, .references("lanes", "id", onDelete: .cascade))
+			.field("horse_name", .string, .required)
+			.field("ownership_label", .string, .required)
+			.field("state", .string, .required)
+			.field("created_at", .datetime)
+			.field("updated_at", .datetime)
+			.unique(on: "owner_id", "round_id")
+			.unique(on: "lane_id")
+			.create()
+	}
 
-    func revert(on database: Database) -> EventLoopFuture<Void> {
-        return database.schema("horses").delete()
-    }
+	func revert(on database: Database) -> EventLoopFuture<Void> {
+		database.schema("horses").delete()
+	}
 }
