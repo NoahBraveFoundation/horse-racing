@@ -6,12 +6,13 @@ import { useHorseBoardStore } from '../../store/horseBoard';
 
 const BoardQuery = graphql`
   query BoardQuery {
+    me { id firstName lastName }
     rounds {
       id
       name
       startAt
       endAt
-      lanes { id number horse { id horseName ownershipLabel owner { firstName lastName } } }
+      lanes { id number horse { id horseName ownershipLabel owner { id firstName lastName } } }
       ...RoundBoardFragment
     }
   }
@@ -22,9 +23,10 @@ const Board: React.FC = () => {
   const setRefreshKey = useHorseBoardStore((s) => s.setRefreshKey);
   const startPolling = useHorseBoardStore((s) => s.startPolling);
 
-  const data: any = useLazyLoadQuery(BoardQuery, {}, { fetchKey: refreshKey });
-  const purchaseHorse = useTicketFlowStore((s) => s.purchaseHorse);
+  const data: any = useLazyLoadQuery(BoardQuery, {}, { fetchKey: refreshKey, fetchPolicy: 'network-only' });
+  const addHorseToCart = useTicketFlowStore((s) => s.addHorseToCart);
   const selections = useTicketFlowStore((s) => s.horseSelections);
+  const refreshCart = useTicketFlowStore((s) => s.refreshCart);
 
   // Poll every 5s while viewing via store
   useEffect(() => startPolling(), [startPolling]);
@@ -42,6 +44,8 @@ const Board: React.FC = () => {
   const error = useHorseBoardStore((s) => s.error);
   const setError = useHorseBoardStore((s) => s.setError);
 
+  const me = data?.me;
+
   const canPlaceInRound = (roundId: string) => !selections.some((s) => s.roundId === roundId);
 
   const onLaneClick = (roundId: string, laneId: string) => {
@@ -50,7 +54,8 @@ const Board: React.FC = () => {
       return;
     }
     setHorseName('');
-    setOwnershipLabel('');
+    // Autofill Presented by with user name
+    setOwnershipLabel(me ? `${me.firstName} ${me.lastName}` : '');
     setError(null);
     openModalStore(roundId, laneId);
   };
@@ -61,13 +66,18 @@ const Board: React.FC = () => {
       setError('Please enter horse name and ownership label.');
       return;
     }
+    if (!canPlaceInRound(modal.roundId)) {
+      setError('You already have a horse in this round.');
+      return;
+    }
     setPlacing(true);
     try {
-      await purchaseHorse({ roundId: modal.roundId, laneId: modal.laneId, horseName: horseName.trim(), ownershipLabel: ownershipLabel.trim() });
+      await addHorseToCart({ roundId: modal.roundId, laneId: modal.laneId, horseName: horseName.trim(), ownershipLabel: ownershipLabel.trim() });
       setPlacing(false);
       closeModal();
-      // Trigger immediate refresh after placing
+      // Trigger immediate refresh after placing for both board and summary
       setRefreshKey((k) => k + 1);
+      refreshCart();
     } catch (e: any) {
       setPlacing(false);
       setError(e?.message || 'Unable to place horse.');
@@ -81,7 +91,7 @@ const Board: React.FC = () => {
       </div>
 
       {data.rounds.map((round: any) => (
-        <RoundBoard key={round.id} roundRef={round} onLaneClick={onLaneClick} />
+        <RoundBoard key={round.id} roundRef={round} onLaneClick={onLaneClick} meId={me?.id || null} />
       ))}
 
       {/* Modal */}
@@ -110,7 +120,7 @@ const Board: React.FC = () => {
                   value={ownershipLabel}
                   onChange={(e) => setOwnershipLabel(e.target.value)}
                   className="w-full rounded-lg border px-3 py-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-noahbrave-600"
-                  placeholder="Team Hope"
+                  placeholder="Your name"
                 />
               </div>
             </div>

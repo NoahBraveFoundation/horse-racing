@@ -16,17 +16,34 @@ final class Ticket: Model, Content, @unchecked Sendable {
 	@Field(key: "attendee_last")
 	var attendeeLast: String
 
+	@OptionalParent(key: "cart_id")
+	var cart: Cart?
+
+	@Enum(key: "state")
+	var state: TicketState
+
+	@Field(key: "can_remove")
+	var canRemove: Bool
+
 	@Timestamp(key: "created_at", on: .create)
 	var createdAt: Date?
 
 	init() {}
 
-	init(id: UUID? = nil, ownerID: UUID, attendeeFirst: String, attendeeLast: String) {
+	init(id: UUID? = nil, ownerID: UUID, attendeeFirst: String, attendeeLast: String, state: TicketState = .onHold, canRemove: Bool = false) {
 		self.id = id
 		self.$owner.id = ownerID
 		self.attendeeFirst = attendeeFirst
 		self.attendeeLast = attendeeLast
+		self.state = state
+		self.canRemove = canRemove
 	}
+}
+
+enum TicketState: String, Codable, CaseIterable {
+	case onHold = "on_hold"
+	case pendingPayment = "pending_payment"
+	case confirmed = "confirmed"
 }
 
 struct MigrateTickets: Migration {

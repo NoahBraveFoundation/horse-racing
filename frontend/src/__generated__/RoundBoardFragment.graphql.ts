@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<7d6d897a1ea840540a35af83eabcbb83>>
+ * @generated SignedSource<<f47977a9cd5004d105b613e7b4b4ad69>>
  * @lightSyntaxTransform
  * @nogrep
  */
@@ -19,6 +19,7 @@ export type RoundBoardFragment$data = {
       readonly id: any | null | undefined;
       readonly owner: {
         readonly firstName: string;
+        readonly id: any | null | undefined;
         readonly lastName: string;
       };
       readonly ownershipLabel: string;
@@ -118,6 +119,7 @@ return {
               "name": "owner",
               "plural": false,
               "selections": [
+                (v0/*: any*/),
                 {
                   "alias": null,
                   "args": null,
@@ -147,6 +149,6 @@ return {
 };
 })();
 
-(node as any).hash = "9ab65719524b5b21627990cf679ee27c";
+(node as any).hash = "e2140e4a42deca00ed5c8b03007fba17";
 
 export default node;

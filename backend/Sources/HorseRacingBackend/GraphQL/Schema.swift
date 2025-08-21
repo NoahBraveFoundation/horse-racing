@@ -1,15 +1,28 @@
 import Foundation
+@preconcurrency import Graphiti
 @preconcurrency import GraphQLKit
 import Vapor
 import NIO
 import Fluent
 
 // Definition of our GraphQL schema
-let horseRacingSchema = try! Schema<HorseResolver, Request> {
+let horseRacingSchema = try! Graphiti.Schema<HorseResolver, Request> {
     Scalar(UUID.self)
     Scalar(Date.self)
 
     Enum(HorseEntryState.self) {
+        Value(.onHold)
+        Value(.pendingPayment)
+        Value(.confirmed)
+    }
+    
+    Enum(CartStatus.self) {
+        Value(.open)
+        Value(.checkedOut)
+        Value(.abandoned)
+    }
+
+    Enum(TicketState.self) {
         Value(.onHold)
         Value(.pendingPayment)
         Value(.confirmed)
@@ -53,6 +66,8 @@ let horseRacingSchema = try! Schema<HorseResolver, Request> {
         Field("attendeeFirst", at: \.attendeeFirst)
         Field("attendeeLast", at: \.attendeeLast)
         Field("owner", with: \.$owner)
+        Field("state", at: \.state)
+        Field("canRemove", at: \.canRemove)
     }
 
     // Horse type
@@ -80,6 +95,14 @@ let horseRacingSchema = try! Schema<HorseResolver, Request> {
         Field("user", with: \.$user)
     }
 
+    // LoginToken type
+    Type(LoginToken.self) {
+        Field("id", at: \.id)
+        Field("token", at: \.token)
+        Field("expiresAt", at: \.expiresAt)
+        Field("user", with: \.$user)
+    }
+
     // Payment type
     Type(Payment.self) {
         Field("id", at: \.id)
@@ -89,13 +112,37 @@ let horseRacingSchema = try! Schema<HorseResolver, Request> {
         Field("user", with: \.$user)
     }
 
+
+
+    // CartCost type (calculated, no database)
+    Type(HorseResolver.CartCost.self) {
+        Field("ticketsCents", at: \.ticketsCents)
+        Field("horseCents", at: \.horseCents)
+        Field("sponsorCents", at: \.sponsorCents)
+        Field("totalCents", at: \.totalCents)
+    }
+
+    // Cart type
+    Type(Cart.self) {
+        Field("id", at: \.id)
+        Field("status", at: \.status)
+        Field("user", with: \.$user)
+        Field("horses", with: \.$horses)
+        Field("tickets", with: \.$tickets)
+        Field("sponsorInterests", with: \.$sponsorInterests)
+        Field("giftBasketInterests", with: \.$giftBasketInterests)
+        Field("cost", at: HorseResolver.cartCost)
+    }
+
     // Queries
     Query {
+        Field("me", at: HorseResolver.me)
         Field("rounds", at: HorseResolver.getRounds)
         Field("lanes", at: HorseResolver.getLanes) {
             Argument("roundId", at: \.roundId)
         }
         Field("paymentStatus", at: HorseResolver.getPaymentStatus)
+        Field("myCart", at: HorseResolver.myCart)
     }
     
     // Mutations
@@ -107,38 +154,39 @@ let horseRacingSchema = try! Schema<HorseResolver, Request> {
             Argument("lastName", at: \.lastName)
         }
 
-        // Tickets
-        Field("purchaseTicket", at: HorseResolver.purchaseTicket) {
+        // Cart ops
+        Field("getOrCreateCart", at: HorseResolver.getOrCreateCart)
+        Field("addTicketToCart", at: HorseResolver.addTicketToCart) {
             Argument("attendeeFirst", at: \.attendeeFirst)
             Argument("attendeeLast", at: \.attendeeLast)
         }
-
-        // Horse purchases
-        Field("purchaseHorse", at: HorseResolver.purchaseHorse) {
+        Field("addHorseToCart", at: HorseResolver.addHorseToCart) {
             Argument("roundId", at: \.roundId)
             Argument("laneId", at: \.laneId)
             Argument("horseName", at: \.horseName)
             Argument("ownershipLabel", at: \.ownershipLabel)
         }
-        Field("selectHorseLane", at: HorseResolver.selectHorseLane) {
-            Argument("horseId", at: \.horseId)
-            Argument("roundId", at: \.roundId)
-            Argument("laneId", at: \.laneId)
-        }
-        Field("updateHorseState", at: HorseResolver.updateHorseState) {
-            Argument("horseId", at: \.horseId)
-            Argument("state", at: \.state)
-        }
-
-        // Sponsor interest
-        Field("registerSponsorInterest", at: HorseResolver.registerSponsorInterest) {
+        Field("addSponsorToCart", at: HorseResolver.addSponsorToCart) {
             Argument("companyName", at: \.companyName)
         }
-
-        // Gift basket interest
-        Field("registerGiftBasketInterest", at: HorseResolver.registerGiftBasketInterest) {
+        Field("addGiftBasketToCart", at: HorseResolver.addGiftBasketToCart) {
             Argument("description", at: \.description)
         }
+
+        Field("removeTicketFromCart", at: HorseResolver.removeTicketFromCart) {
+            Argument("ticketId", at: \.ticketId)
+        }
+        Field("removeHorseFromCart", at: HorseResolver.removeHorseFromCart) {
+            Argument("horseId", at: \.horseId)
+        }
+        Field("removeSponsorFromCart", at: HorseResolver.removeSponsorFromCart) {
+            Argument("sponsorId", at: \.sponsorId)
+        }
+        Field("removeGiftBasketFromCart", at: HorseResolver.removeGiftBasketFromCart) {
+            Argument("giftId", at: \.giftId)
+        }
+
+        Field("checkoutCart", at: HorseResolver.checkoutCart)
 
         // Payment management
         Field("markPaymentReceived", at: HorseResolver.markPaymentReceived) {

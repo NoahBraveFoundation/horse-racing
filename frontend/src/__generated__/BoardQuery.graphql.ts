@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<61b21e5ed6658bcddfaed8b69613112d>>
+ * @generated SignedSource<<c14a1fb3cfa9f32b899baeae72b5c1fb>>
  * @lightSyntaxTransform
  * @nogrep
  */
@@ -12,6 +12,11 @@ import { ConcreteRequest } from 'relay-runtime';
 import { FragmentRefs } from "relay-runtime";
 export type BoardQuery$variables = Record<PropertyKey, never>;
 export type BoardQuery$data = {
+  readonly me: {
+    readonly firstName: string;
+    readonly id: any | null | undefined;
+    readonly lastName: string;
+  };
   readonly rounds: ReadonlyArray<{
     readonly endAt: any;
     readonly id: any | null | undefined;
@@ -21,6 +26,7 @@ export type BoardQuery$data = {
         readonly id: any | null | undefined;
         readonly owner: {
           readonly firstName: string;
+          readonly id: any | null | undefined;
           readonly lastName: string;
         };
         readonly ownershipLabel: string;
@@ -46,28 +52,55 @@ var v0 = {
   "name": "id",
   "storageKey": null
 },
-v1 = {
-  "alias": null,
-  "args": null,
-  "kind": "ScalarField",
-  "name": "name",
-  "storageKey": null
-},
+v1 = [
+  (v0/*: any*/),
+  {
+    "alias": null,
+    "args": null,
+    "kind": "ScalarField",
+    "name": "firstName",
+    "storageKey": null
+  },
+  {
+    "alias": null,
+    "args": null,
+    "kind": "ScalarField",
+    "name": "lastName",
+    "storageKey": null
+  }
+],
 v2 = {
   "alias": null,
   "args": null,
-  "kind": "ScalarField",
-  "name": "startAt",
+  "concreteType": "User",
+  "kind": "LinkedField",
+  "name": "me",
+  "plural": false,
+  "selections": (v1/*: any*/),
   "storageKey": null
 },
 v3 = {
   "alias": null,
   "args": null,
   "kind": "ScalarField",
-  "name": "endAt",
+  "name": "name",
   "storageKey": null
 },
 v4 = {
+  "alias": null,
+  "args": null,
+  "kind": "ScalarField",
+  "name": "startAt",
+  "storageKey": null
+},
+v5 = {
+  "alias": null,
+  "args": null,
+  "kind": "ScalarField",
+  "name": "endAt",
+  "storageKey": null
+},
+v6 = {
   "alias": null,
   "args": null,
   "concreteType": "Lane",
@@ -113,22 +146,7 @@ v4 = {
           "kind": "LinkedField",
           "name": "owner",
           "plural": false,
-          "selections": [
-            {
-              "alias": null,
-              "args": null,
-              "kind": "ScalarField",
-              "name": "firstName",
-              "storageKey": null
-            },
-            {
-              "alias": null,
-              "args": null,
-              "kind": "ScalarField",
-              "name": "lastName",
-              "storageKey": null
-            }
-          ],
+          "selections": (v1/*: any*/),
           "storageKey": null
         }
       ],
@@ -144,6 +162,7 @@ return {
     "metadata": null,
     "name": "BoardQuery",
     "selections": [
+      (v2/*: any*/),
       {
         "alias": null,
         "args": null,
@@ -153,10 +172,10 @@ return {
         "plural": true,
         "selections": [
           (v0/*: any*/),
-          (v1/*: any*/),
-          (v2/*: any*/),
           (v3/*: any*/),
           (v4/*: any*/),
+          (v5/*: any*/),
+          (v6/*: any*/),
           {
             "args": null,
             "kind": "FragmentSpread",
@@ -175,6 +194,7 @@ return {
     "kind": "Operation",
     "name": "BoardQuery",
     "selections": [
+      (v2/*: any*/),
       {
         "alias": null,
         "args": null,
@@ -184,26 +204,26 @@ return {
         "plural": true,
         "selections": [
           (v0/*: any*/),
-          (v1/*: any*/),
-          (v2/*: any*/),
           (v3/*: any*/),
-          (v4/*: any*/)
+          (v4/*: any*/),
+          (v5/*: any*/),
+          (v6/*: any*/)
         ],
         "storageKey": null
       }
     ]
   },
   "params": {
-    "cacheID": "5ef27905eaa791a19412cbb815b6763a",
+    "cacheID": "e20bbb238c0e9b585c08cff87472e639",
     "id": null,
     "metadata": {},
     "name": "BoardQuery",
     "operationKind": "query",
-    "text": "query BoardQuery {\n  rounds {\n    id\n    name\n    startAt\n    endAt\n    lanes {\n      id\n      number\n      horse {\n        id\n        horseName\n        ownershipLabel\n        owner {\n          firstName\n          lastName\n        }\n      }\n    }\n    ...RoundBoardFragment\n  }\n}\n\nfragment RoundBoardFragment on Round {\n  id\n  name\n  startAt\n  endAt\n  lanes {\n    id\n    number\n    horse {\n      id\n      horseName\n      ownershipLabel\n      owner {\n        firstName\n        lastName\n      }\n    }\n  }\n}\n"
+    "text": "query BoardQuery {\n  me {\n    id\n    firstName\n    lastName\n  }\n  rounds {\n    id\n    name\n    startAt\n    endAt\n    lanes {\n      id\n      number\n      horse {\n        id\n        horseName\n        ownershipLabel\n        owner {\n          id\n          firstName\n          lastName\n        }\n      }\n    }\n    ...RoundBoardFragment\n  }\n}\n\nfragment RoundBoardFragment on Round {\n  id\n  name\n  startAt\n  endAt\n  lanes {\n    id\n    number\n    horse {\n      id\n      horseName\n      ownershipLabel\n      owner {\n        id\n        firstName\n        lastName\n      }\n    }\n  }\n}\n"
   }
 };
 })();
 
-(node as any).hash = "0a4f61b1c2307dc42a2aa868b8a77568";
+(node as any).hash = "c5fb41c08706507755c8f1a087e3c214";
 
 export default node;

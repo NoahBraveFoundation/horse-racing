@@ -76,12 +76,19 @@ func configureDatabase(_ app: Application) async throws {
     // Register migrations
     app.migrations.add(MigrateUsers())
     app.migrations.add(MigrateLoginTokens())
+    app.migrations.add(MigrateCarts())
     app.migrations.add(MigrateRounds())
     app.migrations.add(MigrateLanes())
     app.migrations.add(MigrateHorses())
+    app.migrations.add(MigrateHorsesAddCart())
     app.migrations.add(MigrateTickets())
+    app.migrations.add(MigrateTicketsAddState())
+    app.migrations.add(MigrateTicketsAddCart())
+    app.migrations.add(MigrateTicketsAddCanRemove())
     app.migrations.add(MigrateSponsorInterests())
+    app.migrations.add(MigrateSponsorInterestsAddCart())
     app.migrations.add(MigrateGiftBasketInterests())
+    app.migrations.add(MigrateGiftBasketInterestsAddCart())
     app.migrations.add(MigratePayments())
     
     // Run migrations
@@ -109,11 +116,10 @@ func configureRoutes(_ app: Application) throws {
         guard let user = try await User.query(on: req.db).filter(\.$email == email).first(), let userID = user.id else {
             throw Abort(.notFound, reason: "No account found for this email")
         }
-        let tokenString = [UUID().uuidString, UUID().uuidString].joined()
-        let token = LoginToken(token: tokenString, userID: userID, expiresAt: Date().addingTimeInterval(30 * 60))
+        let token = AuthService.generateSecureLoginToken(for: userID)
         try await token.create(on: req.db)
         let host = Environment.get("APP_HOST") ?? "http://localhost:8080"
-        let link = "\(host)/auth/callback?token=\(tokenString)"
+        let link = "\(host)/auth/callback?token=\(token.token)"
         req.logger.info("Magic link for \(email): \(link)")
         return .accepted
     }
@@ -123,7 +129,7 @@ func configureRoutes(_ app: Application) throws {
         guard let loginToken = try await LoginToken.query(on: req.db).filter(\.$token == tokenValue).first() else { throw Abort(.unauthorized, reason: "Invalid token") }
         guard loginToken.expiresAt > Date() else { try await loginToken.delete(on: req.db); throw Abort(.unauthorized, reason: "Expired token") }
         let user = try await loginToken.$user.get(on: req.db)
-        requestSetAuthenticatedUser(req, user: user)
+        AuthService.setAuthenticatedUser(req, user: user)
         try await loginToken.delete(on: req.db)
         let res = Response(status: .ok)
         res.headers.replaceOrAdd(name: .contentType, value: "application/json")
@@ -132,13 +138,7 @@ func configureRoutes(_ app: Application) throws {
     }
 }
 
-@inline(__always)
-func requestSetAuthenticatedUser(_ req: Request, user: User) {
-    if let id = user.id?.uuidString {
-        req.session.data["userID"] = id
-        req.auth.login(user)
-    }
-}
+
 
 func seedSampleData(_ app: Application) async throws {
     // Seed admin user

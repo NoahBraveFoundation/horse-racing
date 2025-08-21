@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
-import type { User } from '../../types/ticket';
 import { useTicketFlowStore } from '../../store/ticketFlow';
 import StickySummary from './StickySummary';
+import { graphql, useLazyLoadQuery } from 'react-relay';
 
 interface TicketSelectionStepProps {
-  user: User;
   onNext: () => void;
   onBack: () => void;
 }
@@ -13,29 +12,40 @@ type Attendee = { firstName: string; lastName: string };
 
 type Touched = { firstName: boolean; lastName: boolean };
 
-const TicketSelectionStep: React.FC<TicketSelectionStepProps> = ({ user, onNext, onBack: _onBack }) => {
-  const attendees = useTicketFlowStore((s) => s.attendees);
-  const addAttendee = useTicketFlowStore((s) => s.addAttendee);
-  const removeAttendee = useTicketFlowStore((s) => s.removeAttendee);
-  const updateAttendee = useTicketFlowStore((s) => s.updateAttendee);
+const CartTicketsQuery = graphql`
+  query TicketSelectionStepCartTicketsQuery {
+    me { id firstName lastName }
+    myCart {
+      id
+      tickets { id attendeeFirst attendeeLast canRemove }
+    }
+  }
+`;
 
-  const [touched, setTouched] = useState<Touched[]>(attendees.map(() => ({ firstName: false, lastName: false })));
+const TicketSelectionStep: React.FC<TicketSelectionStepProps> = ({ onNext, onBack: _onBack }) => {
+  const [rows, setRows] = useState<Attendee[]>([]);
+  const [touched, setTouched] = useState<Touched[]>([]);
   const [submitted, setSubmitted] = useState(false);
 
-  const totalTickets = 1 + attendees.length; // includes the owner
+  const addTicketToCart = useTicketFlowStore((s) => s.addTicketToCart);
+  const removeTicketFromCart = useTicketFlowStore((s) => s.removeTicketFromCart);
+  const cartRefreshKey = useTicketFlowStore((s) => s.cartRefreshKey);
 
-  const handleAdd = () => {
-    addAttendee();
+  const cartData: any = useLazyLoadQuery(CartTicketsQuery, {}, { fetchKey: cartRefreshKey, fetchPolicy: 'network-only' });
+  const existingTickets: Array<{ id: string; attendeeFirst: string; attendeeLast: string; canRemove: boolean }> = cartData?.myCart?.tickets ?? [];
+
+  const handleAddRow = () => {
+    setRows((prev) => [...prev, { firstName: '', lastName: '' }]);
     setTouched((prev) => [...prev, { firstName: false, lastName: false }]);
   };
 
-  const handleRemove = (index: number) => {
-    removeAttendee(index);
+  const handleRemoveRow = (index: number) => {
+    setRows((prev) => prev.filter((_, i) => i !== index));
     setTouched((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleChange = (index: number, field: keyof Attendee, value: string) => {
-    updateAttendee(index, { [field]: value } as Partial<Attendee>);
+    setRows(prev => prev.map((a, i) => (i === index ? { ...a, [field]: value } : a)));
   };
 
   const handleBlur = (index: number, field: keyof Touched) => {
@@ -43,17 +53,20 @@ const TicketSelectionStep: React.FC<TicketSelectionStepProps> = ({ user, onNext,
   };
 
   const isRowValid = (a: Attendee) => a.firstName.trim().length > 0 && a.lastName.trim().length > 0;
-  const allValid = attendees.every(isRowValid);
 
-  const showError = (i: number, field: keyof Attendee) => {
-    const t = touched[i]?.[field as keyof Touched] || submitted;
-    const v = attendees[i]?.[field]?.trim().length > 0;
-    return t && !v;
+  const handleAddTicket = async (i: number) => {
+    setSubmitted(true);
+    const a = rows[i];
+    if (!a || !isRowValid(a)) return;
+    await addTicketToCart({ attendeeFirst: a.firstName.trim(), attendeeLast: a.lastName.trim() });
+    handleRemoveRow(i);
+  };
+
+  const handleRemoveTicket = async (ticketId: string) => {
+    await removeTicketFromCart(ticketId);
   };
 
   const handleContinue = () => {
-    setSubmitted(true);
-    if (!allValid) return;
     onNext();
   };
 
@@ -67,82 +80,101 @@ const TicketSelectionStep: React.FC<TicketSelectionStepProps> = ({ user, onNext,
         </div>
 
         <div className="bg-white rounded-2xl shadow-xl border border-noahbrave-200 p-8">
-          <div className="mb-8">
-            <h2 className="font-semibold text-gray-900 mb-3">Your ticket</h2>
-            <div className="grid md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1" hidden>First name</label>
-                <input value={user.firstName} disabled className="w-full rounded-lg border px-4 py-3 bg-gray-100 text-gray-500 border-gray-200" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1" hidden>Last name</label>
-                <input value={user.lastName} disabled className="w-full rounded-lg border px-4 py-3 bg-gray-100 text-gray-500 border-gray-200" />
-              </div>
-            </div>
+          <div className="mb-6">
+            <h2 className="font-semibold text-gray-900 mb-3">Tickets in your cart</h2>
+            {existingTickets.length === 0 ? (
+              <p className="text-gray-500">No tickets in your cart yet.</p>
+            ) : (
+              <ul className="divide-y divide-gray-200 rounded-xl border border-noahbrave-200 overflow-hidden">
+                {existingTickets.map((t) => (
+                  <li key={t.id} className="flex items-center justify-between p-3">
+                    <div className="text-gray-800">
+                      {t.attendeeFirst} {t.attendeeLast}
+                    </div>
+                    {t.canRemove && (
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveTicket(t.id)}
+                        className="text-sm text-gray-600 hover:text-gray-800"
+                      >
+                        Remove
+                      </button>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
 
           <div>
             <div className="flex items-center justify-between mb-4">
-              <h2 className="font-semibold text-gray-900">Additional tickets</h2>
-              <button type="button" onClick={handleAdd} className="px-4 py-2 rounded-lg border text-gray-700 hover:bg-gray-50">
+              <h2 className="font-semibold text-gray-900">Add more tickets</h2>
+              <button type="button" onClick={handleAddRow} className="px-4 py-2 rounded-lg border text-gray-700 hover:bg-gray-50">
                 Add another
               </button>
             </div>
 
-            {attendees.length === 0 && (
-              <p className="text-gray-500 mb-4">No additional tickets added yet.</p>
+            {rows.length === 0 && (
+              <p className="text-gray-500 mb-4">No additional tickets pending add.</p>
             )}
 
             <div className="space-y-4">
-              {attendees.map((a, i) => (
-                <div key={i} className="rounded-xl border border-noahbrave-200 p-4">
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">First name</label>
-                      <input
-                        value={a.firstName}
-                        onChange={(e) => handleChange(i, 'firstName', e.target.value)}
-                        onBlur={() => handleBlur(i, 'firstName')}
-                        className={`w-full rounded-lg border px-4 py-3 focus:outline-none focus:ring-2 focus:ring-noahbrave-600 ${
-                          showError(i, 'firstName') ? 'border-red-500' : 'border-gray-300'
-                        }`}
-                        placeholder="Jane"
-                      />
-                      {showError(i, 'firstName') && (
-                        <p className="text-sm text-red-600 mt-1">Please enter a first name</p>
-                      )}
+              {rows.map((a, i) => {
+                const showFirst = (touched[i]?.firstName || submitted) && !a.firstName.trim();
+                const showLast = (touched[i]?.lastName || submitted) && !a.lastName.trim();
+                return (
+                  <div key={i} className="rounded-xl border border-noahbrave-200 p-4">
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">First name</label>
+                        <input
+                          value={a.firstName}
+                          onChange={(e) => handleChange(i, 'firstName', e.target.value)}
+                          onBlur={() => handleBlur(i, 'firstName')}
+                          className={`w-full rounded-lg border px-4 py-3 focus:outline-none focus:ring-2 focus:ring-noahbrave-600 ${
+                            showFirst ? 'border-red-500' : 'border-gray-300'
+                          }`}
+                          placeholder="Jane"
+                        />
+                        {showFirst && (
+                          <p className="text-sm text-red-600 mt-1">Please enter a first name</p>
+                        )}
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Last name</label>
+                        <input
+                          value={a.lastName}
+                          onChange={(e) => handleChange(i, 'lastName', e.target.value)}
+                          onBlur={() => handleBlur(i, 'lastName')}
+                          className={`w-full rounded-lg border px-4 py-3 focus:outline-none focus:ring-2 focus:ring-noahbrave-600 ${
+                            showLast ? 'border-red-500' : 'border-gray-300'
+                          }`}
+                          placeholder="Doe"
+                        />
+                        {showLast && (
+                          <p className="text-sm text-red-600 mt-1">Please enter a last name</p>
+                        )}
+                      </div>
                     </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Last name</label>
-                      <input
-                        value={a.lastName}
-                        onChange={(e) => handleChange(i, 'lastName', e.target.value)}
-                        onBlur={() => handleBlur(i, 'lastName')}
-                        className={`w-full rounded-lg border px-4 py-3 focus:outline-none focus:ring-2 focus:ring-noahbrave-600 ${
-                          showError(i, 'lastName') ? 'border-red-500' : 'border-gray-300'
-                        }`}
-                        placeholder="Doe"
-                      />
-                      {showError(i, 'lastName') && (
-                        <p className="text-sm text-red-600 mt-1">Please enter a last name</p>
-                      )}
+                    <div className="flex justify-end mt-3 gap-3">
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveRow(i)}
+                        className="text-sm text-gray-600 hover:text-gray-800"
+                      >
+                        Remove row
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleAddTicket(i)}
+                        className="cta px-4 py-2 rounded-lg font-semibold"
+                      >
+                        Add ticket
+                      </button>
                     </div>
                   </div>
-                  <div className="flex justify-end mt-3">
-                    <button
-                      type="button"
-                      onClick={() => handleRemove(i)}
-                      className="text-sm text-gray-600 hover:text-gray-800"
-                    >
-                      Remove
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="mt-6 text-sm text-gray-600">
-              Tickets: <span className="font-medium text-gray-900">{totalTickets}</span>
+                );
+              })}
             </div>
           </div>
         </div>

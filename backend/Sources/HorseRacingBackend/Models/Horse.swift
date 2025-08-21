@@ -22,6 +22,9 @@ final class Horse: Model, Content, @unchecked Sendable {
 	@Parent(key: "lane_id")
 	var lane: Lane
 
+	@OptionalParent(key: "cart_id")
+	var cart: Cart?
+
 	@Field(key: "horse_name")
 	var horseName: String
 
@@ -69,5 +72,19 @@ struct MigrateHorses: Migration {
 
 	func revert(on database: Database) -> EventLoopFuture<Void> {
 		database.schema("horses").delete()
+	}
+}
+
+struct MigrateHorsesAddCart: Migration {
+	func prepare(on database: Database) -> EventLoopFuture<Void> {
+		database.schema("horses")
+			.field("cart_id", .uuid, .references("carts", "id", onDelete: .setNull))
+			.update()
+	}
+
+	func revert(on database: Database) -> EventLoopFuture<Void> {
+		database.schema("horses")
+			.deleteField("cart_id")
+			.update()
 	}
 }

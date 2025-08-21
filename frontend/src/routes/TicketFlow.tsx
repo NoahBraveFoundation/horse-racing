@@ -43,7 +43,6 @@ const TicketFlow: React.FC = () => {
               onUserUpdate={(u) => setUser(u)}
               onNext={nextStep}
             />
-            <StickySummary hidePrices />
           </>
         );
       case 2:

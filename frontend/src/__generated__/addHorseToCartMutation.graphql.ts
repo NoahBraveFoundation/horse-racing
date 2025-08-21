@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<06e346ec06efa627d513f9ebc2cfa80d>>
+ * @generated SignedSource<<7d8cebe0f79c5228d464e479b9fc4137>>
  * @lightSyntaxTransform
  * @nogrep
  */
@@ -9,33 +9,25 @@
 // @ts-nocheck
 
 import { ConcreteRequest } from 'relay-runtime';
-export type purchaseHorseMutation$variables = {
+export type addHorseToCartMutation$variables = {
   horseName: string;
   laneId: any;
   ownershipLabel: string;
   roundId: any;
 };
-export type purchaseHorseMutation$data = {
-  readonly purchaseHorse: {
+export type addHorseToCartMutation$data = {
+  readonly addHorseToCart: {
     readonly horseName: string;
     readonly id: any | null | undefined;
-    readonly lane: {
-      readonly id: any | null | undefined;
-    };
     readonly owner: {
-      readonly firstName: string;
       readonly id: any | null | undefined;
-      readonly lastName: string;
     };
     readonly ownershipLabel: string;
-    readonly round: {
-      readonly id: any | null | undefined;
-    };
   };
 };
-export type purchaseHorseMutation = {
-  response: purchaseHorseMutation$data;
-  variables: purchaseHorseMutation$variables;
+export type addHorseToCartMutation = {
+  response: addHorseToCartMutation$data;
+  variables: addHorseToCartMutation$variables;
 };
 
 const node: ConcreteRequest = (function(){
@@ -67,9 +59,6 @@ v4 = {
   "storageKey": null
 },
 v5 = [
-  (v4/*: any*/)
-],
-v6 = [
   {
     "alias": null,
     "args": [
@@ -96,7 +85,7 @@ v6 = [
     ],
     "concreteType": "Horse",
     "kind": "LinkedField",
-    "name": "purchaseHorse",
+    "name": "addHorseToCart",
     "plural": false,
     "selections": [
       (v4/*: any*/),
@@ -122,42 +111,8 @@ v6 = [
         "name": "owner",
         "plural": false,
         "selections": [
-          (v4/*: any*/),
-          {
-            "alias": null,
-            "args": null,
-            "kind": "ScalarField",
-            "name": "firstName",
-            "storageKey": null
-          },
-          {
-            "alias": null,
-            "args": null,
-            "kind": "ScalarField",
-            "name": "lastName",
-            "storageKey": null
-          }
+          (v4/*: any*/)
         ],
-        "storageKey": null
-      },
-      {
-        "alias": null,
-        "args": null,
-        "concreteType": "Lane",
-        "kind": "LinkedField",
-        "name": "lane",
-        "plural": false,
-        "selections": (v5/*: any*/),
-        "storageKey": null
-      },
-      {
-        "alias": null,
-        "args": null,
-        "concreteType": "Round",
-        "kind": "LinkedField",
-        "name": "round",
-        "plural": false,
-        "selections": (v5/*: any*/),
         "storageKey": null
       }
     ],
@@ -174,8 +129,8 @@ return {
     ],
     "kind": "Fragment",
     "metadata": null,
-    "name": "purchaseHorseMutation",
-    "selections": (v6/*: any*/),
+    "name": "addHorseToCartMutation",
+    "selections": (v5/*: any*/),
     "type": "Mutation",
     "abstractKey": null
   },
@@ -188,20 +143,20 @@ return {
       (v2/*: any*/)
     ],
     "kind": "Operation",
-    "name": "purchaseHorseMutation",
-    "selections": (v6/*: any*/)
+    "name": "addHorseToCartMutation",
+    "selections": (v5/*: any*/)
   },
   "params": {
-    "cacheID": "54fe7007009e419126f5608c5551d199",
+    "cacheID": "a171759150d68a25fb150806b00880cd",
     "id": null,
     "metadata": {},
-    "name": "purchaseHorseMutation",
+    "name": "addHorseToCartMutation",
     "operationKind": "mutation",
-    "text": "mutation purchaseHorseMutation(\n  $roundId: UUID!\n  $laneId: UUID!\n  $horseName: String!\n  $ownershipLabel: String!\n) {\n  purchaseHorse(roundId: $roundId, laneId: $laneId, horseName: $horseName, ownershipLabel: $ownershipLabel) {\n    id\n    horseName\n    ownershipLabel\n    owner {\n      id\n      firstName\n      lastName\n    }\n    lane {\n      id\n    }\n    round {\n      id\n    }\n  }\n}\n"
+    "text": "mutation addHorseToCartMutation(\n  $roundId: UUID!\n  $laneId: UUID!\n  $horseName: String!\n  $ownershipLabel: String!\n) {\n  addHorseToCart(roundId: $roundId, laneId: $laneId, horseName: $horseName, ownershipLabel: $ownershipLabel) {\n    id\n    horseName\n    ownershipLabel\n    owner {\n      id\n    }\n  }\n}\n"
   }
 };
 })();
 
-(node as any).hash = "bf18e5b1e61492efc1bf8bb7b371770b";
+(node as any).hash = "d0e812a39710a04ee317c6132336eec8";
 
 export default node;

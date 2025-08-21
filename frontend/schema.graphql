@@ -9,6 +9,30 @@ Indicates exactly one field must be supplied and this field must not be `null`.
 """
 directive @oneOf on INPUT_OBJECT
 
+type Cart {
+  cost: CartCost!
+  giftBasketInterests: [GiftBasketInterest!]!
+  horses: [Horse!]!
+  id: UUID
+  sponsorInterests: [SponsorInterest!]!
+  status: CartStatus!
+  tickets: [Ticket!]!
+  user: User!
+}
+
+type CartCost {
+  horseCents: Int!
+  sponsorCents: Int!
+  ticketsCents: Int!
+  totalCents: Int!
+}
+
+enum CartStatus {
+  open
+  checkedOut
+  abandoned
+}
+
 scalar Date
 
 type GiftBasketInterest {
@@ -41,14 +65,18 @@ type Lane {
 }
 
 type Mutation {
+  addGiftBasketToCart(description: String!): GiftBasketInterest!
+  addHorseToCart(roundId: UUID!, laneId: UUID!, horseName: String!, ownershipLabel: String!): Horse!
+  addSponsorToCart(companyName: String!): SponsorInterest!
+  addTicketToCart(attendeeFirst: String!, attendeeLast: String!): Ticket!
+  checkoutCart: Payment!
   createUser(email: String!, firstName: String!, lastName: String!): User!
+  getOrCreateCart: Cart!
   markPaymentReceived(paymentId: UUID!): Payment!
-  purchaseHorse(roundId: UUID!, laneId: UUID!, horseName: String!, ownershipLabel: String!): Horse!
-  purchaseTicket(attendeeFirst: String!, attendeeLast: String!): Ticket!
-  registerGiftBasketInterest(description: String!): GiftBasketInterest!
-  registerSponsorInterest(companyName: String!): SponsorInterest!
-  selectHorseLane(horseId: UUID!, roundId: UUID!, laneId: UUID!): Horse!
-  updateHorseState(horseId: UUID!, state: HorseEntryState!): Horse!
+  removeGiftBasketFromCart(giftId: UUID!): Boolean!
+  removeHorseFromCart(horseId: UUID!): Boolean!
+  removeSponsorFromCart(sponsorId: UUID!): Boolean!
+  removeTicketFromCart(ticketId: UUID!): Boolean!
 }
 
 type Payment {
@@ -61,6 +89,8 @@ type Payment {
 
 type Query {
   lanes(roundId: UUID!): [Lane!]!
+  me: User!
+  myCart: Cart!
   paymentStatus: Payment
   rounds: [Round!]!
 }
@@ -83,8 +113,16 @@ type SponsorInterest {
 type Ticket {
   attendeeFirst: String!
   attendeeLast: String!
+  canRemove: Boolean!
   id: UUID
   owner: User!
+  state: TicketState!
+}
+
+enum TicketState {
+  on_hold
+  pending_payment
+  confirmed
 }
 
 type User {

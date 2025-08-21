@@ -3,7 +3,11 @@ import type { User } from '../types/ticket';
 import { commitMutation } from 'react-relay';
 import environment from '../relay/environment';
 import { createUserMutation } from '../graphql/mutations/createUser';
-import { purchaseHorseMutation } from '../graphql/mutations/purchaseHorse';
+import { getOrCreateCartMutationGQL } from '../graphql/mutations/getOrCreateCart';
+import { addTicketToCartMutation } from '../graphql/mutations/addTicketToCart';
+import { removeTicketFromCartMutation } from '../graphql/mutations/removeTicketFromCart';
+import { addHorseToCartMutation } from '../graphql/mutations/addHorseToCart';
+import { removeHorseFromCartMutation } from '../graphql/mutations/removeHorseFromCart';
 
 export type Attendee = { firstName: string; lastName: string };
 export type HorseSelection = { roundId: string; laneId: string; horseName: string; ownershipLabel: string; horseId?: string };
@@ -19,6 +23,9 @@ type TicketFlowState = {
   isCreatingUser: boolean;
   errorMessage: string | null;
 
+  cartRefreshKey: number;
+  refreshCart: () => void;
+
   // actions
   setUser: (updates: Partial<User>) => void;
   nextStep: () => void;
@@ -30,10 +37,15 @@ type TicketFlowState = {
   updateAttendee: (index: number, updates: Partial<Attendee>) => void;
 
   createUser: (vars: { firstName: string; lastName: string; email: string }) => Promise<User>;
+  ensureCart: () => Promise<void>;
 
-  purchaseHorse: (vars: { roundId: string; laneId: string; horseName: string; ownershipLabel: string }) => Promise<HorseSelection>;
+  addTicketToCart: (vars: { attendeeFirst: string; attendeeLast: string }) => Promise<void>;
+  removeTicketFromCart: (ticketId: string) => Promise<void>;
 
-  // selectors
+  addHorseToCart: (vars: { roundId: string; laneId: string; horseName: string; ownershipLabel: string }) => Promise<void>;
+  removeHorseFromCart: (horseId: string) => Promise<void>;
+
+  // selectors (legacy client subtotal)
   totalTickets: () => number;
   totalHorseCount: () => number;
   ticketsTotal: () => number;
@@ -48,6 +60,9 @@ export const useTicketFlowStore = create<TicketFlowState>((set, get) => ({
   horseSelections: [],
   isCreatingUser: false,
   errorMessage: null,
+
+  cartRefreshKey: 0,
+  refreshCart: () => set((s) => ({ cartRefreshKey: s.cartRefreshKey + 1 })),
 
   setUser: (updates) => set((state) => ({ user: { ...state.user, ...updates } })),
   nextStep: () => set((s) => ({ currentStep: s.currentStep + 1 })),
@@ -65,10 +80,16 @@ export const useTicketFlowStore = create<TicketFlowState>((set, get) => ({
       commitMutation(environment as any, {
         mutation: createUserMutation as any,
         variables: vars as any,
-        onCompleted: (response: any) => {
+        onCompleted: async (response: any) => {
           const created = response?.createUser;
           if (created?.id) {
             set((s) => ({ user: { ...s.user, id: created.id }, isCreatingUser: false }));
+            try {
+              await get().ensureCart();
+              get().refreshCart();
+            } catch {
+              // ignore cart creation failure here; UI can retry
+            }
             resolve(created);
           } else {
             const message = 'Unexpected response from server. Please try again.';
@@ -88,29 +109,65 @@ export const useTicketFlowStore = create<TicketFlowState>((set, get) => ({
       });
     }),
 
-  purchaseHorse: (vars) =>
-    new Promise<HorseSelection>((resolve, reject) => {
+  ensureCart: () =>
+    new Promise<void>((resolve, reject) => {
       commitMutation(environment as any, {
-        mutation: purchaseHorseMutation as any,
+        mutation: getOrCreateCartMutationGQL as any,
+        variables: {} as any,
+        onCompleted: () => resolve(),
+        onError: (err: any) => reject(err),
+      });
+    }),
+
+  addTicketToCart: (vars) =>
+    new Promise<void>((resolve, reject) => {
+      commitMutation(environment as any, {
+        mutation: addTicketToCartMutation as any,
         variables: vars as any,
-        onCompleted: (response: any) => {
-          const horse = response?.purchaseHorse;
-          if (horse?.id) {
-            const selection: HorseSelection = { roundId: vars.roundId, laneId: vars.laneId, horseName: vars.horseName, ownershipLabel: vars.ownershipLabel, horseId: horse.id };
-            set((s) => ({ horseSelections: [...s.horseSelections, selection] }));
-            resolve(selection);
-          } else {
-            reject(new Error('Could not place horse.'));
-          }
+        onCompleted: () => {
+          get().refreshCart();
+          resolve();
         },
-        onError: (err: any) => {
-          let message = 'Something went wrong placing horse.';
-          if (err?.message) {
-            const match = err.message.match(/Abort\.\d+:\s*(.+)/);
-            message = match ? match[1] : err.message;
-          }
-          reject(new Error(message));
+        onError: (err: any) => reject(err),
+      });
+    }),
+
+  removeTicketFromCart: (ticketId) =>
+    new Promise<void>((resolve, reject) => {
+      commitMutation(environment as any, {
+        mutation: removeTicketFromCartMutation as any,
+        variables: { ticketId } as any,
+        onCompleted: () => {
+          get().refreshCart();
+          resolve();
         },
+        onError: (err: any) => reject(err),
+      });
+    }),
+
+  addHorseToCart: (vars) =>
+    new Promise<void>((resolve, reject) => {
+      commitMutation(environment as any, {
+        mutation: addHorseToCartMutation as any,
+        variables: vars as any,
+        onCompleted: () => {
+          get().refreshCart();
+          resolve();
+        },
+        onError: (err: any) => reject(err),
+      });
+    }),
+
+  removeHorseFromCart: (horseId) =>
+    new Promise<void>((resolve, reject) => {
+      commitMutation(environment as any, {
+        mutation: removeHorseFromCartMutation as any,
+        variables: { horseId } as any,
+        onCompleted: () => {
+          get().refreshCart();
+          resolve();
+        },
+        onError: (err: any) => reject(err),
       });
     }),
 

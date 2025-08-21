@@ -1,17 +1,40 @@
 import React from 'react';
+import { useLazyLoadQuery, graphql } from 'react-relay';
+import ErrorBoundary from '../common/ErrorBoundary';
 import { useTicketFlowStore } from '../../store/ticketFlow';
+
+const CartSummaryQuery = graphql`
+  query StickySummaryCartQuery {
+    myCart {
+      id
+      cost {
+        ticketsCents
+        horseCents
+        sponsorCents
+        totalCents
+      }
+      tickets { id }
+      horses { id }
+    }
+  }
+`;
 
 interface StickySummaryProps {
   hidePrices?: boolean;
   onContinue?: () => void;
 }
 
-const StickySummary: React.FC<StickySummaryProps> = ({ hidePrices = false, onContinue }) => {
-  const ticketsTotal = useTicketFlowStore((s) => s.ticketsTotal());
-  const horsesTotal = useTicketFlowStore((s) => s.horsesTotal());
-  const grandTotal = useTicketFlowStore((s) => s.grandTotal());
-  const ticketCount = useTicketFlowStore((s) => s.totalTickets());
-  const horseCount = useTicketFlowStore((s) => s.totalHorseCount());
+const SummaryInner: React.FC<StickySummaryProps> = ({ hidePrices = false, onContinue }) => {
+  const cartRefreshKey = useTicketFlowStore((s) => s.cartRefreshKey);
+  const data: any = hidePrices ? null : useLazyLoadQuery(CartSummaryQuery, {}, { fetchKey: cartRefreshKey, fetchPolicy: 'network-only' });
+  const cart = data?.myCart;
+
+  const ticketCount = cart?.tickets?.length ?? 0;
+  const horseCount = cart?.horses?.length ?? 0;
+
+  const ticketsTotal = (cart?.cost?.ticketsCents ?? 0) / 100;
+  const horsesTotal = (cart?.cost?.horseCents ?? 0) / 100;
+  const grandTotal = (cart?.cost?.totalCents ?? 0) / 100;
 
   const pluralize = (word: string, count: number) => (count === 1 ? word : `${word}s`);
 
@@ -57,5 +80,22 @@ const StickySummary: React.FC<StickySummaryProps> = ({ hidePrices = false, onCon
     </div>
   );
 };
+
+const StickySummary: React.FC<StickySummaryProps> = (props) => (
+  <ErrorBoundary fallback={props.hidePrices ? null : (
+    <div className="fixed bottom-0 inset-x-0 z-50 border-t border-gray-200 bg-white">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="py-4 flex items-center justify-between">
+          <div className="text-sm text-gray-600">Unable to load cart. Please sign in.</div>
+          {props.onContinue && (
+            <button type="button" onClick={props.onContinue} className="cta px-6 py-3 rounded-lg font-semibold">Continue</button>
+          )}
+        </div>
+      </div>
+    </div>
+  )}>
+    <SummaryInner {...props} />
+  </ErrorBoundary>
+);
 
 export default StickySummary;

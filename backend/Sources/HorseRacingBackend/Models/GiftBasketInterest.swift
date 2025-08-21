@@ -13,6 +13,9 @@ final class GiftBasketInterest: Model, Content, @unchecked Sendable {
 	@Field(key: "description")
 	var descriptionText: String
 
+	@OptionalParent(key: "cart_id")
+	var cart: Cart?
+
 	@Timestamp(key: "created_at", on: .create)
 	var createdAt: Date?
 
@@ -22,6 +25,20 @@ final class GiftBasketInterest: Model, Content, @unchecked Sendable {
 		self.id = id
 		self.$user.id = userID
 		self.descriptionText = descriptionText
+	}
+}
+
+struct MigrateGiftBasketInterestsAddCart: Migration {
+	func prepare(on database: Database) -> EventLoopFuture<Void> {
+		database.schema("gift_basket_interests")
+			.field("cart_id", .uuid, .references("carts", "id", onDelete: .setNull))
+			.update()
+	}
+
+	func revert(on database: Database) -> EventLoopFuture<Void> {
+		database.schema("gift_basket_interests")
+			.deleteField("cart_id")
+			.update()
 	}
 }
 
