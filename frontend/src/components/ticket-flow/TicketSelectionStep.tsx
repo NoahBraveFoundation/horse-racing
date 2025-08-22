@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useTicketFlowStore } from '../../store/ticketFlow';
 import StickySummary from './StickySummary';
 import { graphql, useLazyLoadQuery } from 'react-relay';
+import StepHeader from './StepHeader';
 
 interface TicketSelectionStepProps {
   onNext: () => void;
@@ -74,10 +75,7 @@ const TicketSelectionStep: React.FC<TicketSelectionStepProps> = ({ onNext, onBac
     <div className="min-h-screen bg-noahbrave-50 font-body pb-32">
       <div className="checker-top h-3" style={{ backgroundColor: 'var(--brand)' }} />
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="mb-8 text-center">
-          <h1 className="font-heading text-4xl md:text-5xl text-gray-900">Select Tickets</h1>
-          <p className="text-gray-600 mt-2">Step 2 of 4 — Choose your tickets</p>
-        </div>
+        <StepHeader title="Select Tickets" subtitle="Step 2 of 4 — Choose your tickets" />
 
         <div className="bg-white rounded-2xl shadow-xl border border-noahbrave-200 p-8">
           <div className="mb-6">

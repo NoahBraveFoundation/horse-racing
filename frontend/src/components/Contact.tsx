@@ -11,27 +11,27 @@ export const Contact: React.FC = () => {
             <div className="grid md:grid-cols-2 gap-12">
               <div>
                 <h3 className="font-heading text-2xl text-gray-900 mb-6">Get in Touch</h3>
-                <div className="space-y-4">
-                  <div className="flex items-center">
-                    <div className="w-12 h-12 bg-noahbrave-600 rounded-full flex items-center justify-center mr-4">
+                <div className="space-y-6">
+                  <div className="flex items-start">
+                    <div className="w-12 h-12 bg-noahbrave-600 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
                       <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                       </svg>
                     </div>
                     <div>
-                      <p className="font-semibold text-gray-900">Email</p>
-                      <p className="text-gray-600">info@noahbrave.org</p>
+                      <p className="font-semibold text-gray-900">Christy Lukasik</p>
+                      <a href="mailto:christylukasik@comcast.net" className="text-noahbrave-600 hover:text-noahbrave-700 hover:underline">christylukasik@comcast.net</a>
                     </div>
                   </div>
-                  <div className="flex items-center">
-                    <div className="w-12 h-12 bg-noahbrave-600 rounded-full flex items-center justify-center mr-4">
+                  <div className="flex items-start">
+                    <div className="w-12 h-12 bg-noahbrave-600 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
                       <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9v-9m0-9v9" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                       </svg>
                     </div>
                     <div>
-                      <p className="font-semibold text-gray-900">Website</p>
-                      <a href="https://noahbrave.org" className="text-noahbrave-600 hover:text-noahbrave-700">noahbrave.org</a>
+                      <p className="font-semibold text-gray-900">Gina Evans</p>
+                      <a href="mailto:gina.evans@uticak12.org" className="text-noahbrave-600 hover:text-noahbrave-700 hover:underline">gina.evans@uticak12.org</a>
                     </div>
                   </div>
                 </div>

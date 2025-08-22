@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<c14a1fb3cfa9f32b899baeae72b5c1fb>>
+ * @generated SignedSource<<6d994416b7e8f69eef70536b484705ad>>
  * @lightSyntaxTransform
  * @nogrep
  */
@@ -16,6 +16,12 @@ export type BoardQuery$data = {
     readonly firstName: string;
     readonly id: any | null | undefined;
     readonly lastName: string;
+  };
+  readonly myCart: {
+    readonly horses: ReadonlyArray<{
+      readonly id: any | null | undefined;
+    }>;
+    readonly id: any | null | undefined;
   };
   readonly rounds: ReadonlyArray<{
     readonly endAt: any;
@@ -82,25 +88,49 @@ v2 = {
 v3 = {
   "alias": null,
   "args": null,
-  "kind": "ScalarField",
-  "name": "name",
+  "concreteType": "Cart",
+  "kind": "LinkedField",
+  "name": "myCart",
+  "plural": false,
+  "selections": [
+    (v0/*: any*/),
+    {
+      "alias": null,
+      "args": null,
+      "concreteType": "Horse",
+      "kind": "LinkedField",
+      "name": "horses",
+      "plural": true,
+      "selections": [
+        (v0/*: any*/)
+      ],
+      "storageKey": null
+    }
+  ],
   "storageKey": null
 },
 v4 = {
   "alias": null,
   "args": null,
   "kind": "ScalarField",
-  "name": "startAt",
+  "name": "name",
   "storageKey": null
 },
 v5 = {
   "alias": null,
   "args": null,
   "kind": "ScalarField",
-  "name": "endAt",
+  "name": "startAt",
   "storageKey": null
 },
 v6 = {
+  "alias": null,
+  "args": null,
+  "kind": "ScalarField",
+  "name": "endAt",
+  "storageKey": null
+},
+v7 = {
   "alias": null,
   "args": null,
   "concreteType": "Lane",
@@ -163,6 +193,7 @@ return {
     "name": "BoardQuery",
     "selections": [
       (v2/*: any*/),
+      (v3/*: any*/),
       {
         "alias": null,
         "args": null,
@@ -172,10 +203,10 @@ return {
         "plural": true,
         "selections": [
           (v0/*: any*/),
-          (v3/*: any*/),
           (v4/*: any*/),
           (v5/*: any*/),
           (v6/*: any*/),
+          (v7/*: any*/),
           {
             "args": null,
             "kind": "FragmentSpread",
@@ -195,6 +226,7 @@ return {
     "name": "BoardQuery",
     "selections": [
       (v2/*: any*/),
+      (v3/*: any*/),
       {
         "alias": null,
         "args": null,
@@ -204,26 +236,26 @@ return {
         "plural": true,
         "selections": [
           (v0/*: any*/),
-          (v3/*: any*/),
           (v4/*: any*/),
           (v5/*: any*/),
-          (v6/*: any*/)
+          (v6/*: any*/),
+          (v7/*: any*/)
         ],
         "storageKey": null
       }
     ]
   },
   "params": {
-    "cacheID": "e20bbb238c0e9b585c08cff87472e639",
+    "cacheID": "8cdc07e48c03e4fb0e639f3d4d6763b5",
     "id": null,
     "metadata": {},
     "name": "BoardQuery",
     "operationKind": "query",
-    "text": "query BoardQuery {\n  me {\n    id\n    firstName\n    lastName\n  }\n  rounds {\n    id\n    name\n    startAt\n    endAt\n    lanes {\n      id\n      number\n      horse {\n        id\n        horseName\n        ownershipLabel\n        owner {\n          id\n          firstName\n          lastName\n        }\n      }\n    }\n    ...RoundBoardFragment\n  }\n}\n\nfragment RoundBoardFragment on Round {\n  id\n  name\n  startAt\n  endAt\n  lanes {\n    id\n    number\n    horse {\n      id\n      horseName\n      ownershipLabel\n      owner {\n        id\n        firstName\n        lastName\n      }\n    }\n  }\n}\n"
+    "text": "query BoardQuery {\n  me {\n    id\n    firstName\n    lastName\n  }\n  myCart {\n    id\n    horses {\n      id\n    }\n  }\n  rounds {\n    id\n    name\n    startAt\n    endAt\n    lanes {\n      id\n      number\n      horse {\n        id\n        horseName\n        ownershipLabel\n        owner {\n          id\n          firstName\n          lastName\n        }\n      }\n    }\n    ...RoundBoardFragment\n  }\n}\n\nfragment RoundBoardFragment on Round {\n  id\n  name\n  startAt\n  endAt\n  lanes {\n    id\n    number\n    horse {\n      id\n      horseName\n      ownershipLabel\n      owner {\n        id\n        firstName\n        lastName\n      }\n    }\n  }\n}\n"
   }
 };
 })();
 
-(node as any).hash = "c5fb41c08706507755c8f1a087e3c214";
+(node as any).hash = "bac995fcb19303aca955377fb68e430d";
 
 export default node;

@@ -30,9 +30,12 @@ struct HorseRacingBackend {
         app.middleware.use(app.sessions.middleware)
         app.middleware.use(UserSessionLoaderMiddleware())
 
-        // Configure GraphQL
+                // Configure GraphQL
         try configureGraphQL(app)
-
+        
+        // Configure scheduled tasks
+        try configureScheduledTasks(app)
+        
         // Configure routes
         try configureRoutes(app)
 
@@ -87,6 +90,7 @@ func configureDatabase(_ app: Application) async throws {
     app.migrations.add(MigrateTicketsAddCanRemove())
     app.migrations.add(MigrateSponsorInterests())
     app.migrations.add(MigrateSponsorInterestsAddCart())
+    app.migrations.add(MigrateSponsorInterestsAddLogo())
     app.migrations.add(MigrateGiftBasketInterests())
     app.migrations.add(MigrateGiftBasketInterestsAddCart())
     app.migrations.add(MigratePayments())
@@ -101,6 +105,11 @@ func configureDatabase(_ app: Application) async throws {
 func configureGraphQL(_ app: Application) throws {
     app.register(graphQLSchema: horseRacingSchema, withResolver: HorseResolver())
     if !app.environment.isRelease { app.enableGraphiQL() }
+}
+
+func configureScheduledTasks(_ app: Application) throws {
+    // Cleanup service is ready for manual or scheduled execution
+    app.logger.info("CleanupService configured - use /admin/cleanup endpoint to run manually")
 }
 
 func configureRoutes(_ app: Application) throws {
@@ -135,6 +144,29 @@ func configureRoutes(_ app: Application) throws {
         res.headers.replaceOrAdd(name: .contentType, value: "application/json")
         try res.content.encode(["status": "ok", "userId": user.id?.uuidString ?? ""], as: .json)
         return res
+    }
+    
+    // Admin cleanup endpoint
+    app.post("admin", "cleanup") { req async throws -> HTTPStatus in
+        // Check if user is admin
+        guard let user = req.auth.get(User.self), user.isAdmin else {
+            throw Abort(.forbidden, reason: "Admin access required")
+        }
+        
+        try await withCheckedThrowingContinuation { continuation in
+            CleanupService.runAllCleanups(on: req)
+                .whenComplete { result in
+                    switch result {
+                    case .success:
+                        continuation.resume()
+                    case .failure(let error):
+                        continuation.resume(throwing: error)
+                    }
+                }
+        }
+        
+        req.logger.info("Manual cleanup completed by admin user: \(user.email)")
+        return .ok
     }
 }
 

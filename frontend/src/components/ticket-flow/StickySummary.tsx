@@ -22,9 +22,11 @@ const CartSummaryQuery = graphql`
 interface StickySummaryProps {
   hidePrices?: boolean;
   onContinue?: () => void;
+  onBack?: () => void;
+  continueLoading?: boolean;
 }
 
-const SummaryInner: React.FC<StickySummaryProps> = ({ hidePrices = false, onContinue }) => {
+const SummaryInner: React.FC<StickySummaryProps> = ({ hidePrices = false, onContinue, onBack, continueLoading = false }) => {
   const cartRefreshKey = useTicketFlowStore((s) => s.cartRefreshKey);
   const data: any = hidePrices ? null : useLazyLoadQuery(CartSummaryQuery, {}, { fetchKey: cartRefreshKey, fetchPolicy: 'network-only' });
   const cart = data?.myCart;
@@ -64,17 +66,32 @@ const SummaryInner: React.FC<StickySummaryProps> = ({ hidePrices = false, onCont
               </div>
             )}
           </div>
-          {onContinue && (
-            <div className="w-full sm:w-auto flex sm:block justify-center">
+          <div className="w-full sm:w-auto flex items-center justify-between sm:justify-end gap-3">
+            {onBack && (
               <button
                 type="button"
-                onClick={onContinue}
-                className="cta px-6 py-3 rounded-lg font-semibold"
+                onClick={onBack}
+                className="px-5 py-3 rounded-lg border text-gray-700 hover:bg-gray-50"
               >
-                Continue
+                Back
               </button>
-            </div>
-          )}
+            )}
+            {onContinue && (
+              <button
+                type="button"
+                onClick={continueLoading ? undefined : onContinue}
+                disabled={continueLoading}
+                className="cta px-6 py-3 rounded-lg font-semibold disabled:opacity-60 relative"
+              >
+                {continueLoading && (
+                  <span className="absolute inset-0 flex items-center justify-center">
+                    <span className="h-5 w-5 border-2 border-white/70 border-t-transparent rounded-full animate-spin"></span>
+                  </span>
+                )}
+                <span className={continueLoading ? 'invisible' : ''}>Continue</span>
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>
@@ -87,9 +104,14 @@ const StickySummary: React.FC<StickySummaryProps> = (props) => (
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="py-4 flex items-center justify-between">
           <div className="text-sm text-gray-600">Unable to load cart. Please sign in.</div>
-          {props.onContinue && (
-            <button type="button" onClick={props.onContinue} className="cta px-6 py-3 rounded-lg font-semibold">Continue</button>
-          )}
+          <div className="flex items-center gap-3">
+            {props.onBack && (
+              <button type="button" onClick={props.onBack} className="px-5 py-3 rounded-lg border text-gray-700 hover:bg-gray-50">Back</button>
+            )}
+            {props.onContinue && (
+              <button type="button" onClick={props.onContinue} className="cta px-6 py-3 rounded-lg font-semibold">Continue</button>
+            )}
+          </div>
         </div>
       </div>
     </div>

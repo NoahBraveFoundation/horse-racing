@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import type { User } from '../../types/ticket';
 import { useTicketFlowStore } from '../../store/ticketFlow';
+import StepHeader from './StepHeader';
 
 interface UserDetailsStepProps {
   user: User;
@@ -62,10 +63,7 @@ const UserDetailsStep: React.FC<UserDetailsStepProps> = ({ user, onUserUpdate, o
     <div className="min-h-screen bg-noahbrave-50 font-body pb-32">
       <div className="checker-top h-3" style={{ backgroundColor: 'var(--brand)' }} />
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="mb-8 text-center">
-          <h1 className="font-heading text-4xl md:text-5xl text-gray-900">Buy Tickets</h1>
-          <p className="text-gray-600 mt-2">Step 1 of 4 — Your details</p>
-        </div>
+        <StepHeader title="Buy Tickets" subtitle="Step 1 of 8 — Your details" />
 
         <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-xl border border-noahbrave-200 p-8">
           {errorMessage && (

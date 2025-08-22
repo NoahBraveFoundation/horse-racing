@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
-import nbf from '../assets/nbf.webp'
+import { Link } from 'react-router-dom'
+import Logo from './common/Logo'
 
 export const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -9,9 +10,7 @@ export const Header: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center py-4">
           <div className="flex items-center">
-            <div className="w-12 h-12 shadow-md">
-              <img src={nbf} alt="NoahBRAVE Foundation" className="w-full h-full object-contain" />
-            </div>
+            <Logo size="md" showBackground={true} className="shadow-md" clickable={true} />
             <div className="ml-3">
               <h1 className="font-heading text-2xl tracking-wide text-gray-900">A Night at the Races</h1>
               <p className="text-xs text-gray-600">NoahBRAVE Foundation</p>
@@ -35,7 +34,7 @@ export const Header: React.FC = () => {
             <a href="#about" className="text-gray-700 hover:text-noahbrave-600 font-medium">About</a>
             <a href="#location" className="text-gray-700 hover:text-noahbrave-600 font-medium">Location</a>
             <a href="#contact" className="text-gray-700 hover:text-noahbrave-600 font-medium">Contact</a>
-            <a href="#tickets" className="hidden lg:inline-flex items-center cta px-4 py-2 rounded-lg font-semibold shadow-md">Buy Tickets</a>
+            <Link to="/tickets" className="hidden lg:inline-flex items-center cta px-4 py-2 rounded-lg font-semibold shadow-md">Buy Tickets</Link>
           </nav>
         </div>
       </div>
@@ -45,8 +44,8 @@ export const Header: React.FC = () => {
           <div className="px-2 pt-2 pb-3 space-y-1">
             <a href="#about" className="block px-3 py-2 text-gray-700 hover:text-noahbrave-600 font-medium">About</a>
             <a href="#schedule" className="block px-3 py-2 text-gray-700 hover:text-noahbrave-600 font-medium">Schedule</a>
-            <a href="#tickets" className="block px-3 py-2 text-gray-700 hover:text-noahbrave-600 font-medium">Tickets</a>
             <a href="#contact" className="block px-3 py-2 text-gray-700 hover:text-noahbrave-600 font-medium">Contact</a>
+            <Link to="/tickets" className="block px-3 py-2 text-gray-700 hover:text-noahbrave-600 font-medium">Tickets</Link>
           </div>
         </div>
       )}

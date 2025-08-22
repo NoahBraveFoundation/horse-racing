@@ -15,6 +15,7 @@
   "dependencies": {
     "@tailwindcss/vite": "^4.1.12",
     "@types/graphql": "^14.2.3",
+    "canvas-confetti": "^1.9.3",
     "graphql": "^16.11.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
@@ -25,6 +26,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.33.0",
+    "@types/canvas-confetti": "^1.9.0",
     "@types/react": "^19.1.10",
     "@types/react-dom": "^19.1.7",
     "@types/react-relay": "^18.2.1",

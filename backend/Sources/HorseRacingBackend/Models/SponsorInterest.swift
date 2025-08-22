@@ -13,6 +13,9 @@ final class SponsorInterest: Model, Content, @unchecked Sendable {
 	@Field(key: "company_name")
 	var companyName: String
 
+	@OptionalField(key: "company_logo_base64")
+	var companyLogoBase64: String?
+
 	@OptionalParent(key: "cart_id")
 	var cart: Cart?
 
@@ -21,10 +24,11 @@ final class SponsorInterest: Model, Content, @unchecked Sendable {
 
 	init() {}
 
-	init(id: UUID? = nil, userID: UUID, companyName: String) {
+	init(id: UUID? = nil, userID: UUID, companyName: String, companyLogoBase64: String? = nil) {
 		self.id = id
 		self.$user.id = userID
 		self.companyName = companyName
+		self.companyLogoBase64 = companyLogoBase64
 	}
 }
 

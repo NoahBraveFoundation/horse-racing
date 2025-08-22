@@ -72,12 +72,16 @@ final class HorseResolver: @unchecked Sendable {
     }
 
     // MARK: - Cart queries
-    func myCart(request: Request, _: NoArguments) throws -> EventLoopFuture<Cart> {
+    // myCart: READ-ONLY query that returns existing cart (if any) regardless of status
+    func myCart(request: Request, _: NoArguments) throws -> EventLoopFuture<Cart?> {
         guard let user = request.auth.get(User.self), let userId = user.id else { throw Abort(.unauthorized) }
-        return getOrCreateOpenCart(for: userId, on: request)
+        return Cart.query(on: request.db)
+            .filter(\.$user.$id == userId)
+            .first()
     }
 
     // MARK: - Cart mutations
+    // getOrCreateCart: MUTATION that creates a new cart if none exists, or returns existing open cart
     func getOrCreateCart(request: Request, _: NoArguments) throws -> EventLoopFuture<Cart> {
         guard let user = request.auth.get(User.self), let userId = user.id else { throw Abort(.unauthorized) }
         return getOrCreateOpenCart(for: userId, on: request)
@@ -124,7 +128,7 @@ final class HorseResolver: @unchecked Sendable {
     func addSponsorToCart(request: Request, arguments: AddSponsorToCartArguments) throws -> EventLoopFuture<SponsorInterest> {
         guard let user = request.auth.get(User.self), let userId = user.id else { throw Abort(.unauthorized) }
         return getOrCreateOpenCart(for: userId, on: request).flatMap { cart in
-            let si = SponsorInterest(userID: userId, companyName: arguments.companyName)
+            let si = SponsorInterest(userID: userId, companyName: arguments.companyName, companyLogoBase64: arguments.companyLogoBase64)
             si.$cart.id = cart.id
             return si.create(on: request.db).map { si }
         }
@@ -311,6 +315,31 @@ final class HorseResolver: @unchecked Sendable {
                 }
             }
     }
+    
+    // Individual item cost resolvers
+    static func ticketCost(ticket: Ticket) -> (Request, NoArguments, EventLoopGroup) throws -> EventLoopFuture<Int> {
+        return { req, _, _ in
+            return req.eventLoop.makeSucceededFuture(ticketPriceCents)
+        }
+    }
+    
+    static func horseCost(horse: Horse) -> (Request, NoArguments, EventLoopGroup) throws -> EventLoopFuture<Int> {
+        return { req, _, _ in
+            return req.eventLoop.makeSucceededFuture(horsePriceCents)
+        }
+    }
+    
+    static func sponsorCost(sponsor: SponsorInterest) -> (Request, NoArguments, EventLoopGroup) throws -> EventLoopFuture<Int> {
+        return { req, _, _ in
+            return req.eventLoop.makeSucceededFuture(sponsorPriceCents)
+        }
+    }
+    
+    static func giftBasketCost(giftBasket: GiftBasketInterest) -> (Request, NoArguments, EventLoopGroup) throws -> EventLoopFuture<Int> {
+        return { req, _, _ in
+            return req.eventLoop.makeSucceededFuture(0)
+        }
+    }
 }
 
 extension HorseResolver {
@@ -374,6 +403,7 @@ extension HorseResolver {
 
     struct AddSponsorToCartArguments: Codable {
         let companyName: String
+        let companyLogoBase64: String?
     }
 
     struct AddGiftBasketToCartArguments: Codable {

@@ -7,6 +7,7 @@ import { useHorseBoardStore } from '../../store/horseBoard';
 const BoardQuery = graphql`
   query BoardQuery {
     me { id firstName lastName }
+    myCart { id horses { id } }
     rounds {
       id
       name
@@ -25,6 +26,7 @@ const Board: React.FC = () => {
 
   const data: any = useLazyLoadQuery(BoardQuery, {}, { fetchKey: refreshKey, fetchPolicy: 'network-only' });
   const addHorseToCart = useTicketFlowStore((s) => s.addHorseToCart);
+  const removeHorseFromCart = useTicketFlowStore((s) => s.removeHorseFromCart);
   const selections = useTicketFlowStore((s) => s.horseSelections);
   const refreshCart = useTicketFlowStore((s) => s.refreshCart);
 
@@ -45,6 +47,7 @@ const Board: React.FC = () => {
   const setError = useHorseBoardStore((s) => s.setError);
 
   const me = data?.me;
+  const cartHorseIds = new Set<string>((data?.myCart?.horses ?? []).map((h: any) => h.id));
 
   const canPlaceInRound = (roundId: string) => !selections.some((s) => s.roundId === roundId);
 
@@ -84,6 +87,12 @@ const Board: React.FC = () => {
     }
   };
 
+  const onRemoveHorse = async (horseId: string) => {
+    await removeHorseFromCart(horseId);
+    setRefreshKey((k) => k + 1);
+    refreshCart();
+  };
+
   return (
     <div className="space-y-6">
       <div className="rounded-xl border border-noahbrave-200 bg-white p-3 text-center text-sm text-gray-700">
@@ -91,7 +100,14 @@ const Board: React.FC = () => {
       </div>
 
       {data.rounds.map((round: any) => (
-        <RoundBoard key={round.id} roundRef={round} onLaneClick={onLaneClick} meId={me?.id || null} />
+        <RoundBoard
+          key={round.id}
+          roundRef={round}
+          onLaneClick={onLaneClick}
+          meId={me?.id || null}
+          cartHorseIds={cartHorseIds}
+          onRemoveHorse={onRemoveHorse}
+        />
       ))}
 
       {/* Modal */}

@@ -68,6 +68,7 @@ let horseRacingSchema = try! Graphiti.Schema<HorseResolver, Request> {
         Field("owner", with: \.$owner)
         Field("state", at: \.state)
         Field("canRemove", at: \.canRemove)
+        Field("costCents", at: HorseResolver.ticketCost)
     }
 
     // Horse type
@@ -79,12 +80,15 @@ let horseRacingSchema = try! Graphiti.Schema<HorseResolver, Request> {
         Field("owner", with: \.$owner)
         Field("round", with: \.$round)
         Field("lane", with: \.$lane)
+        Field("costCents", at: HorseResolver.horseCost)
     }
 
     // Sponsor interest type
     Type(SponsorInterest.self) {
         Field("id", at: \.id)
         Field("companyName", at: \.companyName)
+        Field("companyLogoBase64", at: \.companyLogoBase64)
+        Field("costCents", at: HorseResolver.sponsorCost)
         Field("user", with: \.$user)
     }
 
@@ -92,6 +96,7 @@ let horseRacingSchema = try! Graphiti.Schema<HorseResolver, Request> {
     Type(GiftBasketInterest.self) {
         Field("id", at: \.id)
         Field("description", at: \.descriptionText)
+        Field("costCents", at: HorseResolver.giftBasketCost)
         Field("user", with: \.$user)
     }
 
@@ -168,6 +173,7 @@ let horseRacingSchema = try! Graphiti.Schema<HorseResolver, Request> {
         }
         Field("addSponsorToCart", at: HorseResolver.addSponsorToCart) {
             Argument("companyName", at: \.companyName)
+            Argument("companyLogoBase64", at: \.companyLogoBase64)
         }
         Field("addGiftBasketToCart", at: HorseResolver.addGiftBasketToCart) {
             Argument("description", at: \.description)

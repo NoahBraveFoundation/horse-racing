@@ -8,6 +8,11 @@ import { addTicketToCartMutation } from '../graphql/mutations/addTicketToCart';
 import { removeTicketFromCartMutation } from '../graphql/mutations/removeTicketFromCart';
 import { addHorseToCartMutation } from '../graphql/mutations/addHorseToCart';
 import { removeHorseFromCartMutation } from '../graphql/mutations/removeHorseFromCart';
+import { addGiftBasketToCartMutation } from '../graphql/mutations/addGiftBasketToCart';
+import { removeGiftBasketFromCartMutation } from '../graphql/mutations/removeGiftBasketFromCart';
+import { addSponsorToCartMutation } from '../graphql/mutations/addSponsorToCart';
+import { removeSponsorFromCartMutation } from '../graphql/mutations/removeSponsorFromCart';
+import { checkoutCartMutation } from '../graphql/mutations/checkoutCart';
 
 export type Attendee = { firstName: string; lastName: string };
 export type HorseSelection = { roundId: string; laneId: string; horseName: string; ownershipLabel: string; horseId?: string };
@@ -44,6 +49,14 @@ type TicketFlowState = {
 
   addHorseToCart: (vars: { roundId: string; laneId: string; horseName: string; ownershipLabel: string }) => Promise<void>;
   removeHorseFromCart: (horseId: string) => Promise<void>;
+
+  addGiftBasketToCart: (description: string) => Promise<void>;
+  removeGiftBasketFromCart: (giftId: string) => Promise<void>;
+
+  addSponsorToCart: (companyName: string, companyLogoBase64?: string) => Promise<void>;
+  removeSponsorFromCart: (sponsorId: string) => Promise<void>;
+
+  checkoutCart: () => Promise<void>;
 
   // selectors (legacy client subtotal)
   totalTickets: () => number;
@@ -87,9 +100,7 @@ export const useTicketFlowStore = create<TicketFlowState>((set, get) => ({
             try {
               await get().ensureCart();
               get().refreshCart();
-            } catch {
-              // ignore cart creation failure here; UI can retry
-            }
+            } catch {}
             resolve(created);
           } else {
             const message = 'Unexpected response from server. Please try again.';
@@ -124,10 +135,7 @@ export const useTicketFlowStore = create<TicketFlowState>((set, get) => ({
       commitMutation(environment as any, {
         mutation: addTicketToCartMutation as any,
         variables: vars as any,
-        onCompleted: () => {
-          get().refreshCart();
-          resolve();
-        },
+        onCompleted: () => { get().refreshCart(); resolve(); },
         onError: (err: any) => reject(err),
       });
     }),
@@ -137,10 +145,7 @@ export const useTicketFlowStore = create<TicketFlowState>((set, get) => ({
       commitMutation(environment as any, {
         mutation: removeTicketFromCartMutation as any,
         variables: { ticketId } as any,
-        onCompleted: () => {
-          get().refreshCart();
-          resolve();
-        },
+        onCompleted: () => { get().refreshCart(); resolve(); },
         onError: (err: any) => reject(err),
       });
     }),
@@ -150,10 +155,7 @@ export const useTicketFlowStore = create<TicketFlowState>((set, get) => ({
       commitMutation(environment as any, {
         mutation: addHorseToCartMutation as any,
         variables: vars as any,
-        onCompleted: () => {
-          get().refreshCart();
-          resolve();
-        },
+        onCompleted: () => { get().refreshCart(); resolve(); },
         onError: (err: any) => reject(err),
       });
     }),
@@ -163,10 +165,57 @@ export const useTicketFlowStore = create<TicketFlowState>((set, get) => ({
       commitMutation(environment as any, {
         mutation: removeHorseFromCartMutation as any,
         variables: { horseId } as any,
-        onCompleted: () => {
-          get().refreshCart();
-          resolve();
-        },
+        onCompleted: () => { get().refreshCart(); resolve(); },
+        onError: (err: any) => reject(err),
+      });
+    }),
+
+  addGiftBasketToCart: (description) =>
+    new Promise<void>((resolve, reject) => {
+      commitMutation(environment as any, {
+        mutation: addGiftBasketToCartMutation as any,
+        variables: { description } as any,
+        onCompleted: () => { get().refreshCart(); resolve(); },
+        onError: (err: any) => reject(err),
+      });
+    }),
+
+  removeGiftBasketFromCart: (giftId) =>
+    new Promise<void>((resolve, reject) => {
+      commitMutation(environment as any, {
+        mutation: removeGiftBasketFromCartMutation as any,
+        variables: { giftId } as any,
+        onCompleted: () => { get().refreshCart(); resolve(); },
+        onError: (err: any) => reject(err),
+      });
+    }),
+
+  addSponsorToCart: (companyName: string, companyLogoBase64?: string) =>
+    new Promise<void>((resolve, reject) => {
+      commitMutation(environment as any, {
+        mutation: addSponsorToCartMutation as any,
+        variables: { companyName, companyLogoBase64 } as any,
+        onCompleted: () => { get().refreshCart(); resolve(); },
+        onError: (err: any) => reject(err),
+      });
+    }),
+
+  removeSponsorFromCart: (sponsorId) =>
+    new Promise<void>((resolve, reject) => {
+      commitMutation(environment as any, {
+        mutation: removeSponsorFromCartMutation as any,
+        variables: { sponsorId } as any,
+        onCompleted: () => { get().refreshCart(); resolve(); },
+        onError: (err: any) => reject(err),
+      });
+    }),
+
+  checkoutCart: () =>
+    new Promise<void>((resolve, reject) => {
+      commitMutation(environment as any, {
+        mutation: checkoutCartMutation as any,
+        variables: {} as any,
+        onCompleted: () => { get().refreshCart(); resolve(); },
         onError: (err: any) => reject(err),
       });
     }),

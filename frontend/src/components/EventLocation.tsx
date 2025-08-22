@@ -15,6 +15,14 @@ export const EventLocation: React.FC = () => {
               src="https://embed.apple-mapkit.com/v1/embed?center=42.6808%2C-82.817&cameraDistance=27000.853&annotations=%5B%7B%22place%22%3A%22I2740163A10FE522E%22%7D%5D&colorScheme=adaptive&token=eyJraWQiOiIzUjJBVUtZMzhKIiwidHlwIjoiSldUIiwiYWxnIjoiRVMyNTYifQ.eyJpc3MiOiJWU0s0WUpCN0Q4IiwiaWF0IjoxNzU1NzQxMzY0LCJleHAiOjE3NTYzNjQzOTl9.GkPgi2Dw_GDc-4_V9kW4PnFI-mEd3iXULjlovo7bR7jsYDT7DmKA1pYbQdewcQUzo7VCv13Wwpc3PhXWe22n7Q"
               className="w-full h-[400px] md:h-[500px] border-0"
               title="Event Location - Tina's Country House & Garden"
+              scrolling="no"
+              onLoad={(e) => {
+                // Prevent scroll capture
+                const iframe = e.target as HTMLIFrameElement;
+                iframe.contentWindow?.addEventListener('wheel', (e) => {
+                  e.preventDefault();
+                }, { passive: false });
+              }}
             />
           </div>
         </div>

@@ -24,6 +24,8 @@ interface Props {
   roundRef: any;
   onLaneClick?: (roundId: string, laneId: string) => void;
   meId?: string | null;
+  cartHorseIds?: Set<string>;
+  onRemoveHorse?: (horseId: string) => void;
 }
 
 function formatTime(value: number): string {
@@ -32,7 +34,7 @@ function formatTime(value: number): string {
   return d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
 }
 
-const RoundBoard: React.FC<Props> = ({ roundRef, onLaneClick, meId }) => {
+const RoundBoard: React.FC<Props> = ({ roundRef, onLaneClick, meId, cartHorseIds, onRemoveHorse }) => {
   const round = useFragment(RoundBoardFragment, roundRef);
   const hasMine = !!meId && round.lanes.some((l: any) => l.horse && l.horse.owner?.id === meId);
   return (
@@ -47,8 +49,9 @@ const RoundBoard: React.FC<Props> = ({ roundRef, onLaneClick, meId }) => {
         {round.lanes.map((lane: any) => {
           const available = !lane.horse;
           const ownedByMe = !!lane.horse && meId && lane.horse.owner?.id === meId;
+          const inCart = !!lane.horse && cartHorseIds?.has(lane.horse.id);
           const clickable = available && !hasMine && !!onLaneClick;
-          const baseClasses = 'text-left rounded-xl border p-3 transition';
+          const baseClasses = 'relative text-left rounded-xl border p-3 transition';
           const className = ownedByMe
             ? `${baseClasses} border-noahbrave-600 bg-noahbrave-50`
             : available
@@ -70,6 +73,16 @@ const RoundBoard: React.FC<Props> = ({ roundRef, onLaneClick, meId }) => {
               aria-disabled={!clickable}
               className={className}
             >
+              {inCart && onRemoveHorse && (
+                <span
+                  onClick={(e) => { e.stopPropagation(); onRemoveHorse(lane.horse.id); }}
+                  className="absolute right-2 top-2 inline-flex items-center justify-center h-6 w-6 rounded-full bg-gray-200 text-gray-700 hover:bg-gray-300"
+                  title="Remove from cart"
+                  role="button"
+                >
+                  ×
+                </span>
+              )}
               <div className="text-xs text-gray-500 mb-1">Lane {lane.number}</div>
               {lane.horse ? (
                 <div className="text-left">
