@@ -1,5 +1,5 @@
 {
-  "originHash" : "8f05edab0871ba3b0f9a92beb3d0a7038b8e67d11b4a950a46a1ce7c2009ac69",
+  "originHash" : "b8ac043d797d3a44ad8becd6ab9d0ef56744193508a4bcddfed96cbe083f0ca0",
   "pins" : [
     {
       "identity" : "async-http-client",
@@ -125,6 +125,15 @@
       "state" : {
         "revision" : "93f7222c8e195cbad39fafb5a0e4cc85a8def7ea",
         "version" : "4.9.2"
+      }
+    },
+    {
+      "identity" : "sendgrid-kit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/vapor-community/sendgrid-kit.git",
+      "state" : {
+        "revision" : "cae5b098077ce54672f2aac6e856da6dba0236d6",
+        "version" : "3.1.0"
       }
     },
     {

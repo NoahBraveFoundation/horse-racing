@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<88ae0c2c2ac03d3b7289f2b420ed5a75>>
+ * @generated SignedSource<<54e5fa4130b7ad1466d95e0774fc3a43>>
  * @lightSyntaxTransform
  * @nogrep
  */
@@ -29,7 +29,7 @@ export type myCartQuery$data = {
       readonly attendeeLast: string;
       readonly id: any | null | undefined;
     }>;
-  };
+  } | null | undefined;
 };
 export type myCartQuery = {
   response: myCartQuery$data;

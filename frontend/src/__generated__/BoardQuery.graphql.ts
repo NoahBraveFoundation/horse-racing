@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<6d994416b7e8f69eef70536b484705ad>>
+ * @generated SignedSource<<f989028e323d8d7133f9f03cbb131b37>>
  * @lightSyntaxTransform
  * @nogrep
  */
@@ -22,7 +22,7 @@ export type BoardQuery$data = {
       readonly id: any | null | undefined;
     }>;
     readonly id: any | null | undefined;
-  };
+  } | null | undefined;
   readonly rounds: ReadonlyArray<{
     readonly endAt: any;
     readonly id: any | null | undefined;

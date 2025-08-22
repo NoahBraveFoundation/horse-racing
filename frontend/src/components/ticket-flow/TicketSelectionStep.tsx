@@ -3,6 +3,7 @@ import { useTicketFlowStore } from '../../store/ticketFlow';
 import StickySummary from './StickySummary';
 import { graphql, useLazyLoadQuery } from 'react-relay';
 import StepHeader from './StepHeader';
+import type { TicketSelectionStepCartTicketsQuery } from '../../__generated__/TicketSelectionStepCartTicketsQuery.graphql';
 
 interface TicketSelectionStepProps {
   onNext: () => void;
@@ -32,8 +33,8 @@ const TicketSelectionStep: React.FC<TicketSelectionStepProps> = ({ onNext, onBac
   const removeTicketFromCart = useTicketFlowStore((s) => s.removeTicketFromCart);
   const cartRefreshKey = useTicketFlowStore((s) => s.cartRefreshKey);
 
-  const cartData: any = useLazyLoadQuery(CartTicketsQuery, {}, { fetchKey: cartRefreshKey, fetchPolicy: 'network-only' });
-  const existingTickets: Array<{ id: string; attendeeFirst: string; attendeeLast: string; canRemove: boolean }> = cartData?.myCart?.tickets ?? [];
+  const cartData = useLazyLoadQuery<TicketSelectionStepCartTicketsQuery>(CartTicketsQuery, {}, { fetchKey: cartRefreshKey, fetchPolicy: 'network-only' });
+  const existingTickets = cartData?.myCart?.tickets ?? [];
 
   const handleAddRow = () => {
     setRows((prev) => [...prev, { firstName: '', lastName: '' }]);

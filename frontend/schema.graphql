@@ -14,10 +14,13 @@ type Cart {
   giftBasketInterests: [GiftBasketInterest!]!
   horses: [Horse!]!
   id: UUID
+  orderNumber: String!
   sponsorInterests: [SponsorInterest!]!
   status: CartStatus!
   tickets: [Ticket!]!
   user: User!
+  venmoLink: String!
+  venmoUser: String!
 }
 
 type CartCost {
@@ -66,6 +69,12 @@ type Lane {
   round: Round!
 }
 
+type LoginPayload {
+  message: String!
+  success: Boolean!
+  tokenId: String!
+}
+
 type Mutation {
   addGiftBasketToCart(description: String!): GiftBasketInterest!
   addHorseToCart(roundId: UUID!, laneId: UUID!, horseName: String!, ownershipLabel: String!): Horse!
@@ -74,6 +83,7 @@ type Mutation {
   checkoutCart: Payment!
   createUser(email: String!, firstName: String!, lastName: String!): User!
   getOrCreateCart: Cart!
+  login(email: String!): LoginPayload!
   markPaymentReceived(paymentId: UUID!): Payment!
   removeGiftBasketFromCart(giftId: UUID!): Boolean!
   removeHorseFromCart(horseId: UUID!): Boolean!
@@ -92,7 +102,7 @@ type Payment {
 type Query {
   lanes(roundId: UUID!): [Lane!]!
   me: User!
-  myCart: Cart!
+  myCart: Cart
   paymentStatus: Payment
   rounds: [Round!]!
 }

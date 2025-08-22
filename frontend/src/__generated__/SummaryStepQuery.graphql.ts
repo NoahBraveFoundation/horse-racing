@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<49abcbf08dcfdfa1ff1ae6ecfa78d975>>
+ * @generated SignedSource<<f6990fe09169396bc3a40e54b2907dbd>>
  * @lightSyntaxTransform
  * @nogrep
  */
@@ -40,7 +40,7 @@ export type SummaryStepQuery$data = {
       readonly costCents: number;
       readonly id: any | null | undefined;
     }>;
-  };
+  } | null | undefined;
 };
 export type SummaryStepQuery = {
   response: SummaryStepQuery$data;

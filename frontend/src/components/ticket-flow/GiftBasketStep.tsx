@@ -3,6 +3,7 @@ import { useTicketFlowStore } from '../../store/ticketFlow';
 import { graphql, useLazyLoadQuery } from 'react-relay';
 import StepHeader from './StepHeader';
 import StickySummary from './StickySummary';
+import type { GiftBasketStepQuery } from '../../__generated__/GiftBasketStepQuery.graphql';
 
 const GiftBasketQuery = graphql`
   query GiftBasketStepQuery {
@@ -16,7 +17,7 @@ const GiftBasketStep: React.FC<Props> = ({ onBack, onContinue }) => {
   const addGift = useTicketFlowStore((s) => s.addGiftBasketToCart);
   const removeGift = useTicketFlowStore((s) => s.removeGiftBasketFromCart);
   const cartRefreshKey = useTicketFlowStore((s) => s.cartRefreshKey);
-  const data: any = useLazyLoadQuery(GiftBasketQuery, {}, { fetchKey: cartRefreshKey, fetchPolicy: 'network-only' });
+  const data = useLazyLoadQuery<GiftBasketStepQuery>(GiftBasketQuery, {}, { fetchKey: cartRefreshKey, fetchPolicy: 'network-only' });
   const existing = data?.myCart?.giftBasketInterests ?? [];
 
   const [wantGift, setWantGift] = useState(existing.length > 0);

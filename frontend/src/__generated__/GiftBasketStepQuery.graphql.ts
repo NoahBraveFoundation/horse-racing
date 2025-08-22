@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<304b485d12022811071e7f7cff7cc7af>>
+ * @generated SignedSource<<db7d0e2d7644a3fd268c14d8b1d7d0d2>>
  * @lightSyntaxTransform
  * @nogrep
  */
@@ -17,7 +17,7 @@ export type GiftBasketStepQuery$data = {
       readonly id: any | null | undefined;
     }>;
     readonly id: any | null | undefined;
-  };
+  } | null | undefined;
 };
 export type GiftBasketStepQuery = {
   response: GiftBasketStepQuery$data;

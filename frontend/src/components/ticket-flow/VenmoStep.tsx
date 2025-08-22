@@ -1,20 +1,21 @@
 import React, { useCallback, useState } from 'react';
 import { graphql, useLazyLoadQuery } from 'react-relay';
 import confetti from 'canvas-confetti';
+import type { VenmoStepQuery } from '../../__generated__/VenmoStepQuery.graphql';
 
 const VenmoQuery = graphql`
   query VenmoStepQuery {
-    myCart { id cost { totalCents } }
+    myCart { id cost { totalCents } orderNumber venmoLink venmoUser }
     me { id email firstName lastName }
   }
 `;
 
 const VenmoStep: React.FC = () => {
   const [hasPaid, setHasPaid] = useState(false);
-  const data: any = useLazyLoadQuery(VenmoQuery, {}, { fetchPolicy: 'network-only' });
+  const data = useLazyLoadQuery<VenmoStepQuery>(VenmoQuery, {}, { fetchPolicy: 'network-only' });
   const total = ((data?.myCart?.cost?.totalCents ?? 0) / 100).toFixed(2);
-  const venmoUser = 'Gina-Evans-34';
-  const venmoLink = `https://venmo.com/${venmoUser}?txn=pay&amount=${encodeURIComponent(total)}&note=${encodeURIComponent('Noah Brave Fundraiser')}`;
+  const venmoUser = data?.myCart?.venmoUser;
+  const venmoLink = data?.myCart?.venmoLink;
   const email = data?.me?.email || 'your email';
   const fullName = [data?.me?.firstName, data?.me?.lastName].filter(Boolean).join(' ');
 
@@ -52,7 +53,7 @@ const VenmoStep: React.FC = () => {
               <a href={venmoLink} target="_blank" rel="noreferrer" className="cta inline-block px-6 py-3 rounded-lg font-semibold">
                 Pay with Venmo
               </a>
-              <p className="text-sm text-gray-500 mt-6">Venmo: <a href={`https://venmo.com/${venmoUser}`} target="_blank" rel="noreferrer">{venmoUser}</a></p>
+              <p className="text-sm text-gray-500 mt-6">Venmo:{venmoUser}</p>
               <div className="mt-6">
                 <button type="button" onClick={onIPaid} className="px-5 py-3 rounded-lg border text-gray-700 hover:bg-gray-50">
                   I paid
@@ -69,8 +70,6 @@ const VenmoStep: React.FC = () => {
               </a>
             </>
           )}
-          
-          
         </div>
       </div>
     </div>

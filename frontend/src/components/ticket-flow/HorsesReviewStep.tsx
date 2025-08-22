@@ -3,6 +3,7 @@ import { graphql, useLazyLoadQuery } from 'react-relay';
 import { useTicketFlowStore } from '../../store/ticketFlow';
 import { formatTimeRange } from '../../utils/time';
 import StepHeader from './StepHeader';
+import type { HorsesReviewStepQuery } from '../../__generated__/HorsesReviewStepQuery.graphql';
 
 const HorsesQuery = graphql`
   query HorsesReviewStepQuery {
@@ -21,8 +22,8 @@ const HorsesQuery = graphql`
 const HorsesReviewStep: React.FC = () => {
   const cartRefreshKey = useTicketFlowStore((s) => s.cartRefreshKey);
   const removeHorseFromCart = useTicketFlowStore((s) => s.removeHorseFromCart);
-  const data: any = useLazyLoadQuery(HorsesQuery, {}, { fetchKey: cartRefreshKey, fetchPolicy: 'network-only' });
-  const horses: Array<{ id: string; horseName: string; ownershipLabel: string; lane?: { number: number; round?: { name: string; startAt: number; endAt: number } } }> = data?.myCart?.horses ?? [];
+  const data = useLazyLoadQuery<HorsesReviewStepQuery>(HorsesQuery, {}, { fetchKey: cartRefreshKey, fetchPolicy: 'network-only' });
+  const horses = data?.myCart?.horses ?? [];
 
   const handleRemove = async (id: string) => {
     await removeHorseFromCart(id);

@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<8675438a269591432fadcd7844b70eea>>
+ * @generated SignedSource<<25c1deb9936da6e8c4c0f4684cfd29f1>>
  * @lightSyntaxTransform
  * @nogrep
  */
@@ -25,7 +25,7 @@ export type StickySummaryCartQuery$data = {
     readonly tickets: ReadonlyArray<{
       readonly id: any | null | undefined;
     }>;
-  };
+  } | null | undefined;
 };
 export type StickySummaryCartQuery = {
   response: StickySummaryCartQuery$data;

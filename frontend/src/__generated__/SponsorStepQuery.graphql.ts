@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<43acc7f660173158a608926569ffdb03>>
+ * @generated SignedSource<<fbf9981297a9d502812741adc3d93708>>
  * @lightSyntaxTransform
  * @nogrep
  */
@@ -18,7 +18,7 @@ export type SponsorStepQuery$data = {
       readonly companyName: string;
       readonly id: any | null | undefined;
     }>;
-  };
+  } | null | undefined;
 };
 export type SponsorStepQuery = {
   response: SponsorStepQuery$data;

@@ -1,5 +1,6 @@
 import React from 'react';
 import { graphql, useFragment } from 'react-relay';
+import type { RoundBoardFragment$key } from '../../__generated__/RoundBoardFragment.graphql';
 
 const RoundBoardFragment = graphql`
   fragment RoundBoardFragment on Round {
@@ -35,7 +36,7 @@ function formatTime(value: number): string {
 }
 
 const RoundBoard: React.FC<Props> = ({ roundRef, onLaneClick, meId, cartHorseIds, onRemoveHorse }) => {
-  const round = useFragment(RoundBoardFragment, roundRef);
+  const round = useFragment<RoundBoardFragment$key>(RoundBoardFragment, roundRef);
   const hasMine = !!meId && round.lanes.some((l: any) => l.horse && l.horse.owner?.id === meId);
   return (
     <div className="rounded-2xl border border-noahbrave-200 p-4 bg-white">

@@ -33,9 +33,6 @@ struct HorseRacingBackend {
                 // Configure GraphQL
         try configureGraphQL(app)
         
-        // Configure scheduled tasks
-        try configureScheduledTasks(app)
-        
         // Configure routes
         try configureRoutes(app)
 
@@ -107,44 +104,12 @@ func configureGraphQL(_ app: Application) throws {
     if !app.environment.isRelease { app.enableGraphiQL() }
 }
 
-func configureScheduledTasks(_ app: Application) throws {
-    // Cleanup service is ready for manual or scheduled execution
-    app.logger.info("CleanupService configured - use /admin/cleanup endpoint to run manually")
-}
-
 func configureRoutes(_ app: Application) throws {
     app.get("health") { req async throws -> String in
         "Horse Racing Backend is running! 🐎"
     }
 
-    app.post("auth", "magic-link") { req async throws -> HTTPStatus in
-        struct Payload: Content { let email: String }
-        let payload = try req.content.decode(Payload.self)
-        let email = payload.email.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !email.isEmpty else { throw Abort(.badRequest, reason: "Email required") }
-        guard let user = try await User.query(on: req.db).filter(\.$email == email).first(), let userID = user.id else {
-            throw Abort(.notFound, reason: "No account found for this email")
-        }
-        let token = AuthService.generateSecureLoginToken(for: userID)
-        try await token.create(on: req.db)
-        let host = Environment.get("APP_HOST") ?? "http://localhost:8080"
-        let link = "\(host)/auth/callback?token=\(token.token)"
-        req.logger.info("Magic link for \(email): \(link)")
-        return .accepted
-    }
 
-    app.get("auth", "callback") { req async throws -> Response in
-        guard let tokenValue = try? req.query.get(String.self, at: "token") else { throw Abort(.badRequest, reason: "Missing token") }
-        guard let loginToken = try await LoginToken.query(on: req.db).filter(\.$token == tokenValue).first() else { throw Abort(.unauthorized, reason: "Invalid token") }
-        guard loginToken.expiresAt > Date() else { try await loginToken.delete(on: req.db); throw Abort(.unauthorized, reason: "Expired token") }
-        let user = try await loginToken.$user.get(on: req.db)
-        AuthService.setAuthenticatedUser(req, user: user)
-        try await loginToken.delete(on: req.db)
-        let res = Response(status: .ok)
-        res.headers.replaceOrAdd(name: .contentType, value: "application/json")
-        try res.content.encode(["status": "ok", "userId": user.id?.uuidString ?? ""], as: .json)
-        return res
-    }
     
     // Admin cleanup endpoint
     app.post("admin", "cleanup") { req async throws -> HTTPStatus in

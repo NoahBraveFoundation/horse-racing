@@ -3,10 +3,6 @@ import Graphiti
 import Fluent
 import Security
 
-private let ticketPriceCents = 7500
-private let horsePriceCents = 3000
-private let sponsorPriceCents = 10000
-
 final class HorseResolver: @unchecked Sendable {
     // Rounds
     func getRounds(request: Request, _: NoArguments) throws -> EventLoopFuture<[Round]> {
@@ -201,7 +197,7 @@ final class HorseResolver: @unchecked Sendable {
 
             return ticketsFut.and(horsesFut).and(sponsorsFut).flatMap { th, sponsorsCount in
                 let (ticketsCount, horsesCount) = th
-                let total = ticketsCount * ticketPriceCents + horsesCount * horsePriceCents + sponsorsCount * sponsorPriceCents
+                let total = ticketsCount * Pricing.ticketPriceCents + horsesCount * Pricing.horsePriceCents + sponsorsCount * Pricing.sponsorPriceCents
 
                 // Transition states for tickets and horses
                 let updateTickets = Ticket.query(on: request.db)
@@ -257,6 +253,50 @@ final class HorseResolver: @unchecked Sendable {
         }
     }
 
+    // MARK: - Authentication
+    func login(request: Request, arguments: LoginArguments) throws -> EventLoopFuture<LoginPayload> {
+        let email = arguments.email.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !email.isEmpty else { throw Abort(.badRequest, reason: "Email required") }
+        
+        return User.query(on: request.db)
+            .filter(\.$email == email)
+            .first()
+            .flatMap { user -> EventLoopFuture<LoginPayload> in
+                guard let user = user, let userID = user.id else {
+                    return request.eventLoop.makeFailedFuture(Abort(.notFound, reason: "No account found for this email"))
+                }
+                
+                let token = AuthService.generateSecureLoginToken(for: userID)
+                return token.create(on: request.db).flatMap { _ in
+                    let host = Environment.get("APP_HOST") ?? "http://localhost:8080"
+                    let link = "\(host)/auth/callback?token=\(token.token)"
+                    
+                    // Send magic link email
+                    Task {
+                        do {
+                            try await EmailService.sendLoginMagicLink(
+                                to: user,
+                                magicLinkURL: link,
+                                expiresInMinutes: 30,
+                                on: request
+                            )
+                            request.logger.info("Magic link email sent to \(email)")
+                        } catch {
+                            request.logger.error("Failed to send magic link email: \(error)")
+                            // Clean up the token if email fails
+                            try? await token.delete(on: request.db)
+                        }
+                    }
+                    
+                    return request.eventLoop.makeSucceededFuture(LoginPayload(
+                        success: true,
+                        message: "Magic link sent to \(email)",
+                        tokenId: token.id?.uuidString ?? ""
+                    ))
+                }
+            }
+    }
+
     // MARK: - Field resolvers
     static func cartCost(cart: Cart) -> (Request, NoArguments, EventLoopGroup) throws -> EventLoopFuture<CartCost> {
         return { req, _, _ in
@@ -265,9 +305,9 @@ final class HorseResolver: @unchecked Sendable {
             let sponsorsFut = SponsorInterest.query(on: req.db).filter(\.$cart.$id == cart.id!).count()
             return ticketsFut.and(horsesFut).and(sponsorsFut).map { th, sponsorsCount in
                 let (ticketsCount, horsesCount) = th
-                let ticketsCents = ticketsCount * ticketPriceCents
-                let horseCents = horsesCount * horsePriceCents
-                let sponsorCents = sponsorsCount * sponsorPriceCents
+                let ticketsCents = ticketsCount * Pricing.ticketPriceCents
+                let horseCents = horsesCount * Pricing.horsePriceCents
+                let sponsorCents = sponsorsCount * Pricing.sponsorPriceCents
                 let totalCents = ticketsCents + horseCents + sponsorCents
                 
                 return CartCost(
@@ -276,6 +316,28 @@ final class HorseResolver: @unchecked Sendable {
                     sponsorCents: sponsorCents,
                     totalCents: totalCents
                 )
+            }
+        }
+    }
+    
+    static func venmoLink(cart: Cart) -> (Request, NoArguments, EventLoopGroup) throws -> EventLoopFuture<String> {
+        return { req, _, _ in
+            let ticketsFut = Ticket.query(on: req.db).filter(\.$cart.$id == cart.id!).count()
+            let horsesFut = Horse.query(on: req.db).filter(\.$cart.$id == cart.id!).count()
+            let sponsorsFut = SponsorInterest.query(on: req.db).filter(\.$cart.$id == cart.id!).count()
+            let giftBasketsFut = GiftBasketInterest.query(on: req.db).filter(\.$cart.$id == cart.id!).count()
+            
+            return ticketsFut.and(horsesFut).and(sponsorsFut).and(giftBasketsFut).map { result in
+                let (((ticketsCount, horsesCount), sponsorsCount), giftBasketsCount) = result
+                let totalCents = Pricing.calculateTotalCents(
+                    horseCount: horsesCount,
+                    ticketCount: ticketsCount,
+                    sponsorCount: sponsorsCount,
+                    giftBasketCount: giftBasketsCount
+                )
+                
+                let orderNumber = cart.orderNumber
+                return VenmoLinkService.generatePaymentLink(totalCents: totalCents, orderNumber: orderNumber)
             }
         }
     }
@@ -319,19 +381,19 @@ final class HorseResolver: @unchecked Sendable {
     // Individual item cost resolvers
     static func ticketCost(ticket: Ticket) -> (Request, NoArguments, EventLoopGroup) throws -> EventLoopFuture<Int> {
         return { req, _, _ in
-            return req.eventLoop.makeSucceededFuture(ticketPriceCents)
+            return req.eventLoop.makeSucceededFuture(Pricing.ticketPriceCents)
         }
     }
     
     static func horseCost(horse: Horse) -> (Request, NoArguments, EventLoopGroup) throws -> EventLoopFuture<Int> {
         return { req, _, _ in
-            return req.eventLoop.makeSucceededFuture(horsePriceCents)
+            return req.eventLoop.makeSucceededFuture(Pricing.horsePriceCents)
         }
     }
     
     static func sponsorCost(sponsor: SponsorInterest) -> (Request, NoArguments, EventLoopGroup) throws -> EventLoopFuture<Int> {
         return { req, _, _ in
-            return req.eventLoop.makeSucceededFuture(sponsorPriceCents)
+            return req.eventLoop.makeSucceededFuture(Pricing.sponsorPriceCents)
         }
     }
     
@@ -414,6 +476,17 @@ extension HorseResolver {
     struct RemoveHorseFromCartArguments: Codable { let horseId: UUID }
     struct RemoveSponsorFromCartArguments: Codable { let sponsorId: UUID }
     struct RemoveGiftBasketFromCartArguments: Codable { let giftId: UUID }
+    
+    // Authentication
+    struct LoginArguments: Codable {
+        let email: String
+    }
+    
+    struct LoginPayload: Codable {
+        let success: Bool
+        let message: String
+        let tokenId: String
+    }
     
     struct CartCost: Codable {
         let ticketsCents: Int

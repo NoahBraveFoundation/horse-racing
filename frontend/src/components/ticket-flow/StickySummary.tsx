@@ -2,6 +2,7 @@ import React from 'react';
 import { useLazyLoadQuery, graphql } from 'react-relay';
 import ErrorBoundary from '../common/ErrorBoundary';
 import { useTicketFlowStore } from '../../store/ticketFlow';
+import type { StickySummaryCartQuery } from '../../__generated__/StickySummaryCartQuery.graphql';
 
 const CartSummaryQuery = graphql`
   query StickySummaryCartQuery {
@@ -28,7 +29,7 @@ interface StickySummaryProps {
 
 const SummaryInner: React.FC<StickySummaryProps> = ({ hidePrices = false, onContinue, onBack, continueLoading = false }) => {
   const cartRefreshKey = useTicketFlowStore((s) => s.cartRefreshKey);
-  const data: any = hidePrices ? null : useLazyLoadQuery(CartSummaryQuery, {}, { fetchKey: cartRefreshKey, fetchPolicy: 'network-only' });
+  const data = hidePrices ? null : useLazyLoadQuery<StickySummaryCartQuery>(CartSummaryQuery, {}, { fetchKey: cartRefreshKey, fetchPolicy: 'network-only' });
   const cart = data?.myCart;
 
   const ticketCount = cart?.tickets?.length ?? 0;

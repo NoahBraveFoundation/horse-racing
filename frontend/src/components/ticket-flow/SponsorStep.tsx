@@ -3,6 +3,7 @@ import { useTicketFlowStore } from '../../store/ticketFlow';
 import { graphql, useLazyLoadQuery } from 'react-relay';
 import StepHeader from './StepHeader';
 import StickySummary from './StickySummary';
+import type { SponsorStepQuery } from '../../__generated__/SponsorStepQuery.graphql';
 
 const SponsorQuery = graphql`
   query SponsorStepQuery {
@@ -23,7 +24,7 @@ const SponsorStep: React.FC<Props> = ({ onBack, onContinue }) => {
   const addSponsor = useTicketFlowStore((s) => s.addSponsorToCart);
   const removeSponsor = useTicketFlowStore((s) => s.removeSponsorFromCart);
   const cartRefreshKey = useTicketFlowStore((s) => s.cartRefreshKey);
-  const data: any = useLazyLoadQuery(SponsorQuery, {}, { fetchKey: cartRefreshKey, fetchPolicy: 'network-only' });
+  const data = useLazyLoadQuery<SponsorStepQuery>(SponsorQuery, {}, { fetchKey: cartRefreshKey, fetchPolicy: 'network-only' });
   const existing = data?.myCart?.sponsorInterests ?? [];
 
   const [wantSponsor, setWantSponsor] = useState(existing.length > 0);

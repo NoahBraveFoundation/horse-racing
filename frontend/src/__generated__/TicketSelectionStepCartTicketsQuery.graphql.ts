@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<8ba930dfbe8c64177b8e4ad5893193fb>>
+ * @generated SignedSource<<6389ffb2c866ca141b741e826c17ceb9>>
  * @lightSyntaxTransform
  * @nogrep
  */
@@ -24,7 +24,7 @@ export type TicketSelectionStepCartTicketsQuery$data = {
       readonly canRemove: boolean;
       readonly id: any | null | undefined;
     }>;
-  };
+  } | null | undefined;
 };
 export type TicketSelectionStepCartTicketsQuery = {
   response: TicketSelectionStepCartTicketsQuery$data;

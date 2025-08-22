@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { graphql, useLazyLoadQuery } from 'react-relay';
 import { useTicketFlowStore } from '../../store/ticketFlow';
 import StepHeader from './StepHeader';
+import type { SummaryStepQuery } from '../../__generated__/SummaryStepQuery.graphql';
 
 const SummaryQuery = graphql`
   query SummaryStepQuery {
@@ -23,7 +24,7 @@ const SummaryStep: React.FC<Props> = ({ onBack, onNext }) => {
   const checkout = useTicketFlowStore((s) => s.checkoutCart);
   const [inFlight, setInFlight] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const data: any = useLazyLoadQuery(SummaryQuery, {}, { fetchKey: cartRefreshKey, fetchPolicy: 'network-only' });
+  const data = useLazyLoadQuery<SummaryStepQuery>(SummaryQuery, {}, { fetchKey: cartRefreshKey, fetchPolicy: 'network-only' });
   const cart = data?.myCart;
 
   const formatCents = (c?: number) => `$${((c ?? 0) / 100).toLocaleString()}`;

@@ -3,6 +3,7 @@ import { graphql, useLazyLoadQuery } from 'react-relay';
 import RoundBoard from './RoundBoard';
 import { useTicketFlowStore, HORSE_PRICE } from '../../store/ticketFlow';
 import { useHorseBoardStore } from '../../store/horseBoard';
+import type { BoardQuery } from '../../__generated__/BoardQuery.graphql';
 
 const BoardQuery = graphql`
   query BoardQuery {
@@ -24,7 +25,7 @@ const Board: React.FC = () => {
   const setRefreshKey = useHorseBoardStore((s) => s.setRefreshKey);
   const startPolling = useHorseBoardStore((s) => s.startPolling);
 
-  const data: any = useLazyLoadQuery(BoardQuery, {}, { fetchKey: refreshKey, fetchPolicy: 'network-only' });
+  const data = useLazyLoadQuery<BoardQuery>(BoardQuery, {}, { fetchKey: refreshKey, fetchPolicy: 'network-only' });
   const addHorseToCart = useTicketFlowStore((s) => s.addHorseToCart);
   const removeHorseFromCart = useTicketFlowStore((s) => s.removeHorseFromCart);
   const selections = useTicketFlowStore((s) => s.horseSelections);

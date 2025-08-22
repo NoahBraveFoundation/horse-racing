@@ -131,12 +131,22 @@ let horseRacingSchema = try! Graphiti.Schema<HorseResolver, Request> {
     Type(Cart.self) {
         Field("id", at: \.id)
         Field("status", at: \.status)
+        Field("orderNumber", at: \.orderNumber)
         Field("user", with: \.$user)
         Field("horses", with: \.$horses)
         Field("tickets", with: \.$tickets)
         Field("sponsorInterests", with: \.$sponsorInterests)
         Field("giftBasketInterests", with: \.$giftBasketInterests)
         Field("cost", at: HorseResolver.cartCost)
+        Field("venmoLink", at: HorseResolver.venmoLink)
+        Field("venmoUser", at: \.venmoUser)
+    }
+
+    // Login
+    Type(HorseResolver.LoginPayload.self) {
+        Field("success", at: \.success)
+        Field("message", at: \.message)
+        Field("tokenId", at: \.tokenId)
     }
 
     // Queries
@@ -193,6 +203,11 @@ let horseRacingSchema = try! Graphiti.Schema<HorseResolver, Request> {
         }
 
         Field("checkoutCart", at: HorseResolver.checkoutCart)
+
+        // Authentication
+        Field("login", at: HorseResolver.login) {
+            Argument("email", at: \.email)
+        }
 
         // Payment management
         Field("markPaymentReceived", at: HorseResolver.markPaymentReceived) {

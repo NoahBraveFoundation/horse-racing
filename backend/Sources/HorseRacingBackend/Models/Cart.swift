@@ -44,6 +44,20 @@ final class Cart: Model, Content, @unchecked Sendable {
 		self.$user.id = userID
 		self.status = status
 	}
+	
+	// MARK: - Computed Properties
+	
+	/// Generate order number from cart ID
+	var orderNumber: String {
+		guard let id = self.id else { return "NB-0000" }
+		let idString = id.uuidString.replacingOccurrences(of: "-", with: "")
+		let shortId = String(idString.prefix(8)).uppercased()
+		return "NB-\(shortId)"
+	}
+
+	var venmoUser: String {
+		return VenmoLinkService.venmoUser
+	}
 }
 
 struct MigrateCarts: Migration {
@@ -61,5 +75,7 @@ struct MigrateCarts: Migration {
 		database.schema("carts").delete()
 	}
 }
+
+
 
 

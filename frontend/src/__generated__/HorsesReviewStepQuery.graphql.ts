@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<5bdc136a65e3414bd5cee73a0ae371c5>>
+ * @generated SignedSource<<f5bcb0518b2226cd8ee0da6593d58b56>>
  * @lightSyntaxTransform
  * @nogrep
  */
@@ -28,7 +28,7 @@ export type HorsesReviewStepQuery$data = {
       readonly ownershipLabel: string;
     }>;
     readonly id: any | null | undefined;
-  };
+  } | null | undefined;
 };
 export type HorsesReviewStepQuery = {
   response: HorsesReviewStepQuery$data;
