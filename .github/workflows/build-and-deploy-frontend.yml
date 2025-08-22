@@ -35,9 +35,9 @@ jobs:
         working-directory: frontend
         run: npm ci
         
-      - name: Generate Relay types
-        working-directory: frontend
-        run: npm run relay
+      # - name: Generate Relay types
+      #   working-directory: frontend
+      #   run: npm run relay
         
       - name: Build site
         working-directory: frontend
