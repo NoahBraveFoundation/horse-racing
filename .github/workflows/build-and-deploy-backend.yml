@@ -2,7 +2,7 @@ name: Build and Deploy Backend
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
     paths:
       - "backend/**"
       - ".github/workflows/build-and-deploy-backend.yml"
@@ -54,9 +54,9 @@ jobs:
     needs: build-and-push
     runs-on: ubuntu-latest
     steps:
-    - name: Deploy to Azure Web App (container)
+      - name: Deploy to Azure Web App (container)
         uses: azure/webapps-deploy@v3
         with:
-        app-name: horses-noahbrave
-        publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-        images: ghcr.io/${{ github.repository_owner }}/horses-backend:${{ github.sha }}
+          app-name: horses-noahbrave
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_NOAHBRAVE }}
+          images: ghcr.io/${{ github.repository_owner }}/horses-backend:${{ github.sha }}
