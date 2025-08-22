@@ -21,6 +21,7 @@ export const Contact: React.FC = () => {
                     <div>
                       <p className="font-semibold text-gray-900">Christy Lukasik</p>
                       <a href="mailto:christylukasik@comcast.net" className="text-noahbrave-600 hover:text-noahbrave-700 hover:underline">christylukasik@comcast.net</a>
+                      <p className="text-gray-700">(586) 871-5698</p>
                     </div>
                   </div>
                   <div className="flex items-start">
@@ -32,6 +33,7 @@ export const Contact: React.FC = () => {
                     <div>
                       <p className="font-semibold text-gray-900">Gina Evans</p>
                       <a href="mailto:gina.evans@uticak12.org" className="text-noahbrave-600 hover:text-noahbrave-700 hover:underline">gina.evans@uticak12.org</a>
+                      <p className="text-gray-700">(586) 383-1258</p>
                     </div>
                   </div>
                 </div>

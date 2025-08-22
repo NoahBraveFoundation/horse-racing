@@ -44,7 +44,7 @@ export const About: React.FC = () => {
               The heart-pounding action of thoroughbred horse racing will be brought to life through professional race video, hosted and emceed live by Kyle Simmons.
             </p>
             <p className="text-lg text-gray-700 mb-6">
-              <strong>Races 1–10:</strong> Each of the first ten races will feature a 10-horse field. Every horse has been purchased and named by an owner in advance, with owners recognized in the official program. A <span className="font-semibold">$50 prize</span> will be awarded to the owner of each winning horse.
+              <strong>Races 1–10:</strong> Each of the first ten races will feature a 10-horse field. Every horse has been purchased and named by an owner in advance, with owners recognized in the official program. A <span className="font-semibold">$60 prize</span> will be awarded to the owner of each winning horse.
             </p>
             <p className="text-lg text-gray-700 mb-6">
               <strong>Race 11: The Auction Race</strong> – In the grand finale, 10 horses will be auctioned off live to the highest bidders. The winning bidder(s) for each horse will become its official owner, representing one of the ten post positions. The owner(s) of the winning horse in Race #11 will receive <span className="font-semibold">half of the total auction proceeds</span> raised that evening!

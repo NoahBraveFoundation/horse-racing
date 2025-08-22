@@ -41,6 +41,7 @@ jobs:
             type=raw,value=latest,enable={{is_default_branch}}
 
       - uses: docker/build-push-action@v5
+        id: build
         with:
           context: ./backend
           file: ./backend/Dockerfile
@@ -64,4 +65,4 @@ jobs:
         uses: azure/webapps-deploy@v3
         with:
           app-name: horses-noahbrave
-          images: ghcr.io/${{ github.repository_owner }}/horses-backend:${{ github.sha }}
+          images: ${{ needs.build-and-push.outputs.image }}@${{ needs.build-and-push.outputs.digest }}
