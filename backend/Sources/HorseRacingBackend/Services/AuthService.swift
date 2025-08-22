@@ -1,5 +1,5 @@
 import Vapor
-import Security
+import Crypto // from swift-crypto
 
 enum AuthService {
     // MARK: - Session Management
@@ -9,23 +9,26 @@ enum AuthService {
             req.auth.login(user)
         }
     }
-    
-    // MARK: - Token Generation
+
+    // MARK: - Token Generation (CSPRNG via Swift Crypto)
     static func generateSecureLoginToken(for userId: UUID) -> LoginToken {
-        // Generate cryptographically secure random token using Security framework (32 bytes = 256 bits)
-        let tokenData = Data(SecureRandomBytes(count: 32))
-        let tokenString = tokenData.base64EncodedString()
-        
-        // Set consistent expiration (30 minutes from now)
+        // 32 random bytes (256 bits), using CryptoKit-compatible API
+        let key = SymmetricKey(size: .bits256)
+        let tokenData = key.withUnsafeBytes { Data($0) }
+
+        // URL-safe Base64 (no padding) to make it copy/paste & link friendly
+        let tokenString = base64URLEncoded(tokenData)
+
         let expirationDate = Date().addingTimeInterval(30 * 60)
-        
         return LoginToken(token: tokenString, userID: userId, expiresAt: expirationDate)
     }
-    
-    // MARK: - Helper Methods
-    private static func SecureRandomBytes(count: Int) -> [UInt8] {
-        var bytes = [UInt8](repeating: 0, count: count)
-        _ = SecRandomCopyBytes(kSecRandomDefault, count, &bytes)
-        return bytes
+
+    // MARK: - Helpers
+    private static func base64URLEncoded(_ data: Data) -> String {
+        let s = data.base64EncodedString()
+        return s
+            .replacingOccurrences(of: "+", with: "-")
+            .replacingOccurrences(of: "/", with: "_")
+            .replacingOccurrences(of: "=", with: "")
     }
 }

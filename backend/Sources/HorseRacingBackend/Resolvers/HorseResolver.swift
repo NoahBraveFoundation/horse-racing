@@ -1,7 +1,6 @@
 import Vapor
 import Graphiti
 import Fluent
-import Security
 
 final class HorseResolver: @unchecked Sendable {
     // Rounds
@@ -269,8 +268,7 @@ final class HorseResolver: @unchecked Sendable {
                 let token = AuthService.generateSecureLoginToken(for: userID)
                 return token.create(on: request.db).flatMap { _ in
                     let host = Environment.get("APP_HOST") ?? "http://localhost:5173"
-                    let encodedToken = token.token.addingPercentEncoding(withAllowedCharacters: .alphanumerics) ?? token.token
-                    let link = "\(host)/auth?token=\(encodedToken)"
+                    let link = "\(host)/auth?token=\(token.token)"
                     
                     // Send magic link email
                     Task {
