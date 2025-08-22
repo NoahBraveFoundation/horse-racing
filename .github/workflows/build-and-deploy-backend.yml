@@ -54,9 +54,14 @@ jobs:
     needs: build-and-push
     runs-on: ubuntu-latest
     steps:
+
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS_NOAHBRAVE }}
+
       - name: Deploy to Azure Web App (container)
         uses: azure/webapps-deploy@v3
         with:
           app-name: horses-noahbrave
-          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_NOAHBRAVE }}
           images: ghcr.io/${{ github.repository_owner }}/horses-backend:${{ github.sha }}
