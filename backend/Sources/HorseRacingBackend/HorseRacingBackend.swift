@@ -18,7 +18,7 @@ struct HorseRacingBackend {
 
         // CORS middleware
         let corsConfiguration = CORSMiddleware.Configuration(
-            allowedOrigin: .any(["https://horses.noahbrave.com", "http://localhost:5173"]),
+            allowedOrigin: .any(["https://horses.noahbrave.org", "http://localhost:5173", Environment.get("APP_HOST") ?? ""]),
             allowedMethods: [.GET, .POST, .PUT, .DELETE, .OPTIONS],
             allowedHeaders: [.accept, .authorization, .contentType, .origin, .xRequestedWith],
             allowCredentials: true
