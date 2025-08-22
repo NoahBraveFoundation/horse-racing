@@ -1,8 +1,12 @@
 // @ts-ignore - Bypassing strict typing for Relay setup
 import { Environment, Network, RecordSource, Store } from 'relay-runtime';
 
+const API_URL = import.meta.env.VITE_API_URL || '/graphql';
+
 function fetchQuery(operation: any, variables: any) {
-  return fetch('/graphql', {
+  const url = import.meta.env.DEV ? '/graphql' : API_URL;
+  
+  return fetch(url, {
     method: 'POST',
     credentials: 'include',
     headers: {
