@@ -89,6 +89,7 @@ type Mutation {
   removeHorseFromCart(horseId: UUID!): Boolean!
   removeSponsorFromCart(sponsorId: UUID!): Boolean!
   removeTicketFromCart(ticketId: UUID!): Boolean!
+  validateToken(token: String!): ValidateTokenPayload!
 }
 
 type Payment {
@@ -154,4 +155,10 @@ type User {
 }
 
 scalar UUID
+
+type ValidateTokenPayload {
+  message: String!
+  success: Boolean!
+  user: User
+}
 

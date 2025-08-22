@@ -21,6 +21,7 @@
     "react-dom": "^19.1.1",
     "react-relay": "^20.1.1",
     "react-router-dom": "^7.8.1",
+    "react-router-hash-link": "^2.4.3",
     "relay-runtime": "^20.1.1",
     "zustand": "^5.0.8"
   },
@@ -30,6 +31,7 @@
     "@types/react": "^19.1.10",
     "@types/react-dom": "^19.1.7",
     "@types/react-relay": "^18.2.1",
+    "@types/react-router-hash-link": "^2.4.9",
     "@types/relay-runtime": "^19.0.2",
     "@vitejs/plugin-react": "^5.0.0",
     "autoprefixer": "^10.4.21",

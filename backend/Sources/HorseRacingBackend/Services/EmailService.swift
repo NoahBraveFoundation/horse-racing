@@ -44,13 +44,17 @@ struct EmailService {
         let email = SendGridEmail(
             personalizations: [personalization],
             from: EmailAddress(email: fromEmail, name: fromName),
-            templateID: loginMagicLinkTemplateID
+            templateID: loginMagicLinkTemplateID,
+            mailSettings: .init(
+                bypassSpamManagement: .init(enable: true),
+                bypassBounceManagement: .init(enable: true)
+            )
         )
         
         let client = getSendGridClient(req)
         try await client.send(email: email)
         
-        req.logger.info("Login magic link email sent to \(user.email)")
+        req.logger.info("Login magic link email sent to \(user.email) for \(magicLinkURL)")
     }
     
     // MARK: - Horse Racing Checkout Email
@@ -73,7 +77,11 @@ struct EmailService {
         let email = SendGridEmail(
             personalizations: [personalization],
             from: EmailAddress(email: fromEmail, name: fromName),
-            templateID: horseRacingCheckoutTemplateID
+            templateID: horseRacingCheckoutTemplateID,
+            mailSettings: .init(
+                bypassSpamManagement: .init(enable: true),
+                bypassBounceManagement: .init(enable: true)
+            )
         )
         
         let client = getSendGridClient(req)
@@ -102,7 +110,11 @@ struct EmailService {
         let email = SendGridEmail(
             personalizations: [personalization],
             from: EmailAddress(email: fromEmail, name: fromName),
-            templateID: horseRacingConfirmedTemplateID
+            templateID: horseRacingConfirmedTemplateID,
+            mailSettings: .init(
+                bypassSpamManagement: .init(enable: true),
+                bypassBounceManagement: .init(enable: true)
+            )
         )
         
         let client = getSendGridClient(req)

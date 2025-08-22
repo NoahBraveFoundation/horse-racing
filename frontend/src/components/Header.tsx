@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { HashLink } from 'react-router-hash-link'
 import Logo from './common/Logo'
 
 export const Header: React.FC = () => {
@@ -30,10 +31,19 @@ export const Header: React.FC = () => {
           </div>
 
           <nav className="hidden md:flex items-center space-x-8 text-sm">
-            <a href="#schedule" className="text-gray-700 hover:text-noahbrave-600 font-medium">Schedule</a>
-            <a href="#about" className="text-gray-700 hover:text-noahbrave-600 font-medium">About</a>
-            <a href="#location" className="text-gray-700 hover:text-noahbrave-600 font-medium">Location</a>
-            <a href="#contact" className="text-gray-700 hover:text-noahbrave-600 font-medium">Contact</a>
+            <HashLink smooth to="/#schedule" className="text-gray-700 hover:text-noahbrave-600 font-medium">
+              Schedule
+            </HashLink>
+            <HashLink smooth to="/#about" className="text-gray-700 hover:text-noahbrave-600 font-medium">
+              About
+            </HashLink>
+            <HashLink smooth to="/#location" className="text-gray-700 hover:text-noahbrave-600 font-medium">
+              Location
+            </HashLink>
+            <HashLink smooth to="/#contact" className="text-gray-700 hover:text-noahbrave-600 font-medium">
+              Contact
+            </HashLink>
+            <Link to="/login" className="text-gray-700 hover:text-noahbrave-600 font-medium">Login</Link>
             <Link to="/tickets" className="hidden lg:inline-flex items-center cta px-4 py-2 rounded-lg font-semibold shadow-md">Buy Tickets</Link>
           </nav>
         </div>
@@ -42,9 +52,10 @@ export const Header: React.FC = () => {
       {isMenuOpen && (
         <div className="md:hidden bg-white border-t border-gray-200 shadow">
           <div className="px-2 pt-2 pb-3 space-y-1">
-            <a href="#about" className="block px-3 py-2 text-gray-700 hover:text-noahbrave-600 font-medium">About</a>
-            <a href="#schedule" className="block px-3 py-2 text-gray-700 hover:text-noahbrave-600 font-medium">Schedule</a>
-            <a href="#contact" className="block px-3 py-2 text-gray-700 hover:text-noahbrave-600 font-medium">Contact</a>
+            <HashLink smooth to="/#about" className="block px-3 py-2 text-gray-700 hover:text-noahbrave-600 font-medium">About</HashLink>
+            <HashLink smooth to="/#schedule" className="block px-3 py-2 text-gray-700 hover:text-noahbrave-600 font-medium">Schedule</HashLink>
+            <HashLink smooth to="/#contact" className="block px-3 py-2 text-gray-700 hover:text-noahbrave-600 font-medium">Contact</HashLink>
+            <Link to="/login" className="block px-3 py-2 text-gray-700 hover:text-noahbrave-600 font-medium">Login</Link>
             <Link to="/tickets" className="block px-3 py-2 text-gray-700 hover:text-noahbrave-600 font-medium">Tickets</Link>
           </div>
         </div>

@@ -268,8 +268,9 @@ final class HorseResolver: @unchecked Sendable {
                 
                 let token = AuthService.generateSecureLoginToken(for: userID)
                 return token.create(on: request.db).flatMap { _ in
-                    let host = Environment.get("APP_HOST") ?? "http://localhost:8080"
-                    let link = "\(host)/auth/callback?token=\(token.token)"
+                    let host = Environment.get("APP_HOST") ?? "http://localhost:5173"
+                    let encodedToken = token.token.addingPercentEncoding(withAllowedCharacters: .alphanumerics) ?? token.token
+                    let link = "\(host)/auth?token=\(encodedToken)"
                     
                     // Send magic link email
                     Task {
@@ -293,6 +294,49 @@ final class HorseResolver: @unchecked Sendable {
                         message: "Magic link sent to \(email)",
                         tokenId: token.id?.uuidString ?? ""
                     ))
+                }
+            }
+    }
+    
+    func validateToken(request: Request, arguments: ValidateTokenArguments) throws -> EventLoopFuture<ValidateTokenPayload> {
+        let tokenValue = arguments.token
+        
+        return LoginToken.query(on: request.db)
+            .filter(\.$token == tokenValue)
+            .first()
+            .flatMap { loginToken -> EventLoopFuture<ValidateTokenPayload> in
+                guard let loginToken = loginToken else {
+                    return request.eventLoop.makeSucceededFuture(ValidateTokenPayload(
+                        success: false,
+                        user: nil,
+                        message: "Invalid token"
+                    ))
+                }
+                
+                guard loginToken.expiresAt > Date() else {
+                    // Token expired, clean it up
+                    return loginToken.delete(on: request.db).flatMap { _ in
+                        request.eventLoop.makeSucceededFuture(ValidateTokenPayload(
+                            success: false,
+                            user: nil,
+                            message: "Token expired"
+                        ))
+                    }
+                }
+                
+                // Get user and authenticate
+                return loginToken.$user.get(on: request.db).flatMap { user in
+                    // Set authenticated user in session
+                    self.setAuthenticatedUser(request, user: user)
+                    
+                    // Clean up the token
+                    return loginToken.delete(on: request.db).map { _ in
+                        ValidateTokenPayload(
+                            success: true,
+                            user: user,
+                            message: "Authentication successful"
+                        )
+                    }
                 }
             }
     }
@@ -486,6 +530,16 @@ extension HorseResolver {
         let success: Bool
         let message: String
         let tokenId: String
+    }
+    
+    struct ValidateTokenArguments: Codable {
+        let token: String
+    }
+    
+    struct ValidateTokenPayload: Codable {
+        let success: Bool
+        let user: User?
+        let message: String
     }
     
     struct CartCost: Codable {
