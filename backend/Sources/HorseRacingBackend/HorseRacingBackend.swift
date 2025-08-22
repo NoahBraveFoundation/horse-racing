@@ -68,7 +68,7 @@ func configureDatabase(_ app: Application) async throws {
         username: Environment.get("DATABASE_USERNAME") ?? "vapor_username",
         password: Environment.get("DATABASE_PASSWORD") ?? "vapor_password",
         database: Environment.get("DATABASE_NAME") ?? "horse_racing_db",
-        tls: .disable
+        tls: .prefer(try .init(configuration: .makeClientConfiguration()))
     )
     
     app.databases.use(.postgres(configuration: postgresConfig), as: .psql)
