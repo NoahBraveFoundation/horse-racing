@@ -109,34 +109,7 @@ func configureRoutes(_ app: Application) throws {
     app.get("health") { req async throws -> String in
         "Horse Racing Backend is running! 🐎"
     }
-
-
-    
-    // Admin cleanup endpoint
-    app.post("admin", "cleanup") { req async throws -> HTTPStatus in
-        // Check if user is admin
-        guard let user = req.auth.get(User.self), user.isAdmin else {
-            throw Abort(.forbidden, reason: "Admin access required")
-        }
-        
-        try await withCheckedThrowingContinuation { continuation in
-            CleanupService.runAllCleanups(on: req)
-                .whenComplete { result in
-                    switch result {
-                    case .success:
-                        continuation.resume()
-                    case .failure(let error):
-                        continuation.resume(throwing: error)
-                    }
-                }
-        }
-        
-        req.logger.info("Manual cleanup completed by admin user: \(user.email)")
-        return .ok
-    }
 }
-
-
 
 func seedSampleData(_ app: Application) async throws {
     // Seed admin user

@@ -37,8 +37,8 @@ final class HorseResolver: @unchecked Sendable {
 
                 // Confirm any pending tickets for this user
                 let confirmTickets = Ticket.query(on: request.db)
-                    .filter(\.\$owner.\$id == userId)
-                    .filter(\.\$state == .pendingPayment)
+                    .filter(\.$owner.$id == userId)
+                    .filter(\.$state == .pendingPayment)
                     .all()
                     .flatMap { tickets in
                         EventLoopFuture.whenAllSucceed(
@@ -51,8 +51,8 @@ final class HorseResolver: @unchecked Sendable {
 
                 // Confirm any pending horses for this user
                 let confirmHorses = Horse.query(on: request.db)
-                    .filter(\.\$owner.\$id == userId)
-                    .filter(\.\$state == .pendingPayment)
+                    .filter(\.$owner.$id == userId)
+                    .filter(\.$state == .pendingPayment)
                     .all()
                     .flatMap { horses in
                         EventLoopFuture.whenAllSucceed(
@@ -65,9 +65,9 @@ final class HorseResolver: @unchecked Sendable {
 
                 // Fetch most recent checked out cart for email
                 let cartFuture = Cart.query(on: request.db)
-                    .filter(\.\$user.\$id == userId)
-                    .filter(\.\$status == .checkedOut)
-                    .sort(\.\$updatedAt, .descending)
+                    .filter(\.$user.$id == userId)
+                    .filter(\.$status == .checkedOut)
+                    .sort(\.$updatedAt, .descending)
                     .first()
 
                 return confirmTickets
@@ -116,7 +116,22 @@ final class HorseResolver: @unchecked Sendable {
 
     func allHorses(request: Request, _: NoArguments) throws -> EventLoopFuture<[Horse]> {
         guard let user = request.auth.get(User.self), user.isAdmin else { throw Abort(.forbidden) }
-        return Horse.query(on: request.db).with(\.$owner).with(\.$round).with(\.$lane).all()
+        return Horse.query(on: request.db)
+            .with(\.$owner)
+            .with(\.$round)
+            .with(\.$lane)
+            .all()
+            .map { horses in
+                // Sort horses by round start time and lane number
+                return horses.sorted { horse1, horse2 in
+                    // First sort by round start time
+                    if horse1.round.startAt != horse2.round.startAt {
+                        return horse1.round.startAt < horse2.round.startAt
+                    }
+                    // Then by lane number within the same round
+                    return horse1.lane.number < horse2.lane.number
+                }
+            }
     }
 
     func abandonedCarts(request: Request, _: NoArguments) throws -> EventLoopFuture<[Cart]> {
@@ -141,6 +156,14 @@ final class HorseResolver: @unchecked Sendable {
                 cart.status = .abandoned
                 return cart.save(on: request.db).map { cart }
             }
+    }
+
+    func runAdminCleanup(request: Request, _: NoArguments) throws -> EventLoopFuture<Bool> {
+        guard let user = request.auth.get(User.self), user.isAdmin else { throw Abort(.forbidden) }
+        return CleanupService.runAllCleanups(on: request).map {
+            request.logger.info("Manual cleanup completed by admin user: \(user.email)")
+            return true
+        }
     }
 
     func adminStats(request: Request, _: NoArguments) throws -> EventLoopFuture<AdminStats> {

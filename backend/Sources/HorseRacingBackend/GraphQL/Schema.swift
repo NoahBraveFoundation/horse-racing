@@ -260,5 +260,6 @@ let horseRacingSchema = try! Graphiti.Schema<HorseResolver, Request> {
         Field("releaseCart", at: HorseResolver.releaseCart) {
             Argument("cartId", at: \.cartId)
         }
+        Field("runAdminCleanup", at: HorseResolver.runAdminCleanup)
     }
 }

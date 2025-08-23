@@ -3,7 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { graphql, useLazyLoadQuery, useMutation } from 'react-relay';
 import Header from './Header';
 import Footer from './Footer';
-import { useLogout } from '../utils/auth'
+import { useLogout, getCurrentUser } from '../utils/auth'
+import DashboardBoard from './horse-board/DashboardBoard';
+import ErrorBoundary from './common/ErrorBoundary';
+import ErrorFallback from './common/ErrorFallback';
 import type { DashboardAdminQuery } from '../__generated__/DashboardAdminQuery.graphql';
 import type { DashboardMarkPaidMutation } from '../__generated__/DashboardMarkPaidMutation.graphql';
 import type { DashboardSetAdminMutation } from '../__generated__/DashboardSetAdminMutation.graphql';
@@ -46,6 +49,12 @@ const releaseCartMutation = graphql`
   }
 `;
 
+const runCleanupMutation = graphql`
+  mutation DashboardRunCleanupMutation {
+    runAdminCleanup
+  }
+`;
+
 interface LocalUser {
   id: string;
   email: string;
@@ -54,29 +63,25 @@ interface LocalUser {
   isAdmin: boolean;
 }
 
-const Dashboard: React.FC = () => {
+export const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<LocalUser | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
-  const { logout } = useLogout()
+  const { logout } = useLogout();
 
   useEffect(() => {
-    const userData = localStorage.getItem('user');
-    const token = localStorage.getItem('token');
-    if (!userData || !token) {
+    const userData = getCurrentUser();
+
+    if (!userData) {
       navigate('/login', { replace: true });
       return;
     }
-    try {
-      const u = JSON.parse(userData);
-      if (!u.isAdmin) {
-        navigate('/account', { replace: true });
-        return;
-      }
-      setUser(u);
-    } catch {
-      navigate('/login', { replace: true });
+
+    if (!userData.isAdmin) {
+      navigate('/account', { replace: true });
+      return;
     }
+    setUser(userData);
   }, [navigate]);
 
   const data = useLazyLoadQuery<DashboardAdminQuery>(adminQuery, {}, { fetchKey: refreshKey, fetchPolicy: 'network-only' });
@@ -85,6 +90,7 @@ const Dashboard: React.FC = () => {
   const [commitSetAdmin] = useMutation<DashboardSetAdminMutation>(setAdminMutation);
   const [commitReleaseHorse] = useMutation<DashboardReleaseHorseMutation>(releaseHorseMutation);
   const [commitReleaseCart] = useMutation<DashboardReleaseCartMutation>(releaseCartMutation);
+  const [commitRunCleanup] = useMutation(runCleanupMutation);
 
   const refresh = () => setRefreshKey(k => k + 1);
 
@@ -108,6 +114,10 @@ const Dashboard: React.FC = () => {
 
   const onReleaseCart = (id: string) => {
     commitReleaseCart({ variables: { cartId: id }, onCompleted: refresh });
+  };
+
+  const onRunCleanup = () => {
+    commitRunCleanup({ variables: {}, onCompleted: refresh });
   };
 
   const onHoldHorses = data.allHorses.filter(h => h.state.toLowerCase() === 'on_hold');
@@ -145,7 +155,7 @@ const Dashboard: React.FC = () => {
                 {data.sponsorInterests.map(s => (
                   <div key={s.id} className="text-center">
                     {s.companyLogoBase64 && (
-                      <img src={`data:image/png;base64,${s.companyLogoBase64}`} alt={s.companyName} className="h-12 mx-auto mb-1" />
+                      <img src={s.companyLogoBase64} alt={s.companyName} className="h-12 mx-auto mb-1" />
                     )}
                     <div className="text-sm">{s.companyName}</div>
                   </div>
@@ -155,7 +165,7 @@ const Dashboard: React.FC = () => {
           )}
           {data.giftBasketInterests.length > 0 && (
             <div className="mt-6">
-              <h3 className="font-semibold mb-2">Gift Basket Signups</h3>
+              <h3 className="font-semibold mb-2">Raffle Basket Signups</h3>
               <ul className="list-disc list-inside text-sm text-gray-700">
                 {data.giftBasketInterests.map(g => (
                   <li key={g.id}>{g.description} - {g.user.firstName}</li>
@@ -229,6 +239,12 @@ const Dashboard: React.FC = () => {
           </table>
         </section>
 
+        {/* Visual Horse Board */}
+        <section className="bg-white rounded-xl p-6 shadow">
+          <h2 className="text-xl font-semibold mb-4">Visual Horse Board</h2>
+          <DashboardBoard />
+        </section>
+
         {/* Cleanup */}
         <section className="bg-white rounded-xl p-6 shadow">
           <h2 className="text-xl font-semibold mb-4">Cleanup</h2>
@@ -271,7 +287,8 @@ const Dashboard: React.FC = () => {
           </div>
         </section>
 
-        <div className="text-center">
+        <div className="flex items-center justify-center gap-3">
+          <button onClick={onRunCleanup} className="inline-flex items-center px-6 py-3 border border-red-300 rounded-lg text-red-700 hover:bg-red-50">Run Cleanup</button>
           <button onClick={handleLogout} className="inline-flex items-center px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">Logout</button>
         </div>
       </div>
@@ -280,4 +297,16 @@ const Dashboard: React.FC = () => {
   );
 };
 
-export default Dashboard;
+const DashboardWithErrorBoundary: React.FC = () => (
+  <ErrorBoundary fallback={
+    <ErrorFallback 
+      title="Dashboard Error"
+      message="Unable to load the admin dashboard. You may not have permission to access this page, or there was an error loading the data."
+      logoutRedirectTo="/login?redirectTo=/dashboard"
+    />
+  }>
+    <Dashboard />
+  </ErrorBoundary>
+);
+
+export default DashboardWithErrorBoundary;

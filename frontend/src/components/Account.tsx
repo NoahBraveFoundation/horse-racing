@@ -5,7 +5,8 @@ import Header from './Header'
 import Footer from './Footer'
 import AccountBoard from './horse-board/AccountBoard'
 import ErrorBoundary from './common/ErrorBoundary'
-import { useLogout } from '../utils/auth'
+import ErrorFallback from './common/ErrorFallback'
+import { useLogout, getCurrentUser } from '../utils/auth'
 
 interface User {
   id: string
@@ -44,19 +45,14 @@ export const Account: React.FC = () => {
   const { logout } = useLogout()
 
   useEffect(() => {
-    const userData = localStorage.getItem('user')
+    const userData = getCurrentUser()
     
     if (!userData) {
       navigate('/login', { replace: true })
       return
     }
 
-    try {
-      const userObj = JSON.parse(userData)
-      setUser(userObj)
-    } catch (error) {
-      navigate('/login', { replace: true })
-    }
+    setUser(userData)
   }, [navigate])
 
   const handleLogout = () => {
@@ -175,4 +171,16 @@ const AccountTickets: React.FC = () => {
   );
 };
 
-export default Account
+const AccountWithErrorBoundary: React.FC = () => (
+  <ErrorBoundary fallback={
+    <ErrorFallback 
+      title="Account Error"
+      message="Unable to load your account information. Please try again or sign back in."
+      logoutRedirectTo="/login?redirectTo=/account"
+    />
+  }>
+    <Account />
+  </ErrorBoundary>
+);
+
+export default AccountWithErrorBoundary

@@ -3,6 +3,8 @@ import { graphql, useLazyLoadQuery } from 'react-relay';
 import { useTicketFlowStore } from '../../store/ticketFlow';
 import { formatTimeRange } from '../../utils/time';
 import StepHeader from './StepHeader';
+import ErrorBoundary from '../common/ErrorBoundary';
+import ErrorFallback from '../common/ErrorFallback';
 import type { HorsesReviewStepQuery } from '../../__generated__/HorsesReviewStepQuery.graphql';
 
 const HorsesQuery = graphql`
@@ -49,15 +51,9 @@ const HorsesReviewStep: React.FC = () => {
                       <div className="mt-2 text-sm text-gray-600">
                         <div className="font-medium">{h.lane.round.name}</div>
                         <div className="mt-1 text-gray-500">
-                          <div className="block sm:hidden">
-                            <div>Lane {h.lane.number}</div>
-                            <div className="whitespace-nowrap">{formatTimeRange(h.lane.round.startAt, h.lane.round.endAt)}</div>
-                          </div>
-                          <div className="hidden sm:block">
-                            <span>Lane {h.lane.number}</span>
-                            <span className="mx-2 text-gray-300">•</span>
-                            <span className="whitespace-nowrap">{formatTimeRange(h.lane.round.startAt, h.lane.round.endAt)}</span>
-                          </div>
+                          <span>Lane {h.lane.number}</span>
+                          <span className="mx-2 text-gray-300">•</span>
+                          <span className="whitespace-nowrap">{formatTimeRange(h.lane.round.startAt, h.lane.round.endAt)}</span>
                         </div>
                       </div>
                     )}
@@ -79,4 +75,16 @@ const HorsesReviewStep: React.FC = () => {
   );
 };
 
-export default HorsesReviewStep;
+const HorsesReviewStepWithErrorBoundary: React.FC = () => (
+  <ErrorBoundary fallback={
+    <ErrorFallback 
+      title="Horses Review Error"
+      message="Unable to load horse information. Please try again or sign back in."
+      logoutRedirectTo="/login?redirectTo=/tickets"
+    />
+  }>
+    <HorsesReviewStep />
+  </ErrorBoundary>
+);
+
+export default HorsesReviewStepWithErrorBoundary;

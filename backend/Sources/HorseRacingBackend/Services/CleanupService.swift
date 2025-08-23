@@ -10,27 +10,27 @@ enum CleanupService {
     }
     
     // MARK: - Horse Lane Cleanup
-    static func cleanupExpiredHorses(on req: Request) -> EventLoopFuture<Void> {
-        let cutoffDate = Date().addingTimeInterval(-Config.horseTimeout)
+    // static func cleanupExpiredHorses(on req: Request) -> EventLoopFuture<Void> {
+    //     let cutoffDate = Date().addingTimeInterval(-Config.horseTimeout)
         
-        return Horse.query(on: req.db)
-            .filter(\.$state == .onHold)
-            .filter(\.$createdAt < cutoffDate)
-            .all()
-            .flatMap { expiredHorses in
-                guard !expiredHorses.isEmpty else {
-                    return req.eventLoop.makeSucceededFuture(())
-                }
+    //     return Horse.query(on: req.db)
+    //         .filter(\.$state == .onHold)
+    //         .filter(\.$createdAt < cutoffDate)
+    //         .all()
+    //         .flatMap { expiredHorses in
+    //             guard !expiredHorses.isEmpty else {
+    //                 return req.eventLoop.makeSucceededFuture(())
+    //             }
                 
-                req.logger.info("Cleaning up \(expiredHorses.count) expired horses")
+    //             req.logger.info("Cleaning up \(expiredHorses.count) expired horses")
                 
-                return EventLoopFuture.whenAllSucceed(
-                    expiredHorses.map { horse in
-                        horse.delete(on: req.db)
-                    }, on: req.eventLoop
-                ).map { _ in }
-            }
-    }
+    //             return EventLoopFuture.whenAllSucceed(
+    //                 expiredHorses.map { horse in
+    //                     horse.delete(on: req.db)
+    //                 }, on: req.eventLoop
+    //             ).map { _ in }
+    //         }
+    // }
     
     // MARK: - Cart Cleanup
     static func cleanupAbandonedCarts(on req: Request) -> EventLoopFuture<Void> {
@@ -67,39 +67,13 @@ enum CleanupService {
             }
     }
     
-    // MARK: - Payment Cleanup
-    static func cleanupAbandonedPayments(on req: Request) -> EventLoopFuture<Void> {
-        let cutoffDate = Date().addingTimeInterval(-Config.paymentTimeout)
-        
-        return Payment.query(on: req.db)
-            .filter(\.$paymentReceived == false)
-            .filter(\.$createdAt < cutoffDate)
-            .all()
-            .flatMap { abandonedPayments in
-                guard !abandonedPayments.isEmpty else {
-                    return req.eventLoop.makeSucceededFuture(())
-                }
-                
-                req.logger.info("Found \(abandonedPayments.count) abandoned payments")
-                
-                // For now, just log them. Could add a status field later
-                return req.eventLoop.makeSucceededFuture(())
-            }
-    }
-    
     // MARK: - Comprehensive Cleanup
     static func runAllCleanups(on req: Request) -> EventLoopFuture<Void> {
         req.logger.info("Starting scheduled cleanup tasks")
         
         return cleanupExpiredTokens(on: req)
             .flatMap { _ in
-                cleanupExpiredHorses(on: req)
-            }
-            .flatMap { _ in
                 cleanupAbandonedCarts(on: req)
-            }
-            .flatMap { _ in
-                cleanupAbandonedPayments(on: req)
             }
             .flatMap { _ in
                 req.logger.info("Completed scheduled cleanup tasks")

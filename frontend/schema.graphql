@@ -1,8 +1,3 @@
-schema {
-  query: Query
-  mutation: Mutation
-}
-
 """Exposes a URL that specifies the behavior of this scalar."""
 directive @specifiedBy(
   """The URL that specifies the behavior of this scalar."""
@@ -13,6 +8,12 @@ directive @specifiedBy(
 Indicates exactly one field must be supplied and this field must not be `null`.
 """
 directive @oneOf on INPUT_OBJECT
+
+type AdminStats {
+  giftBasketCount: Int!
+  sponsorCount: Int!
+  ticketCount: Int!
+}
 
 type Cart {
   cost: CartCost!
@@ -96,14 +97,15 @@ type Mutation {
   login(email: String!, redirectTo: String): LoginPayload!
   logout: LogoutPayload!
   markPaymentReceived(paymentId: UUID!): Payment!
-  setUserAdmin(userId: UUID!, isAdmin: Boolean!): User!
-  releaseHorse(horseId: UUID!): Boolean!
   releaseCart(cartId: UUID!): Cart!
+  releaseHorse(horseId: UUID!): Boolean!
   removeGiftBasketFromCart(giftId: UUID!): Boolean!
   removeHorseFromCart(horseId: UUID!): Boolean!
   removeSponsorFromCart(sponsorId: UUID!): Boolean!
   removeTicketFromCart(ticketId: UUID!): Boolean!
   renameHorse(horseId: UUID!, horseName: String!, ownershipLabel: String!): Horse!
+  runAdminCleanup: Boolean!
+  setUserAdmin(userId: UUID!, isAdmin: Boolean!): User!
   validateToken(token: String!): ValidateTokenPayload!
 }
 
@@ -115,25 +117,19 @@ type Payment {
   user: User!
 }
 
-type AdminStats {
-  ticketCount: Int!
-  sponsorCount: Int!
-  giftBasketCount: Int!
-}
-
 type Query {
+  abandonedCarts: [Cart!]!
+  adminStats: AdminStats!
+  allHorses: [Horse!]!
+  giftBasketInterests: [GiftBasketInterest!]!
   lanes(roundId: UUID!): [Lane!]!
   me: User!
   myCart: Cart
   paymentStatus: Payment
-  rounds: [Round!]!
-  users: [User!]!
   pendingPayments: [Payment!]!
-  allHorses: [Horse!]!
-  abandonedCarts: [Cart!]!
-  adminStats: AdminStats!
+  rounds: [Round!]!
   sponsorInterests: [SponsorInterest!]!
-  giftBasketInterests: [GiftBasketInterest!]!
+  users: [User!]!
 }
 
 type Round {
