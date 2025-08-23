@@ -42,20 +42,33 @@ const HorsesReviewStep: React.FC = () => {
             <ul className="divide-y divide-gray-200 rounded-xl border border-noahbrave-200 overflow-hidden">
               {horses.map((h) => (
                 <li key={h.id} className="flex items-start justify-between p-4">
-                  <div className="text-gray-800">
+                  <div className="text-gray-800 flex-1 min-w-0">
                     <div className="text-lg font-semibold text-gray-900">{h.horseName}</div>
-                    <div className="text-sm text-gray-700">{h.ownershipLabel}</div>
+                    <div className="text-sm text-gray-700 mt-1">{h.ownershipLabel}</div>
                     {h.lane?.round && (
-                      <div className="mt-1 text-sm text-gray-600">
-                        <span className="font-medium">{h.lane.round.name}</span>
-                        <span className="mx-2 text-gray-400">•</span>
-                        <span>Lane {h.lane.number}</span>
-                        <span className="mx-2 text-gray-400">•</span>
-                        <span>{formatTimeRange(h.lane.round.startAt, h.lane.round.endAt)}</span>
+                      <div className="mt-2 text-sm text-gray-600">
+                        <div className="font-medium">{h.lane.round.name}</div>
+                        <div className="mt-1 text-gray-500">
+                          <div className="block sm:hidden">
+                            <div>Lane {h.lane.number}</div>
+                            <div className="whitespace-nowrap">{formatTimeRange(h.lane.round.startAt, h.lane.round.endAt)}</div>
+                          </div>
+                          <div className="hidden sm:block">
+                            <span>Lane {h.lane.number}</span>
+                            <span className="mx-2 text-gray-300">•</span>
+                            <span className="whitespace-nowrap">{formatTimeRange(h.lane.round.startAt, h.lane.round.endAt)}</span>
+                          </div>
+                        </div>
                       </div>
                     )}
                   </div>
-                  <button type="button" onClick={() => handleRemove(h.id)} className="text-sm text-gray-600 hover:text-gray-800">Remove</button>
+                  <button 
+                    type="button" 
+                    onClick={() => handleRemove(h.id)} 
+                    className="text-sm text-gray-600 hover:text-gray-800 ml-4 flex-shrink-0 px-3 py-1 rounded border border-gray-300 hover:bg-gray-50"
+                  >
+                    Remove
+                  </button>
                 </li>
               ))}
             </ul>
