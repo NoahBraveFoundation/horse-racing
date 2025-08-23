@@ -18,11 +18,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Swift
-        id: swift-setup
-        uses: swift-actions/setup-swift@v2
-        with:
-          swift-version: '6.1'
+    # Broken on Linux https://github.com/swift-actions/setup-swift/issues/694
+    #   - name: Set up Swift
+    #     id: swift-setup
+    #     uses: swift-actions/setup-swift@v2
+    #     with:
+    #       swift-version: '6.1'
 
       - name: Show Swift version
         run: swift --version
