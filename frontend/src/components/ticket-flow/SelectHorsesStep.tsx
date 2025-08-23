@@ -30,7 +30,7 @@ const SelectHorsesStep: React.FC<SelectHorsesStepProps> = ({ onBack, onNext }) =
         </div>
       </div>
       {showInfo && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
+        <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center">
           <div className="absolute inset-0 bg-black/40" onClick={() => setShowInfo(false)} />
           <div className="relative w-full sm:w-[500px] bg-white rounded-t-2xl sm:rounded-2xl shadow-xl p-6">
             <div className="flex items-center justify-between mb-4">
