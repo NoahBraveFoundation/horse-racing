@@ -1,133 +1,283 @@
-import React, { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import Header from './Header'
-import Footer from './Footer'
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { graphql, useLazyLoadQuery, useMutation } from 'react-relay';
+import Header from './Header';
+import Footer from './Footer';
 import { useLogout } from '../utils/auth'
+import type { DashboardAdminQuery } from '../__generated__/DashboardAdminQuery.graphql';
+import type { DashboardMarkPaidMutation } from '../__generated__/DashboardMarkPaidMutation.graphql';
+import type { DashboardSetAdminMutation } from '../__generated__/DashboardSetAdminMutation.graphql';
+import type { DashboardReleaseHorseMutation } from '../__generated__/DashboardReleaseHorseMutation.graphql';
+import type { DashboardReleaseCartMutation } from '../__generated__/DashboardReleaseCartMutation.graphql';
 
-interface User {
-  id: string
-  email: string
-  firstName: string
-  lastName: string
-  isAdmin: boolean
+const adminQuery = graphql`
+  query DashboardAdminQuery {
+    pendingPayments { id totalCents user { id firstName lastName email } }
+    users { id email firstName lastName isAdmin }
+    adminStats { ticketCount sponsorCount giftBasketCount }
+    allHorses { id horseName state round { name } lane { number } owner { firstName lastName } }
+    abandonedCarts { id orderNumber user { id firstName lastName email } }
+    sponsorInterests { id companyName companyLogoBase64 }
+    giftBasketInterests { id description user { firstName lastName } }
+  }
+`;
+
+const markPaidMutation = graphql`
+  mutation DashboardMarkPaidMutation($paymentId: UUID!) {
+    markPaymentReceived(paymentId: $paymentId) { id paymentReceived }
+  }
+`;
+
+const setAdminMutation = graphql`
+  mutation DashboardSetAdminMutation($userId: UUID!, $isAdmin: Boolean!) {
+    setUserAdmin(userId: $userId, isAdmin: $isAdmin) { id isAdmin }
+  }
+`;
+
+const releaseHorseMutation = graphql`
+  mutation DashboardReleaseHorseMutation($horseId: UUID!) {
+    releaseHorse(horseId: $horseId)
+  }
+`;
+
+const releaseCartMutation = graphql`
+  mutation DashboardReleaseCartMutation($cartId: UUID!) {
+    releaseCart(cartId: $cartId) { id status }
+  }
+`;
+
+interface LocalUser {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  isAdmin: boolean;
 }
 
-export const Dashboard: React.FC = () => {
-  const navigate = useNavigate()
-  const [user, setUser] = useState<User | null>(null)
+const Dashboard: React.FC = () => {
+  const navigate = useNavigate();
+  const [user, setUser] = useState<LocalUser | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
   const { logout } = useLogout()
 
   useEffect(() => {
-    const userData = localStorage.getItem('user')
-    
-    if (!userData) {
-      navigate('/login', { replace: true })
-      return
+    const userData = localStorage.getItem('user');
+    const token = localStorage.getItem('token');
+    if (!userData || !token) {
+      navigate('/login', { replace: true });
+      return;
     }
-
     try {
-      const userObj = JSON.parse(userData)
-      if (!userObj.isAdmin) {
-        navigate('/account', { replace: true })
-        return
+      const u = JSON.parse(userData);
+      if (!u.isAdmin) {
+        navigate('/account', { replace: true });
+        return;
       }
-      setUser(userObj)
-    } catch (error) {
-      navigate('/login', { replace: true })
+      setUser(u);
+    } catch {
+      navigate('/login', { replace: true });
     }
-  }, [navigate])
+  }, [navigate]);
+
+  const data = useLazyLoadQuery<DashboardAdminQuery>(adminQuery, {}, { fetchKey: refreshKey, fetchPolicy: 'network-only' });
+
+  const [commitMarkPaid] = useMutation<DashboardMarkPaidMutation>(markPaidMutation);
+  const [commitSetAdmin] = useMutation<DashboardSetAdminMutation>(setAdminMutation);
+  const [commitReleaseHorse] = useMutation<DashboardReleaseHorseMutation>(releaseHorseMutation);
+  const [commitReleaseCart] = useMutation<DashboardReleaseCartMutation>(releaseCartMutation);
+
+  const refresh = () => setRefreshKey(k => k + 1);
 
   const handleLogout = () => {
     logout('/login?redirectTo=/dashboard')
   }
 
-  if (!user) {
-    return null
-  }
+  if (!user) return null;
+
+  const onMarkPaid = (id: string) => {
+    commitMarkPaid({ variables: { paymentId: id }, onCompleted: refresh });
+  };
+
+  const onToggleAdmin = (id: string, isAdmin: boolean) => {
+    commitSetAdmin({ variables: { userId: id, isAdmin }, onCompleted: refresh });
+  };
+
+  const onReleaseHorse = (id: string) => {
+    commitReleaseHorse({ variables: { horseId: id }, onCompleted: refresh });
+  };
+
+  const onReleaseCart = (id: string) => {
+    commitReleaseCart({ variables: { cartId: id }, onCompleted: refresh });
+  };
+
+  const onHoldHorses = data.allHorses.filter(h => h.state.toLowerCase() === 'on_hold');
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-noahbrave-50 to-white font-body text-gray-800">
       <Header />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        <div className="text-center mb-12">
-          <h1 className="font-heading text-4xl md:text-5xl text-gray-900 mb-4">Admin Dashboard</h1>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
+        <div className="text-center">
+          <h1 className="font-heading text-4xl md:text-5xl text-gray-900 mb-2">Admin Dashboard</h1>
           <p className="text-lg text-gray-700">Welcome back, {user.firstName}!</p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {/* Event Overview Card */}
-          <div className="bg-white rounded-2xl p-6 shadow-xl border border-noahbrave-200">
-            <div className="w-14 h-14 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="w-7 h-7 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
+        {/* Reports */}
+        <section className="bg-white rounded-xl p-6 shadow">
+          <h2 className="text-xl font-semibold mb-4">Reports</h2>
+          <div className="grid md:grid-cols-3 gap-4 text-center">
+            <div>
+              <div className="text-3xl font-bold">{data.adminStats.ticketCount}</div>
+              <div className="text-sm text-gray-600">Tickets Sold</div>
             </div>
-            <h3 className="font-heading text-lg text-gray-900 mb-3">Event Overview</h3>
-            <p className="text-gray-700 mb-4 text-sm">Monitor ticket sales and horse racing information.</p>
-            <button className="w-full bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm">
-              View Details
-            </button>
-          </div>
-
-          {/* User Management Card */}
-          <div className="bg-white rounded-2xl p-6 shadow-xl border border-noahbrave-200">
-            <div className="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="w-7 h-7 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
-              </svg>
+            <div>
+              <div className="text-3xl font-bold">{data.adminStats.giftBasketCount}</div>
+              <div className="text-sm text-gray-600">Raffle Signups</div>
             </div>
-            <h3 className="font-heading text-lg text-gray-900 mb-3">User Management</h3>
-            <p className="text-gray-700 mb-4 text-sm">Manage user accounts, permissions, and access controls.</p>
-            <button className="w-full bg-green-600 text-white px-3 py-2 rounded-lg hover:bg-green-700 transition-colors text-sm">
-              Manage Users
-            </button>
-          </div>
-
-          {/* Payment Management Card */}
-          <div className="bg-white rounded-2xl p-6 shadow-xl border border-noahbrave-200">
-            <div className="w-14 h-14 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="w-7 h-7 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-              </svg>
+            <div>
+              <div className="text-3xl font-bold">{data.adminStats.sponsorCount}</div>
+              <div className="text-sm text-gray-600">Sponsors</div>
             </div>
-            <h3 className="font-heading text-lg text-gray-900 mb-3">Payment Management</h3>
-            <p className="text-gray-700 mb-4 text-sm">Mark bills as paid, track payments, and manage financial records.</p>
-            <button className="w-full bg-yellow-600 text-white px-3 py-2 rounded-lg hover:bg-yellow-700 transition-colors text-sm">
-              Manage Payments
-            </button>
           </div>
-
-          {/* Reports Card */}
-          <div className="bg-white rounded-2xl p-6 shadow-xl border border-noahbrave-200">
-            <div className="w-14 h-14 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="w-7 h-7 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2zm0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-              </svg>
+          {data.sponsorInterests.length > 0 && (
+            <div className="mt-6">
+              <h3 className="font-semibold mb-2">Sponsors</h3>
+              <div className="flex flex-wrap gap-4">
+                {data.sponsorInterests.map(s => (
+                  <div key={s.id} className="text-center">
+                    {s.companyLogoBase64 && (
+                      <img src={`data:image/png;base64,${s.companyLogoBase64}`} alt={s.companyName} className="h-12 mx-auto mb-1" />
+                    )}
+                    <div className="text-sm">{s.companyName}</div>
+                  </div>
+                ))}
+              </div>
             </div>
-            <h3 className="font-heading text-lg text-gray-900 mb-3">Reports & Analytics</h3>
-            <p className="text-gray-700 mb-4 text-sm">Generate reports, view analytics, and export data.</p>
-            <button className="w-full bg-purple-600 text-white px-3 py-2 rounded-lg hover:bg-purple-700 transition-colors text-sm">
-              View Reports
-            </button>
-          </div>
-        </div>
+          )}
+          {data.giftBasketInterests.length > 0 && (
+            <div className="mt-6">
+              <h3 className="font-semibold mb-2">Gift Basket Signups</h3>
+              <ul className="list-disc list-inside text-sm text-gray-700">
+                {data.giftBasketInterests.map(g => (
+                  <li key={g.id}>{g.description} - {g.user.firstName}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </section>
 
-        {/* Logout Section */}
-        <div className="text-center mt-12">
-          <button
-            onClick={handleLogout}
-            className="inline-flex items-center px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
-          >
-            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-            </svg>
-            Logout
-          </button>
+        {/* Payment management */}
+        <section className="bg-white rounded-xl p-6 shadow">
+          <h2 className="text-xl font-semibold mb-4">Payments</h2>
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="text-left border-b"><th className="py-2">User</th><th>Total</th><th></th></tr>
+            </thead>
+            <tbody>
+              {data.pendingPayments.map(p => (
+                <tr key={p.id} className="border-b">
+                  <td className="py-2">{p.user.firstName} {p.user.lastName} ({p.user.email})</td>
+                  <td>${(p.totalCents/100).toFixed(2)}</td>
+                  <td><button className="text-blue-600" onClick={() => onMarkPaid(p.id)}>Mark Paid</button></td>
+                </tr>
+              ))}
+              {data.pendingPayments.length === 0 && (
+                <tr><td colSpan={3} className="py-2 text-center text-gray-500">No pending payments</td></tr>
+              )}
+            </tbody>
+          </table>
+        </section>
+
+        {/* User management */}
+        <section className="bg-white rounded-xl p-6 shadow">
+          <h2 className="text-xl font-semibold mb-4">Users</h2>
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="text-left border-b"><th className="py-2">Name</th><th>Email</th><th>Admin</th></tr>
+            </thead>
+            <tbody>
+              {data.users.map(u => (
+                <tr key={u.id} className="border-b">
+                  <td className="py-2">{u.firstName} {u.lastName}</td>
+                  <td>{u.email}</td>
+                  <td>
+                    <input type="checkbox" checked={u.isAdmin} onChange={e => onToggleAdmin(u.id, e.target.checked)} />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </section>
+
+        {/* Horse board overview */}
+        <section className="bg-white rounded-xl p-6 shadow">
+          <h2 className="text-xl font-semibold mb-4">Horse Board</h2>
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="text-left border-b"><th className="py-2">Horse</th><th>Owner</th><th>Round</th><th>Lane</th><th>State</th></tr>
+            </thead>
+            <tbody>
+              {data.allHorses.map(h => (
+                <tr key={h.id} className="border-b">
+                  <td className="py-2">{h.horseName}</td>
+                  <td>{h.owner.firstName} {h.owner.lastName}</td>
+                  <td>{h.round.name}</td>
+                  <td>{h.lane.number}</td>
+                  <td className="capitalize">{h.state.replace('_', ' ')}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </section>
+
+        {/* Cleanup */}
+        <section className="bg-white rounded-xl p-6 shadow">
+          <h2 className="text-xl font-semibold mb-4">Cleanup</h2>
+          <div className="mb-4">
+            <h3 className="font-semibold mb-2">On-hold Horses</h3>
+            <table className="w-full text-sm">
+              <thead><tr className="text-left border-b"><th className="py-2">Horse</th><th>Round</th><th>Lane</th><th></th></tr></thead>
+              <tbody>
+                {onHoldHorses.map(h => (
+                  <tr key={h.id} className="border-b">
+                    <td className="py-2">{h.horseName}</td>
+                    <td>{h.round.name}</td>
+                    <td>{h.lane.number}</td>
+                    <td><button className="text-red-600" onClick={() => onReleaseHorse(h.id)}>Release</button></td>
+                  </tr>
+                ))}
+                {onHoldHorses.length === 0 && (
+                  <tr><td colSpan={4} className="py-2 text-center text-gray-500">No on-hold horses</td></tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+          <div>
+            <h3 className="font-semibold mb-2">Abandoned Carts</h3>
+            <table className="w-full text-sm">
+              <thead><tr className="text-left border-b"><th className="py-2">Order</th><th>User</th><th></th></tr></thead>
+              <tbody>
+                {data.abandonedCarts.map(c => (
+                  <tr key={c.id} className="border-b">
+                    <td className="py-2">{c.orderNumber}</td>
+                    <td>{c.user.firstName} {c.user.lastName}</td>
+                    <td><button className="text-red-600" onClick={() => onReleaseCart(c.id)}>Release</button></td>
+                  </tr>
+                ))}
+                {data.abandonedCarts.length === 0 && (
+                  <tr><td colSpan={3} className="py-2 text-center text-gray-500">No abandoned carts</td></tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <div className="text-center">
+          <button onClick={handleLogout} className="inline-flex items-center px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">Logout</button>
         </div>
       </div>
       <Footer />
     </div>
-  )
-}
+  );
+};
 
-export default Dashboard
+export default Dashboard;

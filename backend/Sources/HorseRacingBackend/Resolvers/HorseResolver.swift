@@ -32,8 +32,136 @@ final class HorseResolver: @unchecked Sendable {
             .flatMap { payment in
                 payment.paymentReceived = true
                 payment.paymentReceivedAt = Date()
-                return payment.save(on: request.db).map { payment }
+
+                let userId = payment.$user.id
+
+                // Confirm any pending tickets for this user
+                let confirmTickets = Ticket.query(on: request.db)
+                    .filter(\.\$owner.\$id == userId)
+                    .filter(\.\$state == .pendingPayment)
+                    .all()
+                    .flatMap { tickets in
+                        EventLoopFuture.whenAllSucceed(
+                            tickets.map { t in
+                                t.state = .confirmed
+                                return t.save(on: request.db)
+                            }, on: request.eventLoop
+                        )
+                    }
+
+                // Confirm any pending horses for this user
+                let confirmHorses = Horse.query(on: request.db)
+                    .filter(\.\$owner.\$id == userId)
+                    .filter(\.\$state == .pendingPayment)
+                    .all()
+                    .flatMap { horses in
+                        EventLoopFuture.whenAllSucceed(
+                            horses.map { h in
+                                h.state = .confirmed
+                                return h.save(on: request.db)
+                            }, on: request.eventLoop
+                        )
+                    }
+
+                // Fetch most recent checked out cart for email
+                let cartFuture = Cart.query(on: request.db)
+                    .filter(\.\$user.\$id == userId)
+                    .filter(\.\$status == .checkedOut)
+                    .sort(\.\$updatedAt, .descending)
+                    .first()
+
+                return confirmTickets
+                    .and(confirmHorses)
+                    .flatMap { _ in
+                        payment.save(on: request.db).flatMap { _ in
+                            cartFuture.flatMap { cart in
+                                guard let cart = cart else {
+                                    return request.eventLoop.makeSucceededFuture(payment)
+                                }
+                                return User.find(userId, on: request.db)
+                                    .unwrap(or: Abort(.notFound))
+                                    .map { user in
+                                        Task {
+                                            try? await EmailService.sendHorseRacingConfirmed(for: cart, user: user, on: request)
+                                        }
+                                        return payment
+                                    }
+                            }
+                        }
+                    }
             }
+    }
+
+    // MARK: - Admin queries and mutations
+
+    func allUsers(request: Request, _: NoArguments) throws -> EventLoopFuture<[User]> {
+        guard let user = request.auth.get(User.self), user.isAdmin else { throw Abort(.forbidden) }
+        return User.query(on: request.db).all()
+    }
+
+    func setUserAdmin(request: Request, arguments: SetUserAdminArguments) throws -> EventLoopFuture<User> {
+        guard let currentUser = request.auth.get(User.self), currentUser.isAdmin else { throw Abort(.forbidden) }
+        return User.find(arguments.userId, on: request.db)
+            .unwrap(or: Abort(.notFound))
+            .flatMap { user in
+                user.isAdmin = arguments.isAdmin
+                return user.save(on: request.db).map { user }
+            }
+    }
+
+    func pendingPayments(request: Request, _: NoArguments) throws -> EventLoopFuture<[Payment]> {
+        guard let user = request.auth.get(User.self), user.isAdmin else { throw Abort(.forbidden) }
+        return Payment.query(on: request.db).filter(\.$paymentReceived == false).with(\.$user).all()
+    }
+
+    func allHorses(request: Request, _: NoArguments) throws -> EventLoopFuture<[Horse]> {
+        guard let user = request.auth.get(User.self), user.isAdmin else { throw Abort(.forbidden) }
+        return Horse.query(on: request.db).with(\.$owner).with(\.$round).with(\.$lane).all()
+    }
+
+    func abandonedCarts(request: Request, _: NoArguments) throws -> EventLoopFuture<[Cart]> {
+        guard let user = request.auth.get(User.self), user.isAdmin else { throw Abort(.forbidden) }
+        return Cart.query(on: request.db).filter(\.$status == .abandoned).with(\.$user).all()
+    }
+
+    func releaseHorse(request: Request, arguments: ReleaseHorseArguments) throws -> EventLoopFuture<Bool> {
+        guard let user = request.auth.get(User.self), user.isAdmin else { throw Abort(.forbidden) }
+        return Horse.find(arguments.horseId, on: request.db)
+            .unwrap(or: Abort(.notFound))
+            .flatMap { horse in
+                horse.delete(on: request.db).map { true }
+            }
+    }
+
+    func releaseCart(request: Request, arguments: ReleaseCartArguments) throws -> EventLoopFuture<Cart> {
+        guard let user = request.auth.get(User.self), user.isAdmin else { throw Abort(.forbidden) }
+        return Cart.find(arguments.cartId, on: request.db)
+            .unwrap(or: Abort(.notFound))
+            .flatMap { cart in
+                cart.status = .abandoned
+                return cart.save(on: request.db).map { cart }
+            }
+    }
+
+    func adminStats(request: Request, _: NoArguments) throws -> EventLoopFuture<AdminStats> {
+        guard let user = request.auth.get(User.self), user.isAdmin else { throw Abort(.forbidden) }
+        let ticketCount = Ticket.query(on: request.db).count()
+        let sponsorCount = SponsorInterest.query(on: request.db).count()
+        let giftCount = GiftBasketInterest.query(on: request.db).count()
+        return ticketCount.and(sponsorCount).and(giftCount).map { ts, gift in
+            let (t, s) = ts
+            return AdminStats(ticketCount: t, sponsorCount: s, giftBasketCount: gift)
+        }
+    }
+
+    func allSponsorInterests(request: Request, _: NoArguments) throws -> EventLoopFuture<[SponsorInterest]> {
+        guard let user = request.auth.get(User.self), user.isAdmin else { throw Abort(.forbidden) }
+        return SponsorInterest.query(on: request.db).all()
+    }
+
+    func allGiftBasketInterests(request: Request, _: NoArguments) throws -> EventLoopFuture<[GiftBasketInterest]> {
+        guard let user = request.auth.get(User.self), user.isAdmin else { throw Abort(.forbidden) }
+        return GiftBasketInterest.query(on: request.db).all()
     }
 
     // MARK: - Authentication helpers
@@ -582,5 +710,20 @@ extension HorseResolver {
         let horseCents: Int
         let sponsorCents: Int
         let totalCents: Int
+    }
+
+    struct SetUserAdminArguments: Codable {
+        let userId: UUID
+        let isAdmin: Bool
+    }
+
+    struct ReleaseHorseArguments: Codable { let horseId: UUID }
+
+    struct ReleaseCartArguments: Codable { let cartId: UUID }
+
+    struct AdminStats: Codable {
+        let ticketCount: Int
+        let sponsorCount: Int
+        let giftBasketCount: Int
     }
 }

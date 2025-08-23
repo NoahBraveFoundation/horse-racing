@@ -117,6 +117,12 @@ let horseRacingSchema = try! Graphiti.Schema<HorseResolver, Request> {
         Field("user", with: \.$user)
     }
 
+    Type(HorseResolver.AdminStats.self) {
+        Field("ticketCount", at: \.ticketCount)
+        Field("sponsorCount", at: \.sponsorCount)
+        Field("giftBasketCount", at: \.giftBasketCount)
+    }
+
 
 
     // CartCost type (calculated, no database)
@@ -171,6 +177,13 @@ let horseRacingSchema = try! Graphiti.Schema<HorseResolver, Request> {
         }
         Field("paymentStatus", at: HorseResolver.getPaymentStatus)
         Field("myCart", at: HorseResolver.myCart)
+        Field("users", at: HorseResolver.allUsers)
+        Field("pendingPayments", at: HorseResolver.pendingPayments)
+        Field("allHorses", at: HorseResolver.allHorses)
+        Field("abandonedCarts", at: HorseResolver.abandonedCarts)
+        Field("adminStats", at: HorseResolver.adminStats)
+        Field("sponsorInterests", at: HorseResolver.allSponsorInterests)
+        Field("giftBasketInterests", at: HorseResolver.allGiftBasketInterests)
     }
     
     // Mutations
@@ -236,6 +249,16 @@ let horseRacingSchema = try! Graphiti.Schema<HorseResolver, Request> {
         // Payment management
         Field("markPaymentReceived", at: HorseResolver.markPaymentReceived) {
             Argument("paymentId", at: \.paymentId)
+        }
+        Field("setUserAdmin", at: HorseResolver.setUserAdmin) {
+            Argument("userId", at: \.userId)
+            Argument("isAdmin", at: \.isAdmin)
+        }
+        Field("releaseHorse", at: HorseResolver.releaseHorse) {
+            Argument("horseId", at: \.horseId)
+        }
+        Field("releaseCart", at: HorseResolver.releaseCart) {
+            Argument("cartId", at: \.cartId)
         }
     }
 }

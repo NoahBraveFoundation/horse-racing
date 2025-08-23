@@ -1,3 +1,8 @@
+schema {
+  query: Query
+  mutation: Mutation
+}
+
 """Exposes a URL that specifies the behavior of this scalar."""
 directive @specifiedBy(
   """The URL that specifies the behavior of this scalar."""
@@ -91,6 +96,9 @@ type Mutation {
   login(email: String!, redirectTo: String): LoginPayload!
   logout: LogoutPayload!
   markPaymentReceived(paymentId: UUID!): Payment!
+  setUserAdmin(userId: UUID!, isAdmin: Boolean!): User!
+  releaseHorse(horseId: UUID!): Boolean!
+  releaseCart(cartId: UUID!): Cart!
   removeGiftBasketFromCart(giftId: UUID!): Boolean!
   removeHorseFromCart(horseId: UUID!): Boolean!
   removeSponsorFromCart(sponsorId: UUID!): Boolean!
@@ -107,12 +115,25 @@ type Payment {
   user: User!
 }
 
+type AdminStats {
+  ticketCount: Int!
+  sponsorCount: Int!
+  giftBasketCount: Int!
+}
+
 type Query {
   lanes(roundId: UUID!): [Lane!]!
   me: User!
   myCart: Cart
   paymentStatus: Payment
   rounds: [Round!]!
+  users: [User!]!
+  pendingPayments: [Payment!]!
+  allHorses: [Horse!]!
+  abandonedCarts: [Cart!]!
+  adminStats: AdminStats!
+  sponsorInterests: [SponsorInterest!]!
+  giftBasketInterests: [GiftBasketInterest!]!
 }
 
 type Round {
