@@ -149,6 +149,12 @@ let horseRacingSchema = try! Graphiti.Schema<HorseResolver, Request> {
         Field("tokenId", at: \.tokenId)
     }
     
+    // Logout
+    Type(HorseResolver.LogoutPayload.self) {
+        Field("success", at: \.success)
+        Field("message", at: \.message)
+    }
+    
     // Validate Token
     Type(HorseResolver.ValidateTokenPayload.self) {
         Field("success", at: \.success)
@@ -220,10 +226,12 @@ let horseRacingSchema = try! Graphiti.Schema<HorseResolver, Request> {
         // Authentication
         Field("login", at: HorseResolver.login) {
             Argument("email", at: \.email)
+            Argument("redirectTo", at: \.redirectTo)
         }
         Field("validateToken", at: HorseResolver.validateToken) {
             Argument("token", at: \.token)
         }
+        Field("logout", at: HorseResolver.logout)
 
         // Payment management
         Field("markPaymentReceived", at: HorseResolver.markPaymentReceived) {

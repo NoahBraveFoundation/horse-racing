@@ -1,11 +1,13 @@
 import React, { useState } from 'react'
 import { useMutation } from 'react-relay'
+import { useSearchParams } from 'react-router-dom'
 import { loginMutation } from '../graphql/mutations/login'
 import type { loginMutation as LoginMutationType } from '../__generated__/loginMutation.graphql'
 import Header from './Header'
 import Footer from './Footer'
 
 export const Login: React.FC = () => {
+  const [searchParams] = useSearchParams()
   const [email, setEmail] = useState('')
   const [isSubmitted, setIsSubmitted] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -19,7 +21,7 @@ export const Login: React.FC = () => {
     setError('')
 
     commit({
-      variables: { email },
+      variables: { email, redirectTo },
       onCompleted: (response, errors) => {
         setIsLoading(false)
         if (errors) {
@@ -39,6 +41,10 @@ export const Login: React.FC = () => {
       }
     })
   }
+
+  // Get redirect parameter for display purposes
+  const redirectTo = searchParams.get('redirectTo')
+  const redirectMessage = redirectTo ? `You'll be redirected to ${redirectTo === '/tickets' ? 'the ticket selection page' : redirectTo} after login.` : ''
 
   if (isSubmitted) {
     return (
@@ -77,6 +83,9 @@ export const Login: React.FC = () => {
             <div className="text-center mb-8">
               <h1 className="font-heading text-3xl text-gray-900 mb-2">Login</h1>
               <p className="text-gray-600">Enter your email to receive a login link</p>
+              {redirectMessage && (
+                <p className="text-sm text-noahbrave-600 mt-2">{redirectMessage}</p>
+              )}
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-6">

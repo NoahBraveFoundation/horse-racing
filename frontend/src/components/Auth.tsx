@@ -38,11 +38,15 @@ export const Auth: React.FC = () => {
           
           // Store user info in localStorage or state management
           localStorage.setItem('user', JSON.stringify(user))
-          localStorage.setItem('token', token)
           
-          // Redirect based on user role
+          // Check for redirect parameter
+          const redirectTo = searchParams.get('redirectTo')
+          
+          // Redirect based on redirect parameter or user role
           if (user.isAdmin) {
             navigate('/dashboard', { replace: true })
+          } else if (redirectTo) {
+            navigate(redirectTo, { replace: true })
           } else {
             navigate('/account', { replace: true })
           }

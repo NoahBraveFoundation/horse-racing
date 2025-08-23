@@ -147,6 +147,17 @@ const UserDetailsStep: React.FC<UserDetailsStepProps> = ({ user, onUserUpdate, o
               {isSubmitting ? 'Creating...' : 'Continue'}
             </button>
           </div>
+
+          <div className="mt-6 pt-6 border-t border-gray-200 text-center">
+            <p className="text-sm text-gray-600 mb-3">Already have an account?</p>
+            <button
+              type="button"
+              onClick={() => window.location.href = '/login?redirectTo=/tickets'}
+              className="text-noahbrave-600 hover:text-noahbrave-700 font-medium text-sm hover:underline"
+            >
+              Log in
+            </button>
+          </div>
         </form>
       </div>
     </div>

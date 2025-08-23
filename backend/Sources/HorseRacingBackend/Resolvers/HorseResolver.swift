@@ -282,7 +282,16 @@ final class HorseResolver: @unchecked Sendable {
                 let token = AuthService.generateSecureLoginToken(for: userID)
                 return token.create(on: request.db).flatMap { _ in
                     let host = Environment.get("APP_HOST") ?? "http://localhost:5173"
-                    let link = "\(host)/auth?token=\(token.token)"
+                    var link = "\(host)/auth?token=\(token.token)"
+                    if let redirect = arguments.redirectTo?.trimmingCharacters(in: .whitespacesAndNewlines), !redirect.isEmpty {
+                        // Only allow relative paths to prevent open redirect
+                        if redirect.hasPrefix("/") && !redirect.hasPrefix("//") {
+                            let encoded = redirect.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? redirect
+                            link += "&redirectTo=\(encoded)"
+                        } else {
+                            request.logger.warning("Rejected non-relative redirectTo: \(redirect)")
+                        }
+                    }
                     
                     // Send magic link email
                     Task {
@@ -351,6 +360,13 @@ final class HorseResolver: @unchecked Sendable {
                     }
                 }
             }
+    }
+
+    func logout(request: Request, _: NoArguments) throws -> LogoutPayload {
+        // Clear session and auth
+        request.auth.logout(User.self)
+        request.session.destroy()
+        return LogoutPayload(success: true, message: "Logged out")
     }
 
     // MARK: - Field resolvers
@@ -537,6 +553,7 @@ extension HorseResolver {
     // Authentication
     struct LoginArguments: Codable {
         let email: String
+        let redirectTo: String?
     }
     
     struct LoginPayload: Codable {
@@ -552,6 +569,11 @@ extension HorseResolver {
     struct ValidateTokenPayload: Codable {
         let success: Bool
         let user: User?
+        let message: String
+    }
+    
+    struct LogoutPayload: Codable {
+        let success: Bool
         let message: String
     }
     

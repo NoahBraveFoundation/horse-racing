@@ -56,7 +56,7 @@ const RoundBoard: React.FC<Props> = ({ roundRef, onLaneClick, meId, cartHorseIds
           const canRename = ownedByMe && !!onRenameHorse;
           const baseClasses = 'relative text-left rounded-xl border p-3 transition';
           const className = ownedByMe
-            ? `${baseClasses} border-noahbrave-600 bg-noahbrave-50`
+            ? `${baseClasses} border-green-600 bg-green-100`
             : available
               ? clickable
                 ? `${baseClasses} border-noahbrave-300 bg-white hover:border-noahbrave-500 hover:shadow-sm`
@@ -98,7 +98,7 @@ const RoundBoard: React.FC<Props> = ({ roundRef, onLaneClick, meId, cartHorseIds
                     <span className="truncate">{lane.horse.horseName}</span>
                   </div>
                   <div className="text-xs text-gray-600 truncate">
-                    {lane.horse.owner.firstName} {lane.horse.owner.lastName}
+                    {lane.horse.ownershipLabel}
                   </div>
                 </div>
               ) : (

@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useLazyLoadQuery, graphql } from 'react-relay'
 import Header from './Header'
 import Footer from './Footer'
 import AccountBoard from './horse-board/AccountBoard'
+import ErrorBoundary from './common/ErrorBoundary'
+import { useLogout } from '../utils/auth'
 
 interface User {
   id: string
@@ -12,15 +15,38 @@ interface User {
   isAdmin: boolean
 }
 
+const AccountQuery = graphql`
+  query AccountQuery {
+    myCart {
+      id
+      tickets { id attendeeFirst attendeeLast costCents }
+      horses { id horseName ownershipLabel costCents }
+      cost {
+        ticketsCents
+        horseCents
+        totalCents
+      }
+    }
+  }
+`;
+
+const RedirectToLoginFallback: React.FC = () => {
+  const navigate = useNavigate()
+  useEffect(() => {
+    navigate('/login?redirectTo=/account', { replace: true })
+  }, [navigate])
+  return null
+}
+
 export const Account: React.FC = () => {
   const navigate = useNavigate()
   const [user, setUser] = useState<User | null>(null)
+  const { logout } = useLogout()
 
   useEffect(() => {
     const userData = localStorage.getItem('user')
-    const token = localStorage.getItem('token')
     
-    if (!userData || !token) {
+    if (!userData) {
       navigate('/login', { replace: true })
       return
     }
@@ -34,9 +60,7 @@ export const Account: React.FC = () => {
   }, [navigate])
 
   const handleLogout = () => {
-    localStorage.removeItem('user')
-    localStorage.removeItem('token')
-    navigate('/login', { replace: true })
+    logout('/login?redirectTo=/account')
   }
 
   if (!user) {
@@ -77,11 +101,19 @@ export const Account: React.FC = () => {
                 </div>
               </div>
             </div>
+
+            {/* Tickets Section */}
+            <div className="bg-white rounded-2xl p-8 shadow-xl border border-noahbrave-200 mt-6">
+              <h3 className="font-heading text-xl text-gray-900 mb-4 text-center">My Tickets</h3>
+              <AccountTickets />
+            </div>
           </div>
 
           {/* Horse Board */}
           <div className="lg:col-span-2">
-            <AccountBoard />
+            <ErrorBoundary fallback={<RedirectToLoginFallback />}>
+              <AccountBoard />
+            </ErrorBoundary>
           </div>
         </div>
 
@@ -102,5 +134,45 @@ export const Account: React.FC = () => {
     </div>
   )
 }
+
+// Separate component for tickets to use Relay query
+const AccountTickets: React.FC = () => {
+  const data = useLazyLoadQuery(AccountQuery, {});
+  const tickets = data?.myCart?.tickets ?? [];
+  const totalCost = (data?.myCart?.cost?.totalCents ?? 0) / 100;
+
+  if (tickets.length === 0) {
+    return (
+      <div className="text-center py-6">
+        <p className="text-gray-500 text-sm">No tickets purchased yet.</p>
+        <p className="text-gray-400 text-xs mt-1">Your tickets will appear here after purchase.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      {tickets.map((ticket: any) => (
+        <div key={ticket.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+          <div>
+            <div className="font-medium text-gray-900">
+              {ticket.attendeeFirst} {ticket.attendeeLast}
+            </div>
+            <div className="text-sm text-gray-600">Event Ticket</div>
+          </div>
+          <div className="text-right">
+            <div className="font-semibold text-gray-900">${(ticket.costCents / 100).toFixed(2)}</div>
+          </div>
+        </div>
+      ))}
+      <div className="pt-3 border-t border-gray-200">
+        <div className="flex justify-between items-center">
+          <span className="font-medium text-gray-700">Total</span>
+          <span className="font-bold text-lg text-gray-900">${totalCost.toFixed(2)}</span>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 export default Account

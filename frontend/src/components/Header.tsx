@@ -1,10 +1,18 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { HashLink } from 'react-router-hash-link'
 import Logo from './common/Logo'
 
 export const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+
+  useEffect(() => {
+    try {
+      const user = localStorage.getItem('user')
+      setIsLoggedIn(!!user)
+    } catch {}
+  }, [])
 
   return (
     <header className="bg-white/95 backdrop-blur border-b-4 border-noahbrave-600 sticky top-0 z-40">
@@ -43,7 +51,11 @@ export const Header: React.FC = () => {
             <HashLink smooth to="/#contact" className="text-gray-700 hover:text-noahbrave-600 font-medium">
               Contact
             </HashLink>
-            <Link to="/login" className="text-gray-700 hover:text-noahbrave-600 font-medium">Login</Link>
+            {isLoggedIn ? (
+              <Link to="/account" className="text-gray-700 hover:text-noahbrave-600 font-medium">Account</Link>
+            ) : (
+              <Link to="/login" className="text-gray-700 hover:text-noahbrave-600 font-medium">Login</Link>
+            )}
             <Link to="/tickets" className="hidden lg:inline-flex items-center cta px-4 py-2 rounded-lg font-semibold shadow-md">Buy Tickets</Link>
           </nav>
         </div>
@@ -55,7 +67,11 @@ export const Header: React.FC = () => {
             <HashLink smooth to="/#about" className="block px-3 py-2 text-gray-700 hover:text-noahbrave-600 font-medium">About</HashLink>
             <HashLink smooth to="/#schedule" className="block px-3 py-2 text-gray-700 hover:text-noahbrave-600 font-medium">Schedule</HashLink>
             <HashLink smooth to="/#contact" className="block px-3 py-2 text-gray-700 hover:text-noahbrave-600 font-medium">Contact</HashLink>
-            <Link to="/login" className="block px-3 py-2 text-gray-700 hover:text-noahbrave-600 font-medium">Login</Link>
+            {isLoggedIn ? (
+              <Link to="/account" className="block px-3 py-2 text-gray-700 hover:text-noahbrave-600 font-medium">Account</Link>
+            ) : (
+              <Link to="/login" className="block px-3 py-2 text-gray-700 hover:text-noahbrave-600 font-medium">Login</Link>
+            )}
             <Link to="/tickets" className="block px-3 py-2 text-gray-700 hover:text-noahbrave-600 font-medium">Tickets</Link>
           </div>
         </div>

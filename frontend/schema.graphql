@@ -75,6 +75,11 @@ type LoginPayload {
   tokenId: String!
 }
 
+type LogoutPayload {
+  message: String!
+  success: Boolean!
+}
+
 type Mutation {
   addGiftBasketToCart(description: String!): GiftBasketInterest!
   addHorseToCart(roundId: UUID!, laneId: UUID!, horseName: String!, ownershipLabel: String!): Horse!
@@ -83,7 +88,8 @@ type Mutation {
   checkoutCart: Payment!
   createUser(email: String!, firstName: String!, lastName: String!): User!
   getOrCreateCart: Cart!
-  login(email: String!): LoginPayload!
+  login(email: String!, redirectTo: String): LoginPayload!
+  logout: LogoutPayload!
   markPaymentReceived(paymentId: UUID!): Payment!
   removeGiftBasketFromCart(giftId: UUID!): Boolean!
   removeHorseFromCart(horseId: UUID!): Boolean!
