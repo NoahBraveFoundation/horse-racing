@@ -16,7 +16,7 @@ struct VenmoLinkService {
     /// - Returns: Complete Venmo payment URL
     static func generatePaymentLink(total: Double, orderNumber: String) -> String {
         let encodedTotal = encodeURIComponent(String(format: "%.2f", total))
-        let encodedNote = encodeURIComponent(orderNumber)
+        let encodedNote = encodeURIComponent("A Night at the Races - Order #\(orderNumber)")
         
         return "\(baseURL)/\(venmoUser)?txn=pay&amount=\(encodedTotal)&note=\(encodedNote)"
     }

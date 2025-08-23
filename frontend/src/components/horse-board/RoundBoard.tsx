@@ -15,7 +15,8 @@ const RoundBoardFragment = graphql`
         id
         horseName
         ownershipLabel
-        owner { id firstName lastName }
+        owner { id firstName lastName email }
+        state
       }
     }
   }
@@ -28,6 +29,7 @@ interface Props {
   cartHorseIds?: Set<string>;
   onRemoveHorse?: (horseId: string) => void;
   onRenameHorse?: (horse: { id: string; horseName: string; ownershipLabel: string }) => void;
+  showAdminInfo?: boolean;
 }
 
 function formatTime(value: number): string {
@@ -36,9 +38,18 @@ function formatTime(value: number): string {
   return d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
 }
 
-const RoundBoard: React.FC<Props> = ({ roundRef, onLaneClick, meId, cartHorseIds, onRemoveHorse, onRenameHorse }) => {
+const RoundBoard: React.FC<Props> = ({ 
+  roundRef, 
+  onLaneClick, 
+  meId, 
+  cartHorseIds, 
+  onRemoveHorse, 
+  onRenameHorse,
+  showAdminInfo = false 
+}) => {
   const round = useFragment<RoundBoardFragment$key>(RoundBoardFragment, roundRef);
   const hasMine = !!meId && round.lanes.some((l: any) => l.horse && l.horse.owner?.id === meId);
+  
   return (
     <div className="rounded-2xl border border-noahbrave-200 p-4 bg-white">
       <div className="flex items-center justify-between mb-3">
@@ -100,6 +111,25 @@ const RoundBoard: React.FC<Props> = ({ roundRef, onLaneClick, meId, cartHorseIds
                   <div className="text-xs text-gray-600 truncate">
                     {lane.horse.ownershipLabel}
                   </div>
+                  {showAdminInfo && (
+                    <>
+                      <div className="text-xs text-gray-500 mt-1">
+                        {lane.horse.owner.firstName} {lane.horse.owner.lastName}
+                      </div>
+                      <div className="text-xs text-gray-400 mt-1">
+                        {lane.horse.owner.email}
+                      </div>
+                      {lane.horse.state && (
+                        <div className={`text-xs px-2 py-1 rounded mt-1 inline-block ${
+                          lane.horse.state === 'confirmed' ? 'bg-green-100 text-green-800' :
+                          lane.horse.state === 'pending_payment' ? 'bg-yellow-100 text-yellow-800' :
+                          'bg-red-100 text-red-800'
+                        }`}>
+                          {lane.horse.state.replace('_', ' ')}
+                        </div>
+                      )}
+                    </>
+                  )}
                 </div>
               ) : (
                 <div className="text-gray-400 text-sm">Available</div>

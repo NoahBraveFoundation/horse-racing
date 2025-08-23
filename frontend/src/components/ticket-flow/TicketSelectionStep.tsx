@@ -3,6 +3,8 @@ import { useTicketFlowStore } from '../../store/ticketFlow';
 import StickySummary from './StickySummary';
 import { graphql, useLazyLoadQuery } from 'react-relay';
 import StepHeader from './StepHeader';
+import ErrorBoundary from '../common/ErrorBoundary';
+import ErrorFallback from '../common/ErrorFallback';
 import type { TicketSelectionStepCartTicketsQuery } from '../../__generated__/TicketSelectionStepCartTicketsQuery.graphql';
 
 interface TicketSelectionStepProps {
@@ -76,7 +78,7 @@ const TicketSelectionStep: React.FC<TicketSelectionStepProps> = ({ onNext, onBac
     <div className="min-h-screen bg-noahbrave-50 font-body pb-32">
       <div className="checker-top h-3" style={{ backgroundColor: 'var(--brand)' }} />
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <StepHeader title="Select Tickets" subtitle="Step 2 of 8 — Choose your tickets" />
+        <StepHeader title="Select Tickets" subtitle="Step 2 of 4 — Choose your tickets" />
 
         <div className="bg-white rounded-2xl shadow-xl border border-noahbrave-200 p-8">
           <div className="mb-6">
@@ -184,4 +186,16 @@ const TicketSelectionStep: React.FC<TicketSelectionStepProps> = ({ onNext, onBac
   );
 };
 
-export default TicketSelectionStep;
+const TicketSelectionStepWithErrorBoundary: React.FC<TicketSelectionStepProps> = (props) => (
+  <ErrorBoundary fallback={
+    <ErrorFallback 
+      title="Ticket Selection Error"
+      message="Unable to load ticket information. Please try again or sign back in."
+      logoutRedirectTo="/login?redirectTo=/tickets"
+    />
+  }>
+    <TicketSelectionStep {...props} />
+  </ErrorBoundary>
+);
+
+export default TicketSelectionStepWithErrorBoundary;

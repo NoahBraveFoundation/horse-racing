@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<f989028e323d8d7133f9f03cbb131b37>>
+ * @generated SignedSource<<bbeff71cea68548414386324b1040d4b>>
  * @lightSyntaxTransform
  * @nogrep
  */
@@ -133,56 +133,32 @@ v6 = {
 v7 = {
   "alias": null,
   "args": null,
-  "concreteType": "Lane",
+  "kind": "ScalarField",
+  "name": "number",
+  "storageKey": null
+},
+v8 = {
+  "alias": null,
+  "args": null,
+  "kind": "ScalarField",
+  "name": "horseName",
+  "storageKey": null
+},
+v9 = {
+  "alias": null,
+  "args": null,
+  "kind": "ScalarField",
+  "name": "ownershipLabel",
+  "storageKey": null
+},
+v10 = {
+  "alias": null,
+  "args": null,
+  "concreteType": "User",
   "kind": "LinkedField",
-  "name": "lanes",
-  "plural": true,
-  "selections": [
-    (v0/*: any*/),
-    {
-      "alias": null,
-      "args": null,
-      "kind": "ScalarField",
-      "name": "number",
-      "storageKey": null
-    },
-    {
-      "alias": null,
-      "args": null,
-      "concreteType": "Horse",
-      "kind": "LinkedField",
-      "name": "horse",
-      "plural": false,
-      "selections": [
-        (v0/*: any*/),
-        {
-          "alias": null,
-          "args": null,
-          "kind": "ScalarField",
-          "name": "horseName",
-          "storageKey": null
-        },
-        {
-          "alias": null,
-          "args": null,
-          "kind": "ScalarField",
-          "name": "ownershipLabel",
-          "storageKey": null
-        },
-        {
-          "alias": null,
-          "args": null,
-          "concreteType": "User",
-          "kind": "LinkedField",
-          "name": "owner",
-          "plural": false,
-          "selections": (v1/*: any*/),
-          "storageKey": null
-        }
-      ],
-      "storageKey": null
-    }
-  ],
+  "name": "owner",
+  "plural": false,
+  "selections": (v1/*: any*/),
   "storageKey": null
 };
 return {
@@ -206,7 +182,34 @@ return {
           (v4/*: any*/),
           (v5/*: any*/),
           (v6/*: any*/),
-          (v7/*: any*/),
+          {
+            "alias": null,
+            "args": null,
+            "concreteType": "Lane",
+            "kind": "LinkedField",
+            "name": "lanes",
+            "plural": true,
+            "selections": [
+              (v0/*: any*/),
+              (v7/*: any*/),
+              {
+                "alias": null,
+                "args": null,
+                "concreteType": "Horse",
+                "kind": "LinkedField",
+                "name": "horse",
+                "plural": false,
+                "selections": [
+                  (v0/*: any*/),
+                  (v8/*: any*/),
+                  (v9/*: any*/),
+                  (v10/*: any*/)
+                ],
+                "storageKey": null
+              }
+            ],
+            "storageKey": null
+          },
           {
             "args": null,
             "kind": "FragmentSpread",
@@ -239,19 +242,53 @@ return {
           (v4/*: any*/),
           (v5/*: any*/),
           (v6/*: any*/),
-          (v7/*: any*/)
+          {
+            "alias": null,
+            "args": null,
+            "concreteType": "Lane",
+            "kind": "LinkedField",
+            "name": "lanes",
+            "plural": true,
+            "selections": [
+              (v0/*: any*/),
+              (v7/*: any*/),
+              {
+                "alias": null,
+                "args": null,
+                "concreteType": "Horse",
+                "kind": "LinkedField",
+                "name": "horse",
+                "plural": false,
+                "selections": [
+                  (v0/*: any*/),
+                  (v8/*: any*/),
+                  (v9/*: any*/),
+                  (v10/*: any*/),
+                  {
+                    "alias": null,
+                    "args": null,
+                    "kind": "ScalarField",
+                    "name": "state",
+                    "storageKey": null
+                  }
+                ],
+                "storageKey": null
+              }
+            ],
+            "storageKey": null
+          }
         ],
         "storageKey": null
       }
     ]
   },
   "params": {
-    "cacheID": "8cdc07e48c03e4fb0e639f3d4d6763b5",
+    "cacheID": "78d9b75128057fac27e11295704bcd79",
     "id": null,
     "metadata": {},
     "name": "BoardQuery",
     "operationKind": "query",
-    "text": "query BoardQuery {\n  me {\n    id\n    firstName\n    lastName\n  }\n  myCart {\n    id\n    horses {\n      id\n    }\n  }\n  rounds {\n    id\n    name\n    startAt\n    endAt\n    lanes {\n      id\n      number\n      horse {\n        id\n        horseName\n        ownershipLabel\n        owner {\n          id\n          firstName\n          lastName\n        }\n      }\n    }\n    ...RoundBoardFragment\n  }\n}\n\nfragment RoundBoardFragment on Round {\n  id\n  name\n  startAt\n  endAt\n  lanes {\n    id\n    number\n    horse {\n      id\n      horseName\n      ownershipLabel\n      owner {\n        id\n        firstName\n        lastName\n      }\n    }\n  }\n}\n"
+    "text": "query BoardQuery {\n  me {\n    id\n    firstName\n    lastName\n  }\n  myCart {\n    id\n    horses {\n      id\n    }\n  }\n  rounds {\n    id\n    name\n    startAt\n    endAt\n    lanes {\n      id\n      number\n      horse {\n        id\n        horseName\n        ownershipLabel\n        owner {\n          id\n          firstName\n          lastName\n        }\n      }\n    }\n    ...RoundBoardFragment\n  }\n}\n\nfragment RoundBoardFragment on Round {\n  id\n  name\n  startAt\n  endAt\n  lanes {\n    id\n    number\n    horse {\n      id\n      horseName\n      ownershipLabel\n      owner {\n        id\n        firstName\n        lastName\n      }\n      state\n    }\n  }\n}\n"
   }
 };
 })();

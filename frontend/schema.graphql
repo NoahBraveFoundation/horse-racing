@@ -9,6 +9,12 @@ Indicates exactly one field must be supplied and this field must not be `null`.
 """
 directive @oneOf on INPUT_OBJECT
 
+type AdminStats {
+  giftBasketCount: Int!
+  sponsorCount: Int!
+  ticketCount: Int!
+}
+
 type Cart {
   cost: CartCost!
   giftBasketInterests: [GiftBasketInterest!]!
@@ -91,11 +97,15 @@ type Mutation {
   login(email: String!, redirectTo: String): LoginPayload!
   logout: LogoutPayload!
   markPaymentReceived(paymentId: UUID!): Payment!
+  releaseCart(cartId: UUID!): Cart!
+  releaseHorse(horseId: UUID!): Boolean!
   removeGiftBasketFromCart(giftId: UUID!): Boolean!
   removeHorseFromCart(horseId: UUID!): Boolean!
   removeSponsorFromCart(sponsorId: UUID!): Boolean!
   removeTicketFromCart(ticketId: UUID!): Boolean!
   renameHorse(horseId: UUID!, horseName: String!, ownershipLabel: String!): Horse!
+  runAdminCleanup: Boolean!
+  setUserAdmin(userId: UUID!, isAdmin: Boolean!): User!
   validateToken(token: String!): ValidateTokenPayload!
 }
 
@@ -108,11 +118,18 @@ type Payment {
 }
 
 type Query {
+  abandonedCarts: [Cart!]!
+  adminStats: AdminStats!
+  allHorses: [Horse!]!
+  giftBasketInterests: [GiftBasketInterest!]!
   lanes(roundId: UUID!): [Lane!]!
   me: User!
   myCart: Cart
   paymentStatus: Payment
+  pendingPayments: [Payment!]!
   rounds: [Round!]!
+  sponsorInterests: [SponsorInterest!]!
+  users: [User!]!
 }
 
 type Round {

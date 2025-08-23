@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 declare module 'relay-runtime' {
   export interface Environment {
     network: Network;

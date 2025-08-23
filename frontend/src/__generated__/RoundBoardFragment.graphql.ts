@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<f47977a9cd5004d105b613e7b4b4ad69>>
+ * @generated SignedSource<<28d89766d7a8e7e32e4424fc8c9d1543>>
  * @lightSyntaxTransform
  * @nogrep
  */
@@ -9,6 +9,7 @@
 // @ts-nocheck
 
 import { ReaderFragment } from 'relay-runtime';
+export type HorseEntryState = "confirmed" | "on_hold" | "pending_payment" | "%future added value";
 import { FragmentRefs } from "relay-runtime";
 export type RoundBoardFragment$data = {
   readonly endAt: any;
@@ -23,6 +24,7 @@ export type RoundBoardFragment$data = {
         readonly lastName: string;
       };
       readonly ownershipLabel: string;
+      readonly state: HorseEntryState;
     } | null | undefined;
     readonly id: any | null | undefined;
     readonly number: number;
@@ -136,6 +138,13 @@ return {
                 }
               ],
               "storageKey": null
+            },
+            {
+              "alias": null,
+              "args": null,
+              "kind": "ScalarField",
+              "name": "state",
+              "storageKey": null
             }
           ],
           "storageKey": null
@@ -149,6 +158,6 @@ return {
 };
 })();
 
-(node as any).hash = "e2140e4a42deca00ed5c8b03007fba17";
+(node as any).hash = "6676535fb5ec69b185485c877659f061";
 
 export default node;

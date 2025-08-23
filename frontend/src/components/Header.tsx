@@ -2,16 +2,14 @@ import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { HashLink } from 'react-router-hash-link'
 import Logo from './common/Logo'
+import { isLoggedIn } from '../utils/auth'
 
 export const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [isUserLoggedIn, setIsUserLoggedIn] = useState(false)
 
   useEffect(() => {
-    try {
-      const user = localStorage.getItem('user')
-      setIsLoggedIn(!!user)
-    } catch {}
+    setIsUserLoggedIn(isLoggedIn())
   }, [])
 
   return (
@@ -51,7 +49,7 @@ export const Header: React.FC = () => {
             <HashLink smooth to="/#contact" className="text-gray-700 hover:text-noahbrave-600 font-medium">
               Contact
             </HashLink>
-            {isLoggedIn ? (
+            {isUserLoggedIn ? (
               <Link to="/account" className="text-gray-700 hover:text-noahbrave-600 font-medium">Account</Link>
             ) : (
               <Link to="/login" className="text-gray-700 hover:text-noahbrave-600 font-medium">Login</Link>
@@ -67,7 +65,7 @@ export const Header: React.FC = () => {
             <HashLink smooth to="/#about" className="block px-3 py-2 text-gray-700 hover:text-noahbrave-600 font-medium">About</HashLink>
             <HashLink smooth to="/#schedule" className="block px-3 py-2 text-gray-700 hover:text-noahbrave-600 font-medium">Schedule</HashLink>
             <HashLink smooth to="/#contact" className="block px-3 py-2 text-gray-700 hover:text-noahbrave-600 font-medium">Contact</HashLink>
-            {isLoggedIn ? (
+            {isUserLoggedIn ? (
               <Link to="/account" className="block px-3 py-2 text-gray-700 hover:text-noahbrave-600 font-medium">Account</Link>
             ) : (
               <Link to="/login" className="block px-3 py-2 text-gray-700 hover:text-noahbrave-600 font-medium">Login</Link>
