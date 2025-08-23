@@ -1,0 +1,43 @@
+name: Build Backend (Linux)
+
+on:
+  pull_request:
+    paths:
+      - 'backend/**'
+      - '.github/workflows/build-backend.yml'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+    # Broken on Linux https://github.com/swift-actions/setup-swift/issues/694
+    #   - name: Set up Swift
+    #     id: swift-setup
+    #     uses: swift-actions/setup-swift@v2
+    #     with:
+    #       swift-version: '6.1'
+
+      - name: Show Swift version
+        run: swift --version
+
+      - name: Cache SwiftPM
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.swiftpm
+            backend/.build
+          key: ${{ runner.os }}-swift-${{ steps.swift-setup.outputs.swift-version }}-${{ hashFiles('backend/Package.resolved') }}
+          restore-keys: |
+            ${{ runner.os }}-swift-${{ steps.swift-setup.outputs.swift-version }}-
+
+      - name: Resolve dependencies
+        working-directory: backend
+        run: swift package resolve
+
+      - name: Build
+        working-directory: backend
+        run: swift build

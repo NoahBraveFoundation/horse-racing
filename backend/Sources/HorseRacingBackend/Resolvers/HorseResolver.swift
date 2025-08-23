@@ -186,6 +186,20 @@ final class HorseResolver: @unchecked Sendable {
         }
     }
 
+    func renameHorse(request: Request, arguments: RenameHorseArguments) throws -> EventLoopFuture<Horse> {
+        guard let user = request.auth.get(User.self), let userId = user.id else { throw Abort(.unauthorized) }
+        return Horse.find(arguments.horseId, on: request.db)
+            .unwrap(or: Abort(.notFound))
+            .flatMap { horse in
+                guard horse.$owner.id == userId else {
+                    return request.eventLoop.makeFailedFuture(Abort(.forbidden, reason: "Cannot modify a horse you do not own")) as EventLoopFuture<Horse>
+                }
+                horse.horseName = arguments.horseName
+                horse.ownershipLabel = arguments.ownershipLabel
+                return horse.save(on: request.db).map { horse }
+            }
+    }
+
     func checkoutCart(request: Request, _: NoArguments) throws -> EventLoopFuture<Payment> {
         guard let user = request.auth.get(User.self), let userId = user.id else { throw Abort(.unauthorized) }
         return getOrCreateOpenCart(for: userId, on: request).flatMap { cart in
@@ -268,7 +282,16 @@ final class HorseResolver: @unchecked Sendable {
                 let token = AuthService.generateSecureLoginToken(for: userID)
                 return token.create(on: request.db).flatMap { _ in
                     let host = Environment.get("APP_HOST") ?? "http://localhost:5173"
-                    let link = "\(host)/auth?token=\(token.token)"
+                    var link = "\(host)/auth?token=\(token.token)"
+                    if let redirect = arguments.redirectTo?.trimmingCharacters(in: .whitespacesAndNewlines), !redirect.isEmpty {
+                        // Only allow relative paths to prevent open redirect
+                        if redirect.hasPrefix("/") && !redirect.hasPrefix("//") {
+                            let encoded = redirect.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? redirect
+                            link += "&redirectTo=\(encoded)"
+                        } else {
+                            request.logger.warning("Rejected non-relative redirectTo: \(redirect)")
+                        }
+                    }
                     
                     // Send magic link email
                     Task {
@@ -337,6 +360,13 @@ final class HorseResolver: @unchecked Sendable {
                     }
                 }
             }
+    }
+
+    func logout(request: Request, _: NoArguments) throws -> LogoutPayload {
+        // Clear session and auth
+        request.auth.logout(User.self)
+        request.session.destroy()
+        return LogoutPayload(success: true, message: "Logged out")
     }
 
     // MARK: - Field resolvers
@@ -518,10 +548,12 @@ extension HorseResolver {
     struct RemoveHorseFromCartArguments: Codable { let horseId: UUID }
     struct RemoveSponsorFromCartArguments: Codable { let sponsorId: UUID }
     struct RemoveGiftBasketFromCartArguments: Codable { let giftId: UUID }
+    struct RenameHorseArguments: Codable { let horseId: UUID; let horseName: String; let ownershipLabel: String }
     
     // Authentication
     struct LoginArguments: Codable {
         let email: String
+        let redirectTo: String?
     }
     
     struct LoginPayload: Codable {
@@ -537,6 +569,11 @@ extension HorseResolver {
     struct ValidateTokenPayload: Codable {
         let success: Bool
         let user: User?
+        let message: String
+    }
+    
+    struct LogoutPayload: Codable {
+        let success: Bool
         let message: String
     }
     

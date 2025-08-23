@@ -98,6 +98,8 @@ const Board: React.FC = () => {
     <div className="space-y-6">
       <div className="rounded-xl border border-noahbrave-200 bg-white p-3 text-center text-sm text-gray-700">
         Each horse costs <span className="font-semibold">${HORSE_PRICE}</span>. Tap an available lane to place your horse.
+        <br />
+        <span className="italic">✨ Tip: Pick a creative name - it makes it more fun!</span>
       </div>
 
       {data.rounds.map((round: any) => (
@@ -123,7 +125,7 @@ const Board: React.FC = () => {
             {error && <div className="mb-3 rounded-lg border border-red-200 bg-red-50 p-3 text-red-800 text-sm">{error}</div>}
             <div className="grid sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Horse name</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Horse name (get creative!)</label>
                 <input
                   value={horseName}
                   onChange={(e) => setHorseName(e.target.value)}

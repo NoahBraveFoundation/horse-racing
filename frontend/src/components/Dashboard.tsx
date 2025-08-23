@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Header from './Header'
 import Footer from './Footer'
+import { useLogout } from '../utils/auth'
 
 interface User {
   id: string
@@ -14,12 +15,12 @@ interface User {
 export const Dashboard: React.FC = () => {
   const navigate = useNavigate()
   const [user, setUser] = useState<User | null>(null)
+  const { logout } = useLogout()
 
   useEffect(() => {
     const userData = localStorage.getItem('user')
-    const token = localStorage.getItem('token')
     
-    if (!userData || !token) {
+    if (!userData) {
       navigate('/login', { replace: true })
       return
     }
@@ -37,9 +38,7 @@ export const Dashboard: React.FC = () => {
   }, [navigate])
 
   const handleLogout = () => {
-    localStorage.removeItem('user')
-    localStorage.removeItem('token')
-    navigate('/login', { replace: true })
+    logout('/login?redirectTo=/dashboard')
   }
 
   if (!user) {
