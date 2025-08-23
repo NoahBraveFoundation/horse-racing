@@ -186,6 +186,20 @@ final class HorseResolver: @unchecked Sendable {
         }
     }
 
+    func renameHorse(request: Request, arguments: RenameHorseArguments) throws -> EventLoopFuture<Horse> {
+        guard let user = request.auth.get(User.self), let userId = user.id else { throw Abort(.unauthorized) }
+        return Horse.find(arguments.horseId, on: request.db)
+            .unwrap(or: Abort(.notFound))
+            .flatMap { horse in
+                guard horse.$owner.id == userId else {
+                    return request.eventLoop.makeFailedFuture(Abort(.forbidden, reason: "Cannot modify a horse you do not own")) as EventLoopFuture<Horse>
+                }
+                horse.horseName = arguments.horseName
+                horse.ownershipLabel = arguments.ownershipLabel
+                return horse.save(on: request.db).map { horse }
+            }
+    }
+
     func checkoutCart(request: Request, _: NoArguments) throws -> EventLoopFuture<Payment> {
         guard let user = request.auth.get(User.self), let userId = user.id else { throw Abort(.unauthorized) }
         return getOrCreateOpenCart(for: userId, on: request).flatMap { cart in
@@ -518,6 +532,7 @@ extension HorseResolver {
     struct RemoveHorseFromCartArguments: Codable { let horseId: UUID }
     struct RemoveSponsorFromCartArguments: Codable { let sponsorId: UUID }
     struct RemoveGiftBasketFromCartArguments: Codable { let giftId: UUID }
+    struct RenameHorseArguments: Codable { let horseId: UUID; let horseName: String; let ownershipLabel: String }
     
     // Authentication
     struct LoginArguments: Codable {

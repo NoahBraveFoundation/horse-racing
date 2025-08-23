@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Header from './Header'
 import Footer from './Footer'
+import AccountBoard from './horse-board/AccountBoard'
 
 interface User {
   id: string
@@ -78,37 +79,9 @@ export const Account: React.FC = () => {
             </div>
           </div>
 
-          {/* Account Actions */}
+          {/* Horse Board */}
           <div className="lg:col-span-2">
-            <div className="grid md:grid-cols-2 gap-6">
-              {/* My Tickets */}
-              <div className="bg-white rounded-2xl p-8 shadow-xl border border-noahbrave-200">
-                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
-                  </svg>
-                </div>
-                <h3 className="font-heading text-xl text-gray-900 mb-4 text-center">My Tickets</h3>
-                <p className="text-gray-700 mb-6 text-center">View and manage your event tickets</p>
-                <button className="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
-                  View Tickets
-                </button>
-              </div>
-
-              {/* My Horses */}
-              <div className="bg-white rounded-2xl p-8 shadow-xl border border-noahbrave-200">
-                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                  </svg>
-                </div>
-                <h3 className="font-heading text-xl text-gray-900 mb-4 text-center">My Horses</h3>
-                <p className="text-gray-700 mb-6 text-center">Track your horse entries and results</p>
-                <button className="w-full bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
-                  View Horses
-                </button>
-              </div>
-            </div>
+            <AccountBoard />
           </div>
         </div>
 

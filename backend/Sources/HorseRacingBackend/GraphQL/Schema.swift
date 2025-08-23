@@ -209,6 +209,12 @@ let horseRacingSchema = try! Graphiti.Schema<HorseResolver, Request> {
             Argument("giftId", at: \.giftId)
         }
 
+        Field("renameHorse", at: HorseResolver.renameHorse) {
+            Argument("horseId", at: \.horseId)
+            Argument("horseName", at: \.horseName)
+            Argument("ownershipLabel", at: \.ownershipLabel)
+        }
+
         Field("checkoutCart", at: HorseResolver.checkoutCart)
 
         // Authentication

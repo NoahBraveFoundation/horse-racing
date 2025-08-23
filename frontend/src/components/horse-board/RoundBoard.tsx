@@ -27,6 +27,7 @@ interface Props {
   meId?: string | null;
   cartHorseIds?: Set<string>;
   onRemoveHorse?: (horseId: string) => void;
+  onRenameHorse?: (horse: { id: string; horseName: string; ownershipLabel: string }) => void;
 }
 
 function formatTime(value: number): string {
@@ -35,7 +36,7 @@ function formatTime(value: number): string {
   return d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
 }
 
-const RoundBoard: React.FC<Props> = ({ roundRef, onLaneClick, meId, cartHorseIds, onRemoveHorse }) => {
+const RoundBoard: React.FC<Props> = ({ roundRef, onLaneClick, meId, cartHorseIds, onRemoveHorse, onRenameHorse }) => {
   const round = useFragment<RoundBoardFragment$key>(RoundBoardFragment, roundRef);
   const hasMine = !!meId && round.lanes.some((l: any) => l.horse && l.horse.owner?.id === meId);
   return (
@@ -52,6 +53,7 @@ const RoundBoard: React.FC<Props> = ({ roundRef, onLaneClick, meId, cartHorseIds
           const ownedByMe = !!lane.horse && meId && lane.horse.owner?.id === meId;
           const inCart = !!lane.horse && cartHorseIds?.has(lane.horse.id);
           const clickable = available && !hasMine && !!onLaneClick;
+          const canRename = ownedByMe && !!onRenameHorse;
           const baseClasses = 'relative text-left rounded-xl border p-3 transition';
           const className = ownedByMe
             ? `${baseClasses} border-noahbrave-600 bg-noahbrave-50`
@@ -70,8 +72,8 @@ const RoundBoard: React.FC<Props> = ({ roundRef, onLaneClick, meId, cartHorseIds
               key={lane.id}
               type="button"
               title={buttonTitle}
-              onClick={clickable ? () => onLaneClick!(round.id, lane.id) : undefined}
-              aria-disabled={!clickable}
+              onClick={clickable ? () => onLaneClick!(round.id, lane.id) : canRename ? () => onRenameHorse!(lane.horse) : undefined}
+              aria-disabled={!(clickable || canRename)}
               className={className}
             >
               {inCart && onRemoveHorse && (
@@ -82,6 +84,11 @@ const RoundBoard: React.FC<Props> = ({ roundRef, onLaneClick, meId, cartHorseIds
                   role="button"
                 >
                   ×
+                </span>
+              )}
+              {canRename && !inCart && (
+                <span className="absolute right-2 top-2 inline-flex items-center justify-center h-5 w-5 rounded-full bg-gray-200 text-gray-700">
+                  ✎
                 </span>
               )}
               <div className="text-xs text-gray-500 mb-1">Lane {lane.number}</div>

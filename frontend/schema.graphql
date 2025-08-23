@@ -89,6 +89,7 @@ type Mutation {
   removeHorseFromCart(horseId: UUID!): Boolean!
   removeSponsorFromCart(sponsorId: UUID!): Boolean!
   removeTicketFromCart(ticketId: UUID!): Boolean!
+  renameHorse(horseId: UUID!, horseName: String!, ownershipLabel: String!): Horse!
   validateToken(token: String!): ValidateTokenPayload!
 }
 
