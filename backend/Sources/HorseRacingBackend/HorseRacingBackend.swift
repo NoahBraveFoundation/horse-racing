@@ -128,6 +128,7 @@ func configureDatabase(_ app: Application) async throws {
     app.migrations.add(MigrateLoginTokens())
     app.migrations.add(MigrateCarts())
     app.migrations.add(MigrateRounds())
+    app.migrations.add(MigrateRoundsUpdateIntervals())
     app.migrations.add(MigrateLanes())
     app.migrations.add(MigrateHorses())
     app.migrations.add(MigrateHorsesAddCart())
@@ -201,13 +202,13 @@ func seedSampleData(_ app: Application) async throws {
 
         var createdRounds: [Round] = []
         for i in 0..<10 {
-            let start = baseStart.addingTimeInterval(TimeInterval(i * 30 * 60))
-            let end = start.addingTimeInterval(30 * 60)
+            let start = baseStart.addingTimeInterval(TimeInterval(i * 10 * 60))
+            let end = start.addingTimeInterval(10 * 60)
             let round = Round(name: "Round \(i + 1)", startAt: start, endAt: end)
             try await round.create(on: app.db)
             createdRounds.append(round)
         }
-        app.logger.info("Seeded 10 rounds from 8:00 PM ET with 30-min intervals")
+        app.logger.info("Seeded 10 rounds from 8:00 PM ET with 10-min intervals")
 
         // Create 10 lanes per round
         for r in createdRounds {

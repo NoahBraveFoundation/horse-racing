@@ -31,32 +31,3 @@ final class SponsorInterest: Model, Content, @unchecked Sendable {
 		self.companyLogoBase64 = companyLogoBase64
 	}
 }
-
-struct MigrateSponsorInterestsAddCart: Migration {
-	func prepare(on database: Database) -> EventLoopFuture<Void> {
-		database.schema("sponsor_interests")
-			.field("cart_id", .uuid, .references("carts", "id", onDelete: .setNull))
-			.update()
-	}
-
-	func revert(on database: Database) -> EventLoopFuture<Void> {
-		database.schema("sponsor_interests")
-			.deleteField("cart_id")
-			.update()
-	}
-}
-
-struct MigrateSponsorInterests: Migration {
-	func prepare(on database: Database) -> EventLoopFuture<Void> {
-		database.schema("sponsor_interests")
-			.id()
-			.field("user_id", .uuid, .required, .references("users", "id", onDelete: .cascade))
-			.field("company_name", .string, .required)
-			.field("created_at", .datetime)
-			.create()
-	}
-
-	func revert(on database: Database) -> EventLoopFuture<Void> {
-		database.schema("sponsor_interests").delete()
-	}
-}

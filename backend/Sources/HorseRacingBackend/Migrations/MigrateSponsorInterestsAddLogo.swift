@@ -1,4 +1,5 @@
 import Fluent
+import Vapor
 
 struct MigrateSponsorInterestsAddLogo: Migration {
     func prepare(on database: Database) -> EventLoopFuture<Void> {

@@ -27,32 +27,3 @@ final class GiftBasketInterest: Model, Content, @unchecked Sendable {
 		self.descriptionText = descriptionText
 	}
 }
-
-struct MigrateGiftBasketInterestsAddCart: Migration {
-	func prepare(on database: Database) -> EventLoopFuture<Void> {
-		database.schema("gift_basket_interests")
-			.field("cart_id", .uuid, .references("carts", "id", onDelete: .setNull))
-			.update()
-	}
-
-	func revert(on database: Database) -> EventLoopFuture<Void> {
-		database.schema("gift_basket_interests")
-			.deleteField("cart_id")
-			.update()
-	}
-}
-
-struct MigrateGiftBasketInterests: Migration {
-	func prepare(on database: Database) -> EventLoopFuture<Void> {
-		database.schema("gift_basket_interests")
-			.id()
-			.field("user_id", .uuid, .required, .references("users", "id", onDelete: .cascade))
-			.field("description", .string, .required)
-			.field("created_at", .datetime)
-			.create()
-	}
-
-	func revert(on database: Database) -> EventLoopFuture<Void> {
-		database.schema("gift_basket_interests").delete()
-	}
-}

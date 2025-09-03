@@ -54,6 +54,7 @@ const VenmoStep: React.FC = () => {
                 Pay with Venmo
               </a>
               <p className="text-sm text-gray-500 mt-6">Venmo:{venmoUser}</p>
+              <p className="text-sm text-gray-500 mt-2">Last 4 digits of phone: 1258</p>
               <div className="mt-6">
                 <button type="button" onClick={onIPaid} className="px-5 py-3 rounded-lg border text-gray-700 hover:bg-gray-50">
                   I paid
