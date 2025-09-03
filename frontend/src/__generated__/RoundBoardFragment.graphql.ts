@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<28d89766d7a8e7e32e4424fc8c9d1543>>
+ * @generated SignedSource<<d073f74a3f013a3f7de3f2199533bcf8>>
  * @lightSyntaxTransform
  * @nogrep
  */
@@ -19,6 +19,7 @@ export type RoundBoardFragment$data = {
       readonly horseName: string;
       readonly id: any | null | undefined;
       readonly owner: {
+        readonly email: string;
         readonly firstName: string;
         readonly id: any | null | undefined;
         readonly lastName: string;
@@ -135,6 +136,13 @@ return {
                   "kind": "ScalarField",
                   "name": "lastName",
                   "storageKey": null
+                },
+                {
+                  "alias": null,
+                  "args": null,
+                  "kind": "ScalarField",
+                  "name": "email",
+                  "storageKey": null
                 }
               ],
               "storageKey": null
@@ -158,6 +166,6 @@ return {
 };
 })();
 
-(node as any).hash = "6676535fb5ec69b185485c877659f061";
+(node as any).hash = "e8d65860ff5602d37cc23bf3cf9af3fc";
 
 export default node;

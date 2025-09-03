@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<8c06e9543124ac6b70e63839e80d0f85>>
+ * @generated SignedSource<<1f4bcf935b5412958922b71adbc8b207>>
  * @lightSyntaxTransform
  * @nogrep
  */
@@ -52,83 +52,75 @@ var v0 = {
   "name": "id",
   "storageKey": null
 },
-v1 = [
-  (v0/*: any*/),
-  {
-    "alias": null,
-    "args": null,
-    "kind": "ScalarField",
-    "name": "firstName",
-    "storageKey": null
-  },
-  {
-    "alias": null,
-    "args": null,
-    "kind": "ScalarField",
-    "name": "lastName",
-    "storageKey": null
-  }
-],
+v1 = {
+  "alias": null,
+  "args": null,
+  "kind": "ScalarField",
+  "name": "firstName",
+  "storageKey": null
+},
 v2 = {
+  "alias": null,
+  "args": null,
+  "kind": "ScalarField",
+  "name": "lastName",
+  "storageKey": null
+},
+v3 = [
+  (v0/*: any*/),
+  (v1/*: any*/),
+  (v2/*: any*/)
+],
+v4 = {
   "alias": null,
   "args": null,
   "concreteType": "User",
   "kind": "LinkedField",
   "name": "me",
   "plural": false,
-  "selections": (v1/*: any*/),
-  "storageKey": null
-},
-v3 = {
-  "alias": null,
-  "args": null,
-  "kind": "ScalarField",
-  "name": "name",
-  "storageKey": null
-},
-v4 = {
-  "alias": null,
-  "args": null,
-  "kind": "ScalarField",
-  "name": "startAt",
+  "selections": (v3/*: any*/),
   "storageKey": null
 },
 v5 = {
   "alias": null,
   "args": null,
   "kind": "ScalarField",
-  "name": "endAt",
+  "name": "name",
   "storageKey": null
 },
 v6 = {
   "alias": null,
   "args": null,
   "kind": "ScalarField",
-  "name": "number",
+  "name": "startAt",
   "storageKey": null
 },
 v7 = {
   "alias": null,
   "args": null,
   "kind": "ScalarField",
-  "name": "horseName",
+  "name": "endAt",
   "storageKey": null
 },
 v8 = {
   "alias": null,
   "args": null,
   "kind": "ScalarField",
-  "name": "ownershipLabel",
+  "name": "number",
   "storageKey": null
 },
 v9 = {
   "alias": null,
   "args": null,
-  "concreteType": "User",
-  "kind": "LinkedField",
-  "name": "owner",
-  "plural": false,
-  "selections": (v1/*: any*/),
+  "kind": "ScalarField",
+  "name": "horseName",
+  "storageKey": null
+},
+v10 = {
+  "alias": null,
+  "args": null,
+  "kind": "ScalarField",
+  "name": "ownershipLabel",
   "storageKey": null
 };
 return {
@@ -138,7 +130,7 @@ return {
     "metadata": null,
     "name": "AccountBoardQuery",
     "selections": [
-      (v2/*: any*/),
+      (v4/*: any*/),
       {
         "alias": null,
         "args": null,
@@ -148,9 +140,9 @@ return {
         "plural": true,
         "selections": [
           (v0/*: any*/),
-          (v3/*: any*/),
-          (v4/*: any*/),
           (v5/*: any*/),
+          (v6/*: any*/),
+          (v7/*: any*/),
           {
             "alias": null,
             "args": null,
@@ -160,7 +152,7 @@ return {
             "plural": true,
             "selections": [
               (v0/*: any*/),
-              (v6/*: any*/),
+              (v8/*: any*/),
               {
                 "alias": null,
                 "args": null,
@@ -170,9 +162,18 @@ return {
                 "plural": false,
                 "selections": [
                   (v0/*: any*/),
-                  (v7/*: any*/),
-                  (v8/*: any*/),
-                  (v9/*: any*/)
+                  (v9/*: any*/),
+                  (v10/*: any*/),
+                  {
+                    "alias": null,
+                    "args": null,
+                    "concreteType": "User",
+                    "kind": "LinkedField",
+                    "name": "owner",
+                    "plural": false,
+                    "selections": (v3/*: any*/),
+                    "storageKey": null
+                  }
                 ],
                 "storageKey": null
               }
@@ -197,7 +198,7 @@ return {
     "kind": "Operation",
     "name": "AccountBoardQuery",
     "selections": [
-      (v2/*: any*/),
+      (v4/*: any*/),
       {
         "alias": null,
         "args": null,
@@ -207,9 +208,9 @@ return {
         "plural": true,
         "selections": [
           (v0/*: any*/),
-          (v3/*: any*/),
-          (v4/*: any*/),
           (v5/*: any*/),
+          (v6/*: any*/),
+          (v7/*: any*/),
           {
             "alias": null,
             "args": null,
@@ -219,7 +220,7 @@ return {
             "plural": true,
             "selections": [
               (v0/*: any*/),
-              (v6/*: any*/),
+              (v8/*: any*/),
               {
                 "alias": null,
                 "args": null,
@@ -229,9 +230,29 @@ return {
                 "plural": false,
                 "selections": [
                   (v0/*: any*/),
-                  (v7/*: any*/),
-                  (v8/*: any*/),
                   (v9/*: any*/),
+                  (v10/*: any*/),
+                  {
+                    "alias": null,
+                    "args": null,
+                    "concreteType": "User",
+                    "kind": "LinkedField",
+                    "name": "owner",
+                    "plural": false,
+                    "selections": [
+                      (v0/*: any*/),
+                      (v1/*: any*/),
+                      (v2/*: any*/),
+                      {
+                        "alias": null,
+                        "args": null,
+                        "kind": "ScalarField",
+                        "name": "email",
+                        "storageKey": null
+                      }
+                    ],
+                    "storageKey": null
+                  },
                   {
                     "alias": null,
                     "args": null,
@@ -251,12 +272,12 @@ return {
     ]
   },
   "params": {
-    "cacheID": "90098abeaffbe8cd117b911d84f6d6d3",
+    "cacheID": "4f2bc0e125a5eedb68f7ea57fddbcb07",
     "id": null,
     "metadata": {},
     "name": "AccountBoardQuery",
     "operationKind": "query",
-    "text": "query AccountBoardQuery {\n  me {\n    id\n    firstName\n    lastName\n  }\n  rounds {\n    id\n    name\n    startAt\n    endAt\n    lanes {\n      id\n      number\n      horse {\n        id\n        horseName\n        ownershipLabel\n        owner {\n          id\n          firstName\n          lastName\n        }\n      }\n    }\n    ...RoundBoardFragment\n  }\n}\n\nfragment RoundBoardFragment on Round {\n  id\n  name\n  startAt\n  endAt\n  lanes {\n    id\n    number\n    horse {\n      id\n      horseName\n      ownershipLabel\n      owner {\n        id\n        firstName\n        lastName\n      }\n      state\n    }\n  }\n}\n"
+    "text": "query AccountBoardQuery {\n  me {\n    id\n    firstName\n    lastName\n  }\n  rounds {\n    id\n    name\n    startAt\n    endAt\n    lanes {\n      id\n      number\n      horse {\n        id\n        horseName\n        ownershipLabel\n        owner {\n          id\n          firstName\n          lastName\n        }\n      }\n    }\n    ...RoundBoardFragment\n  }\n}\n\nfragment RoundBoardFragment on Round {\n  id\n  name\n  startAt\n  endAt\n  lanes {\n    id\n    number\n    horse {\n      id\n      horseName\n      ownershipLabel\n      owner {\n        id\n        firstName\n        lastName\n        email\n      }\n      state\n    }\n  }\n}\n"
   }
 };
 })();

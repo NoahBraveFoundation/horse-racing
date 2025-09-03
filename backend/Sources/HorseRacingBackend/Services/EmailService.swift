@@ -54,7 +54,7 @@ struct EmailService {
         let client = getSendGridClient(req)
         try await client.send(email: email)
         
-        req.logger.info("Login magic link email sent to \(user.email) for \(magicLinkURL)")
+        req.logger.info("Login magic link email sent to \(user.email)")
     }
     
     // MARK: - Horse Racing Checkout Email
@@ -73,6 +73,8 @@ struct EmailService {
             to: [EmailAddress(email: user.email, name: user.firstName)],
             dynamicTemplateData: templateData
         )
+
+        req.logger.info("Sending horse racing checkout email to \(user.email) with \(templateData)")
         
         let email = SendGridEmail(
             personalizations: [personalization],
@@ -91,6 +93,15 @@ struct EmailService {
     }
     
     // MARK: - Horse Racing Confirmed Email
+    /// Sends a confirmation email for horse racing event with attached PDF tickets and Apple Wallet passes.
+    /// 
+    /// This email includes:
+    /// - PDF tickets for printing
+    /// - Individual Apple Wallet passes (.pkpass files) for each ticket
+    /// - Order confirmation details
+    /// 
+    /// If PDF or Wallet pass generation fails, the email will still be sent without those attachments
+    /// rather than failing completely.
     static func sendHorseRacingConfirmed(
         for cart: Cart,
         user: User,
@@ -102,6 +113,48 @@ struct EmailService {
             req: req
         )
         
+        // Create attachments
+        var attachments: [EmailAttachment] = []
+        
+        do {
+            // Generate PDF tickets
+            req.logger.info("Generating PDF tickets for cart \(cart.orderNumber)")
+            let pdfData = try await TicketService.renderTicketsPDF(for: cart, user: user, on: req)
+            
+            let pdfAttachment = EmailAttachment(
+                content: pdfData.base64EncodedString(),
+                type: "application/pdf",
+                filename: "tickets.pdf",
+                disposition: .attachment
+            )
+            attachments.append(pdfAttachment)
+            req.logger.info("PDF tickets generated successfully: \(pdfData.count) bytes")
+            
+        } catch {
+            req.logger.error("Failed to generate PDF tickets: \(error)")
+        }
+        
+        do {
+            // Generate Apple Wallet passes for all tickets
+            req.logger.info("Generating Apple Wallet passes for cart \(cart.orderNumber)")
+            let walletPasses = try await TicketService.generateAppleWalletPasses(for: cart, user: user, on: req)
+            
+            // Add Apple Wallet passes as attachments
+            for (ticketId, passData) in walletPasses {
+                let passAttachment = EmailAttachment(
+                    content: passData.base64EncodedString(),
+                    type: "application/vnd.apple.pkpass",
+                    filename: "ticket-\(ticketId.uuidString.prefix(8)).pkpass",
+                    disposition: .attachment
+                )
+                attachments.append(passAttachment)
+            }
+            req.logger.info("Apple Wallet passes generated successfully: \(walletPasses.count) passes")
+            
+        } catch {
+            req.logger.error("Failed to generate Apple Wallet passes: \(error)")
+        }
+        
         let personalization = Personalization(
             to: [EmailAddress(email: user.email, name: user.firstName)],
             dynamicTemplateData: templateData
@@ -110,6 +163,7 @@ struct EmailService {
         let email = SendGridEmail(
             personalizations: [personalization],
             from: EmailAddress(email: fromEmail, name: fromName),
+            attachments: attachments,
             templateID: horseRacingConfirmedTemplateID,
             mailSettings: .init(
                 bypassSpamManagement: .init(enable: true),
@@ -120,7 +174,99 @@ struct EmailService {
         let client = getSendGridClient(req)
         try await client.send(email: email)
         
-        req.logger.info("Horse racing confirmed email sent to \(user.email)")
+        let attachmentCount = attachments.count
+        let attachmentTypes = attachments.map { $0.type ?? "unknown" }.joined(separator: ", ")
+        req.logger.info("Horse racing confirmed email sent to \(user.email) with \(attachmentCount) attachments: \(attachmentTypes)")
+    }
+    
+    /// Sends a confirmation email with custom attachment configuration.
+    /// 
+    /// - Parameters:
+    ///   - cart: The cart containing the order details
+    ///   - user: The user receiving the email
+    ///   - includePDF: Whether to include PDF tickets as attachment
+    ///   - includeWalletPasses: Whether to include Apple Wallet passes as attachments
+    ///   - req: The Vapor request object
+    static func sendHorseRacingConfirmed(
+        for cart: Cart,
+        user: User,
+        includePDF: Bool = true,
+        includeWalletPasses: Bool = true,
+        on req: Request
+    ) async throws {
+        let templateData = try await buildCheckoutTemplateData(
+            cart: cart,
+            user: user,
+            req: req
+        )
+        
+        // Create attachments
+        var attachments: [EmailAttachment] = []
+        
+        if includePDF {
+            do {
+                req.logger.info("Generating PDF tickets for cart \(cart.orderNumber)")
+                let pdfData = try await TicketService.renderTicketsPDF(for: cart, user: user, on: req)
+                
+                let pdfAttachment = EmailAttachment(
+                    content: pdfData.base64EncodedString(),
+                    type: "application/pdf",
+                    filename: "tickets.pdf",
+                    disposition: .attachment
+                )
+                attachments.append(pdfAttachment)
+                req.logger.info("PDF tickets generated successfully: \(pdfData.count) bytes")
+                
+            } catch {
+                req.logger.error("Failed to generate PDF tickets: \(error)")
+            }
+        }
+        
+        if includeWalletPasses {
+            do {
+                req.logger.info("Generating Apple Wallet passes for cart \(cart.orderNumber)")
+                let walletPasses = try await TicketService.generateAppleWalletPasses(for: cart, user: user, on: req)
+                
+                for (ticketId, passData) in walletPasses {
+                    let passAttachment = EmailAttachment(
+                        content: passData.base64EncodedString(),
+                        type: "application/vnd.apple.pkpass",
+                        filename: "ticket-\(ticketId.uuidString.prefix(8)).pkpass",
+                        disposition: .attachment
+                    )
+                    attachments.append(passAttachment)
+                }
+                req.logger.info("Apple Wallet passes generated successfully: \(walletPasses.count) passes")
+                
+            } catch {
+                req.logger.error("Failed to generate Apple Wallet passes: \(error)")
+            }
+        }
+        
+        let personalization = Personalization(
+            to: [EmailAddress(email: user.email, name: user.firstName)],
+            dynamicTemplateData: templateData
+        )
+
+        req.logger.info("Sending horse racing confirmed email to \(user.email) with \(templateData)")
+        
+        let email = SendGridEmail(
+            personalizations: [personalization],
+            from: EmailAddress(email: fromEmail, name: fromName),
+            attachments: attachments,
+            templateID: horseRacingConfirmedTemplateID,
+            mailSettings: .init(
+                bypassSpamManagement: .init(enable: true),
+                bypassBounceManagement: .init(enable: true)
+            )
+        )
+        
+        let client = getSendGridClient(req)
+        try await client.send(email: email)
+        
+        let attachmentCount = attachments.count
+        let attachmentTypes = attachments.map { $0.type ?? "unknown" }.joined(separator: ", ")
+        req.logger.info("Horse racing confirmed email sent to \(user.email) with \(attachmentCount) attachments: \(attachmentTypes)")
     }
     
     // MARK: - Helper Methods
@@ -128,7 +274,7 @@ struct EmailService {
         cart: Cart,
         user: User,
         req: Request
-    ) async throws -> [String: String] {
+    ) async throws -> CheckoutTemplateData {
         // Get cart items with their relationships
         let horses = try await cart.$horses.get(on: req.db)
         let tickets = try await cart.$tickets.get(on: req.db)
@@ -154,64 +300,40 @@ struct EmailService {
         // Generate Venmo link
         let venmoLink = VenmoLinkService.generatePaymentLink(totalCents: totalCents, orderNumber: orderID)
         
-        // Build template data
-        var templateData: [String: String] = [
-            "order_id": orderID,
-            "first_name": user.firstName,
-            "purchase_date_pretty": purchaseDatePretty,
-            "year": "2025",
-            "total_formatted": formatCurrency(totalCents),
-            "venmo_url": venmoLink
-        ]
-        
-        // Add horses data as JSON string
-        let horsesData = horses.map { horse in
-            [
-                "horseName": horse.horseName,
-                "ownershipLabel": horse.ownershipLabel,
-                "cost_formatted": Pricing.getFormattedPrice(for: .horse)
-            ]
-        }
-        if let horsesJSON = try? JSONSerialization.data(withJSONObject: horsesData),
-           let horsesString = String(data: horsesJSON, encoding: .utf8) {
-            templateData["horses"] = horsesString
-        }
-        
-        // Add tickets data as JSON string
-        let ticketsData = tickets.map { ticket in
-            [
-                "attendeeFirst": ticket.attendeeFirst,
-                "attendeeLast": ticket.attendeeLast,
-                "cost_formatted": Pricing.getFormattedPrice(for: .ticket)
-            ]
-        }
-        if let ticketsJSON = try? JSONSerialization.data(withJSONObject: ticketsData),
-           let ticketsString = String(data: ticketsJSON, encoding: .utf8) {
-            templateData["tickets"] = ticketsString
-        }
-        
-        // Add sponsor interests data as JSON string
-        let sponsorData = sponsorInterests.map { sponsor in
-            [
-                "companyName": sponsor.companyName,
-                "cost_formatted": Pricing.getFormattedPrice(for: .sponsor)
-            ]
-        }
-        if let sponsorJSON = try? JSONSerialization.data(withJSONObject: sponsorData),
-           let sponsorString = String(data: sponsorJSON, encoding: .utf8) {
-            templateData["sponsorInterests"] = sponsorString
-        }
-        
-        // Add gift basket interests data as JSON string
-        let basketData = giftBasketInterests.map { basket in
-            [
-                "description": basket.descriptionText
-            ]
-        }
-        if let basketJSON = try? JSONSerialization.data(withJSONObject: basketData),
-           let basketString = String(data: basketJSON, encoding: .utf8) {
-            templateData["giftBasketInterests"] = basketString
-        }
+        // Build template data using proper structs
+        let templateData = CheckoutTemplateData(
+            orderId: orderID,
+            firstName: user.firstName,
+            purchaseDatePretty: purchaseDatePretty,
+            year: "2025",
+            totalFormatted: formatCurrency(totalCents),
+            venmoUrl: venmoLink,
+            horses: horses.map { horse in
+                HorseTemplateData(
+                    horseName: horse.horseName,
+                    ownershipLabel: horse.ownershipLabel,
+                    costFormatted: Pricing.getFormattedPrice(for: .horse)
+                )
+            },
+            tickets: tickets.map { ticket in
+                TicketTemplateData(
+                    attendeeFirst: ticket.attendeeFirst,
+                    attendeeLast: ticket.attendeeLast,
+                    costFormatted: Pricing.getFormattedPrice(for: .ticket)
+                )
+            },
+            sponsorInterests: sponsorInterests.map { sponsor in
+                SponsorTemplateData(
+                    companyName: sponsor.companyName,
+                    costFormatted: Pricing.getFormattedPrice(for: .sponsor)
+                )
+            },
+            giftBasketInterests: giftBasketInterests.map { basket in
+                GiftBasketTemplateData(
+                    description: basket.descriptionText
+                )
+            }
+        )
         
         return templateData
     }
@@ -233,4 +355,40 @@ struct EmailService {
     private static func formatCurrency(_ cents: Int) -> String {
         return Pricing.formatCurrency(cents)
     }
+}
+
+// MARK: - Template Data Structures
+
+struct CheckoutTemplateData: Codable, Sendable {
+    let orderId: String
+    let firstName: String
+    let purchaseDatePretty: String
+    let year: String
+    let totalFormatted: String
+    let venmoUrl: String
+    let horses: [HorseTemplateData]
+    let tickets: [TicketTemplateData]
+    let sponsorInterests: [SponsorTemplateData]
+    let giftBasketInterests: [GiftBasketTemplateData]
+}
+
+struct HorseTemplateData: Codable, Sendable {
+    let horseName: String
+    let ownershipLabel: String
+    let costFormatted: String
+}
+
+struct TicketTemplateData: Codable, Sendable {
+    let attendeeFirst: String
+    let attendeeLast: String
+    let costFormatted: String
+}
+
+struct SponsorTemplateData: Codable, Sendable {
+    let companyName: String
+    let costFormatted: String
+}
+
+struct GiftBasketTemplateData: Codable, Sendable {
+    let description: String
 }

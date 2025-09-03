@@ -3,6 +3,8 @@ import { graphql, useLazyLoadQuery, commitMutation } from 'react-relay';
 import RoundBoard from './RoundBoard';
 import environment from '../../relay/environment';
 import { renameHorseMutation } from '../../graphql/mutations/renameHorse';
+import type { renameHorseMutation as RenameHorseMutation } from '../../__generated__/renameHorseMutation.graphql';
+import type { AccountBoardQuery } from '../../__generated__/AccountBoardQuery.graphql';
 
 const AccountBoardQuery = graphql`
   query AccountBoardQuery {
@@ -25,16 +27,16 @@ const AccountBoard: React.FC = () => {
     return () => clearInterval(id);
   }, []);
 
-  const data: any = useLazyLoadQuery(AccountBoardQuery, {}, { fetchKey: refreshKey, fetchPolicy: 'network-only' });
+  const data = useLazyLoadQuery<AccountBoardQuery>(AccountBoardQuery, {}, { fetchKey: refreshKey, fetchPolicy: 'network-only' });
   const me = data?.me;
 
-  const [editing, setEditing] = useState<any>(null);
+  const [editing, setEditing] = useState<{ id: string; horseName: string; ownershipLabel: string } | null>(null);
   const [horseName, setHorseName] = useState('');
   const [ownershipLabel, setOwnershipLabel] = useState('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const openEdit = (horse: any) => {
+  const openEdit = (horse: { id: string; horseName: string; ownershipLabel: string }) => {
     setEditing(horse);
     setHorseName(horse.horseName);
     setOwnershipLabel(horse.ownershipLabel);
@@ -55,15 +57,15 @@ const AccountBoard: React.FC = () => {
       return;
     }
     setSaving(true);
-    commitMutation(environment as any, {
-      mutation: renameHorseMutation as any,
-      variables: { horseId: editing.id, horseName: horseName.trim(), ownershipLabel: ownershipLabel.trim() } as any,
+    commitMutation<RenameHorseMutation>(environment, {
+      mutation: renameHorseMutation,
+      variables: { horseId: editing.id, horseName: horseName.trim(), ownershipLabel: ownershipLabel.trim() },
       onCompleted: () => {
         setSaving(false);
         closeEdit();
         setRefreshKey(k => k + 1);
       },
-      onError: (err: any) => {
+      onError: (err: Error) => {
         setSaving(false);
         setError(err?.message || 'Unable to rename horse.');
       }
@@ -72,7 +74,7 @@ const AccountBoard: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {data.rounds.map((round: any) => (
+      {data.rounds.map((round) => (
         <RoundBoard key={round.id} roundRef={round} meId={me?.id || null} onRenameHorse={openEdit} />
       ))}
 

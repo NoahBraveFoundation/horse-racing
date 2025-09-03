@@ -3,6 +3,8 @@ import Fluent
 import FluentPostgresDriver
 import GraphQLKit
 import GraphiQLVapor
+import VaporWalletPasses
+import WalletPasses
 
 @main
 struct HorseRacingBackend {
@@ -26,13 +28,16 @@ struct HorseRacingBackend {
         app.middleware.use(CORSMiddleware(configuration: corsConfiguration))
         
         // Sessions (cookie-based)
-        app.sessions.use(.memory)
+        app.sessions.use(.fluent)
         app.sessions.configuration.cookieName = "hrf_session"
         app.middleware.use(app.sessions.middleware)
         app.middleware.use(UserSessionLoaderMiddleware())
 
                 // Configure GraphQL
         try configureGraphQL(app)
+        
+        // Configure PassesServiceCustom
+        try configurePassesService(app)
         
         // Configure routes
         try configureRoutes(app)
@@ -47,6 +52,50 @@ struct HorseRacingBackend {
       app.logger.info("Shutting down application")
       try await app.asyncShutdown()
       app.logger.info("Application shut down")
+    }
+}
+
+// MARK: - PassBuilder Service Storage
+
+struct PassBuilderServiceKey: StorageKey {
+    typealias Value = PassBuilder
+}
+
+extension Application {
+    var passBuilderService: PassBuilder {
+        get {
+            self.storage[PassBuilderServiceKey.self] ?? {
+                guard
+                    let certBase64 = Environment.get("PASS_CERT_PEM"),
+                    let certPassword = Environment.get("PASS_CERT_PASSWORD"),
+                    let wwdrBase64 = Environment.get("PASS_WWDR_PEM"),
+                    let privateKeyBase64 = Environment.get("PASS_PRIVATE_KEY_PEM")
+                else {
+                    fatalError("Missing Wallet env vars (PASS_*). Configure certificates to enable pass generation.")
+                }
+                guard 
+                    let wwdrData = Data(base64Encoded: wwdrBase64),
+                    let certData = Data(base64Encoded: certBase64),
+                    let privateKeyData = Data(base64Encoded: privateKeyBase64),
+                    let wwdrContent = String(data: wwdrData, encoding: .utf8),
+                    let certContent = String(data: certData, encoding: .utf8),
+                    let privateKeyContent = String(data: privateKeyData, encoding: .utf8)
+                else {
+                    fatalError("Failed to decode base64 certificate data")
+                }
+                let newService = PassBuilder(
+                    pemWWDRCertificate: wwdrContent,
+                    pemCertificate: certContent,
+                    pemPrivateKey: privateKeyContent,
+                    pemPrivateKeyPassword: certPassword.isEmpty ? nil : certPassword
+                )
+                self.storage[PassBuilderServiceKey.self] = newService
+                return newService
+            }()
+        }
+        set {
+            self.storage[PassBuilderServiceKey.self] = newValue
+        }
     }
 }
 
@@ -92,6 +141,7 @@ func configureDatabase(_ app: Application) async throws {
     app.migrations.add(MigrateGiftBasketInterests())
     app.migrations.add(MigrateGiftBasketInterestsAddCart())
     app.migrations.add(MigratePayments())
+    app.migrations.add(SessionRecord.migration)
     
     // Run migrations
     try await app.autoMigrate()
@@ -103,6 +153,26 @@ func configureDatabase(_ app: Application) async throws {
 func configureGraphQL(_ app: Application) throws {
     app.register(graphQLSchema: horseRacingSchema, withResolver: HorseResolver())
     if !app.environment.isRelease { app.enableGraphiQL() }
+}
+
+func configurePassesService(_ app: Application) throws {
+    // Check if required environment variables are present
+    guard
+        Environment.get("PASS_CERT_PEM") != nil,
+        Environment.get("PASS_WWDR_PEM") != nil,
+        Environment.get("PASS_PRIVATE_KEY_PEM") != nil,
+        Environment.get("PASS_CERT_PASSWORD") != nil
+    else {
+        app.logger.warning("⚠️ Pass configuration incomplete. Some environment variables missing.")
+        app.logger.warning("Required: PASS_CERT_PEM, PASS_WWDR_PEM, PASS_PRIVATE_KEY_PEM, PASS_CERT_PASSWORD")
+        app.logger.warning("Note: Certificate values should be base64-encoded PEM content")
+        return
+    }
+    
+    // Initialize the pass builder service (it's already configured in the extension)
+    _ = app.passBuilderService
+    
+    app.logger.info("✅ PassBuilder service configured successfully")
 }
 
 func configureRoutes(_ app: Application) throws {

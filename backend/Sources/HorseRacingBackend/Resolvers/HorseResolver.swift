@@ -401,15 +401,21 @@ final class HorseResolver: @unchecked Sendable {
                         }
                     }
 
-                let closeCart = { () -> EventLoopFuture<Void> in
-                    cart.status = .checkedOut
-                    return cart.save(on: request.db)
-                }
-
                 return updateTickets.flatMap { _ in
                     updateHorses.flatMap { _ in
                         updatePayment.flatMap { payment in
-                            closeCart().map { payment }
+                            cart.status = .checkedOut
+                            return cart.save(on: request.db).flatMap { _ in
+                                // Send checkout confirmation email
+                                Task {
+                                    do {
+                                        try await EmailService.sendHorseRacingCheckout(for: cart, user: user, on: request)
+                                    } catch {
+                                        request.logger.error("Failed to send checkout email: \(error)")
+                                    }
+                                }
+                                return request.eventLoop.makeSucceededFuture(payment)
+                            }
                         }
                     }
                 }
@@ -502,13 +508,18 @@ final class HorseResolver: @unchecked Sendable {
                     self.setAuthenticatedUser(request, user: user)
                     
                     // Clean up the token
-                    return loginToken.delete(on: request.db).map { _ in
-                        ValidateTokenPayload(
-                            success: true,
-                            user: user,
-                            message: "Authentication successful"
-                        )
-                    }
+                    // return loginToken.delete(on: request.db).map { _ in
+                    //     ValidateTokenPayload(
+                    //         success: true,
+                    //         user: user,
+                    //         message: "Authentication successful"
+                    //     )
+                    // }
+                    return request.eventLoop.makeSucceededFuture(ValidateTokenPayload(
+                        success: true,
+                        user: user,
+                        message: "Authentication successful"
+                    ))
                 }
             }
     }
