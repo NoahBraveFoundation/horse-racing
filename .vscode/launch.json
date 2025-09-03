@@ -17,6 +17,6 @@
             "name": "Release HorseRacingBackend (backend)",
             "program": "${workspaceFolder:horse-racing-fundraiser}/backend/.build/release/HorseRacingBackend",
             "preLaunchTask": "swift: Build Release HorseRacingBackend (backend)"
-        }
+        },
     ]
 }

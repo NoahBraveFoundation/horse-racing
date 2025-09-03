@@ -5,6 +5,7 @@ enum HorseEntryState: String, Codable, CaseIterable {
 	case onHold = "on_hold"
 	case pendingPayment = "pending_payment"
 	case confirmed = "confirmed"
+	case abandoned = "abandoned"
 }
 
 final class Horse: Model, Content, @unchecked Sendable {

@@ -1,9 +1,10 @@
-// @ts-ignore - Bypassing strict typing for Relay setup
-import { Environment, Network, RecordSource, Store } from 'relay-runtime';
+import { Network, RecordSource, Store } from 'relay-runtime';
+import type { RequestParameters, Variables } from 'relay-runtime';
+import * as RelayRuntime from 'relay-runtime';
 
 const API_URL = import.meta.env.VITE_API_URL || '/graphql';
 
-function fetchQuery(operation: any, variables: any) {
+function fetchQuery(operation: RequestParameters, variables: Variables) {
   const url = import.meta.env.DEV ? '/graphql' : API_URL;
   
   return fetch(url, {
@@ -19,8 +20,7 @@ function fetchQuery(operation: any, variables: any) {
   }).then(response => response.json());
 }
 
-// @ts-ignore - Using constructor despite type issues
-const environment = new (Environment as any)({
+const environment = new (RelayRuntime as any).Environment({
   network: Network.create(fetchQuery),
   store: new (Store as any)(new (RecordSource as any)()),
 });

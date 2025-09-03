@@ -92,7 +92,7 @@ const SponsorStep: React.FC<Props> = ({ onBack, onContinue }) => {
     <div className="min-h-screen bg-noahbrave-50 font-body pb-32">
       <div className="checker-top h-3" style={{ backgroundColor: 'var(--brand)' }} />
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <StepHeader title="Sponsor" subtitle="Step 6 of 8 — Sponsor a horse" />
+        <StepHeader title="Sponsor" subtitle="Step 6 of 8 — Sponsor the event" />
 
         <div className="bg-white rounded-2xl shadow-xl border border-noahbrave-200 p-8">
           <label className="flex items-start gap-3">

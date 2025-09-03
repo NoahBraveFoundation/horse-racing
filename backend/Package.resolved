@@ -1,6 +1,24 @@
 {
-  "originHash" : "b8ac043d797d3a44ad8becd6ab9d0ef56744193508a4bcddfed96cbe083f0ca0",
+  "originHash" : "4f9bf43ad27c1d457d36b907ca1185a9e06d92595abfbd31e3976b480eb8349b",
   "pins" : [
+    {
+      "identity" : "apns",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/vapor/apns.git",
+      "state" : {
+        "revision" : "dedccc1243efbfcaf86dd1810a3759c4ab36cdb4",
+        "version" : "4.2.0"
+      }
+    },
+    {
+      "identity" : "apnswift",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/swift-server-community/APNSwift.git",
+      "state" : {
+        "revision" : "36fec7e6ca5e99c6049771601770a5488021e19a",
+        "version" : "5.1.0"
+      }
+    },
     {
       "identity" : "async-http-client",
       "kind" : "remoteSourceControl",
@@ -56,6 +74,15 @@
       }
     },
     {
+      "identity" : "fluent-wallet",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/fpseverino/fluent-wallet.git",
+      "state" : {
+        "revision" : "fbfe7eb39506d4ce77b4c0eeb802f213f359d347",
+        "version" : "0.1.0"
+      }
+    },
+    {
       "identity" : "graphiql-vapor",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/alexsteinerde/graphiql-vapor.git",
@@ -98,6 +125,15 @@
       "state" : {
         "revision" : "3498e60218e6003894ff95192d756e238c01f44e",
         "version" : "4.7.1"
+      }
+    },
+    {
+      "identity" : "plot",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/JohnSundell/Plot.git",
+      "state" : {
+        "revision" : "271926b4413fe868739d99f5eadcf2bd6cd62fb8",
+        "version" : "0.14.0"
       }
     },
     {
@@ -335,12 +371,39 @@
       }
     },
     {
+      "identity" : "swift-wallet",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/fpseverino/swift-wallet.git",
+      "state" : {
+        "revision" : "68d795ee394c035c5c4c50f9b8e8cf405b167988",
+        "version" : "0.4.1"
+      }
+    },
+    {
+      "identity" : "swift-zip-archive",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/adam-fowler/swift-zip-archive.git",
+      "state" : {
+        "revision" : "2cf559f47443d99924950c4114aba1af3e688c7d",
+        "version" : "0.6.3"
+      }
+    },
+    {
       "identity" : "vapor",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/vapor/vapor.git",
       "state" : {
         "revision" : "3636f443474769147828a5863e81a31f6f30e92c",
         "version" : "4.115.1"
+      }
+    },
+    {
+      "identity" : "wallet",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/vapor-community/wallet.git",
+      "state" : {
+        "revision" : "54229693002380d6db2146cc3c466547d0685580",
+        "version" : "0.7.1"
       }
     },
     {

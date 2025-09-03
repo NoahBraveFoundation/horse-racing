@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<9eea690221dc0ec60551ba4bbdc108b4>>
+ * @generated SignedSource<<b9600e7e2c19d77cc05123cac61d99ed>>
  * @lightSyntaxTransform
  * @nogrep
  */
@@ -213,12 +213,12 @@ return {
     ]
   },
   "params": {
-    "cacheID": "7bcf3bdb52219e17b0aad4a36bc6dd4f",
+    "cacheID": "477acb67cd07cc79fb66a078df847e22",
     "id": null,
     "metadata": {},
     "name": "DashboardBoardQuery",
     "operationKind": "query",
-    "text": "query DashboardBoardQuery {\n  rounds {\n    id\n    name\n    startAt\n    endAt\n    lanes {\n      id\n      number\n      horse {\n        id\n        horseName\n        ownershipLabel\n        state\n        owner {\n          id\n          firstName\n          lastName\n          email\n        }\n      }\n    }\n    ...RoundBoardFragment\n  }\n}\n\nfragment RoundBoardFragment on Round {\n  id\n  name\n  startAt\n  endAt\n  lanes {\n    id\n    number\n    horse {\n      id\n      horseName\n      ownershipLabel\n      owner {\n        id\n        firstName\n        lastName\n      }\n      state\n    }\n  }\n}\n"
+    "text": "query DashboardBoardQuery {\n  rounds {\n    id\n    name\n    startAt\n    endAt\n    lanes {\n      id\n      number\n      horse {\n        id\n        horseName\n        ownershipLabel\n        state\n        owner {\n          id\n          firstName\n          lastName\n          email\n        }\n      }\n    }\n    ...RoundBoardFragment\n  }\n}\n\nfragment RoundBoardFragment on Round {\n  id\n  name\n  startAt\n  endAt\n  lanes {\n    id\n    number\n    horse {\n      id\n      horseName\n      ownershipLabel\n      owner {\n        id\n        firstName\n        lastName\n        email\n      }\n      state\n    }\n  }\n}\n"
   }
 };
 })();
