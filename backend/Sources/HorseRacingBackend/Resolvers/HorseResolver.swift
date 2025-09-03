@@ -134,6 +134,11 @@ final class HorseResolver: @unchecked Sendable {
             }
     }
 
+    func allTickets(request: Request, _: NoArguments) throws -> EventLoopFuture<[Ticket]> {
+        guard let user = request.auth.get(User.self), user.isAdmin else { throw Abort(.forbidden) }
+        return Ticket.query(on: request.db).with(\.$owner).all()
+    }
+
     func abandonedCarts(request: Request, _: NoArguments) throws -> EventLoopFuture<[Cart]> {
         guard let user = request.auth.get(User.self), user.isAdmin else { throw Abort(.forbidden) }
         return Cart.query(on: request.db).filter(\.$status == .abandoned).with(\.$user).all()
@@ -348,6 +353,29 @@ final class HorseResolver: @unchecked Sendable {
                 horse.horseName = arguments.horseName
                 horse.ownershipLabel = arguments.ownershipLabel
                 return horse.save(on: request.db).map { horse }
+            }
+    }
+
+    func setTicketSeatingPreference(request: Request, arguments: SetTicketSeatingPreferenceArguments) throws -> EventLoopFuture<Ticket> {
+        guard let user = request.auth.get(User.self), let userId = user.id else { throw Abort(.unauthorized) }
+        return Ticket.find(arguments.ticketId, on: request.db)
+            .unwrap(or: Abort(.notFound))
+            .flatMap { ticket in
+                guard ticket.$owner.id == userId else {
+                    return request.eventLoop.makeFailedFuture(Abort(.forbidden, reason: "Cannot modify a ticket you do not own")) as EventLoopFuture<Ticket>
+                }
+                ticket.seatingPreference = arguments.seatingPreference
+                return ticket.save(on: request.db).map { ticket }
+            }
+    }
+
+    func setTicketSeatAssignment(request: Request, arguments: SetTicketSeatAssignmentArguments) throws -> EventLoopFuture<Ticket> {
+        guard let user = request.auth.get(User.self), user.isAdmin else { throw Abort(.unauthorized) }
+        return Ticket.find(arguments.ticketId, on: request.db)
+            .unwrap(or: Abort(.notFound))
+            .flatMap { ticket in
+                ticket.seatAssignment = arguments.seatAssignment
+                return ticket.save(on: request.db).map { ticket }
             }
     }
 
@@ -711,6 +739,8 @@ extension HorseResolver {
     struct RemoveSponsorFromCartArguments: Codable { let sponsorId: UUID }
     struct RemoveGiftBasketFromCartArguments: Codable { let giftId: UUID }
     struct RenameHorseArguments: Codable { let horseId: UUID; let horseName: String; let ownershipLabel: String }
+    struct SetTicketSeatingPreferenceArguments: Codable { let ticketId: UUID; let seatingPreference: String? }
+    struct SetTicketSeatAssignmentArguments: Codable { let ticketId: UUID; let seatAssignment: String? }
     
     // Authentication
     struct LoginArguments: Codable {

@@ -13,11 +13,17 @@ final class Ticket: Model, Content, @unchecked Sendable {
 	@Field(key: "attendee_first")
 	var attendeeFirst: String
 
-	@Field(key: "attendee_last")
-	var attendeeLast: String
+        @Field(key: "attendee_last")
+        var attendeeLast: String
 
-	@OptionalParent(key: "cart_id")
-	var cart: Cart?
+        @OptionalField(key: "seating_preference")
+        var seatingPreference: String?
+
+        @OptionalField(key: "seat_assignment")
+        var seatAssignment: String?
+
+        @OptionalParent(key: "cart_id")
+        var cart: Cart?
 
 	@Enum(key: "state")
 	var state: TicketState
@@ -30,14 +36,16 @@ final class Ticket: Model, Content, @unchecked Sendable {
 
 	init() {}
 
-	init(id: UUID? = nil, ownerID: UUID, attendeeFirst: String, attendeeLast: String, state: TicketState = .onHold, canRemove: Bool = false) {
-		self.id = id
-		self.$owner.id = ownerID
-		self.attendeeFirst = attendeeFirst
-		self.attendeeLast = attendeeLast
-		self.state = state
-		self.canRemove = canRemove
-	}
+        init(id: UUID? = nil, ownerID: UUID, attendeeFirst: String, attendeeLast: String, seatingPreference: String? = nil, seatAssignment: String? = nil, state: TicketState = .onHold, canRemove: Bool = false) {
+                self.id = id
+                self.$owner.id = ownerID
+                self.attendeeFirst = attendeeFirst
+                self.attendeeLast = attendeeLast
+                self.seatingPreference = seatingPreference
+                self.seatAssignment = seatAssignment
+                self.state = state
+                self.canRemove = canRemove
+        }
 }
 
 enum TicketState: String, Codable, CaseIterable {

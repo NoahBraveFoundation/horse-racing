@@ -135,6 +135,8 @@ func configureDatabase(_ app: Application) async throws {
     app.migrations.add(MigrateTicketsAddState())
     app.migrations.add(MigrateTicketsAddCart())
     app.migrations.add(MigrateTicketsAddCanRemove())
+    app.migrations.add(MigrateTicketsAddSeatingPreference())
+    app.migrations.add(MigrateTicketsAddSeatAssignment())
     app.migrations.add(MigrateSponsorInterests())
     app.migrations.add(MigrateSponsorInterestsAddCart())
     app.migrations.add(MigrateSponsorInterestsAddLogo())

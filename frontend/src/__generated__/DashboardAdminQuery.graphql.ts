@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<e7671f501df3a429daf1819c81914699>>
+ * @generated SignedSource<<f86884a3027d3b0ef25ea05e4572f187>>
  * @lightSyntaxTransform
  * @nogrep
  */
@@ -41,6 +41,17 @@ export type DashboardAdminQuery$data = {
       readonly name: string;
     };
     readonly state: HorseEntryState;
+  }>;
+  readonly allTickets: ReadonlyArray<{
+    readonly attendeeFirst: string;
+    readonly attendeeLast: string;
+    readonly id: any | null | undefined;
+    readonly owner: {
+      readonly firstName: string;
+      readonly lastName: string;
+    };
+    readonly seatAssignment: string | null | undefined;
+    readonly seatingPreference: string | null | undefined;
   }>;
   readonly giftBasketInterests: ReadonlyArray<{
     readonly description: string;
@@ -126,7 +137,17 @@ v5 = [
   (v1/*: any*/),
   (v2/*: any*/)
 ],
-v6 = [
+v6 = {
+  "alias": null,
+  "args": null,
+  "concreteType": "User",
+  "kind": "LinkedField",
+  "name": "owner",
+  "plural": false,
+  "selections": (v5/*: any*/),
+  "storageKey": null
+},
+v7 = [
   {
     "alias": null,
     "args": null,
@@ -260,16 +281,48 @@ v6 = [
         ],
         "storageKey": null
       },
+      (v6/*: any*/)
+    ],
+    "storageKey": null
+  },
+  {
+    "alias": null,
+    "args": null,
+    "concreteType": "Ticket",
+    "kind": "LinkedField",
+    "name": "allTickets",
+    "plural": true,
+    "selections": [
+      (v0/*: any*/),
       {
         "alias": null,
         "args": null,
-        "concreteType": "User",
-        "kind": "LinkedField",
-        "name": "owner",
-        "plural": false,
-        "selections": (v5/*: any*/),
+        "kind": "ScalarField",
+        "name": "attendeeFirst",
         "storageKey": null
-      }
+      },
+      {
+        "alias": null,
+        "args": null,
+        "kind": "ScalarField",
+        "name": "attendeeLast",
+        "storageKey": null
+      },
+      {
+        "alias": null,
+        "args": null,
+        "kind": "ScalarField",
+        "name": "seatingPreference",
+        "storageKey": null
+      },
+      {
+        "alias": null,
+        "args": null,
+        "kind": "ScalarField",
+        "name": "seatAssignment",
+        "storageKey": null
+      },
+      (v6/*: any*/)
     ],
     "storageKey": null
   },
@@ -355,7 +408,7 @@ return {
     "kind": "Fragment",
     "metadata": null,
     "name": "DashboardAdminQuery",
-    "selections": (v6/*: any*/),
+    "selections": (v7/*: any*/),
     "type": "Query",
     "abstractKey": null
   },
@@ -364,19 +417,19 @@ return {
     "argumentDefinitions": [],
     "kind": "Operation",
     "name": "DashboardAdminQuery",
-    "selections": (v6/*: any*/)
+    "selections": (v7/*: any*/)
   },
   "params": {
-    "cacheID": "67243fa4fa954b7fdc55c091e477e54f",
+    "cacheID": "304d1e6266453af8eb50196bba693df2",
     "id": null,
     "metadata": {},
     "name": "DashboardAdminQuery",
     "operationKind": "query",
-    "text": "query DashboardAdminQuery {\n  pendingPayments {\n    id\n    totalCents\n    user {\n      id\n      firstName\n      lastName\n      email\n    }\n  }\n  users {\n    id\n    email\n    firstName\n    lastName\n    isAdmin\n  }\n  adminStats {\n    ticketCount\n    sponsorCount\n    giftBasketCount\n  }\n  allHorses {\n    id\n    horseName\n    state\n    round {\n      name\n    }\n    lane {\n      number\n    }\n    owner {\n      firstName\n      lastName\n    }\n  }\n  abandonedCarts {\n    id\n    orderNumber\n    user {\n      id\n      firstName\n      lastName\n      email\n    }\n  }\n  sponsorInterests {\n    id\n    companyName\n    companyLogoBase64\n  }\n  giftBasketInterests {\n    id\n    description\n    user {\n      firstName\n      lastName\n    }\n  }\n}\n"
+    "text": "query DashboardAdminQuery {\n  pendingPayments {\n    id\n    totalCents\n    user {\n      id\n      firstName\n      lastName\n      email\n    }\n  }\n  users {\n    id\n    email\n    firstName\n    lastName\n    isAdmin\n  }\n  adminStats {\n    ticketCount\n    sponsorCount\n    giftBasketCount\n  }\n  allHorses {\n    id\n    horseName\n    state\n    round {\n      name\n    }\n    lane {\n      number\n    }\n    owner {\n      firstName\n      lastName\n    }\n  }\n  allTickets {\n    id\n    attendeeFirst\n    attendeeLast\n    seatingPreference\n    seatAssignment\n    owner {\n      firstName\n      lastName\n    }\n  }\n  abandonedCarts {\n    id\n    orderNumber\n    user {\n      id\n      firstName\n      lastName\n      email\n    }\n  }\n  sponsorInterests {\n    id\n    companyName\n    companyLogoBase64\n  }\n  giftBasketInterests {\n    id\n    description\n    user {\n      firstName\n      lastName\n    }\n  }\n}\n"
   }
 };
 })();
 
-(node as any).hash = "d75210bdea9a3aff3267bbd81b0ed3f9";
+(node as any).hash = "c3b55c998682fe8650bec8fde456c0c5";
 
 export default node;

@@ -42,4 +42,32 @@ struct MigrateTicketsAddCanRemove: Migration {
     }
 }
 
+struct MigrateTicketsAddSeatingPreference: Migration {
+    func prepare(on database: Database) -> EventLoopFuture<Void> {
+        database.schema("tickets")
+            .field("seating_preference", .string)
+            .update()
+    }
+
+    func revert(on database: Database) -> EventLoopFuture<Void> {
+        database.schema("tickets")
+            .deleteField("seating_preference")
+            .update()
+    }
+}
+
+struct MigrateTicketsAddSeatAssignment: Migration {
+    func prepare(on database: Database) -> EventLoopFuture<Void> {
+        database.schema("tickets")
+            .field("seat_assignment", .string)
+            .update()
+    }
+
+    func revert(on database: Database) -> EventLoopFuture<Void> {
+        database.schema("tickets")
+            .deleteField("seat_assignment")
+            .update()
+    }
+}
+
 
