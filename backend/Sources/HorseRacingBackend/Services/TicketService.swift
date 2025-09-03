@@ -127,8 +127,6 @@ struct TicketService {
 
 		// Get the ticket template SVG from resources
 		let ticketTemplatePath = Bundle.module.path(forResource: "ticket-template", ofType: "svg")
-		let ticketTemplateData = ticketTemplatePath.flatMap { try? Data(contentsOf: URL(fileURLWithPath: $0)) }
-		let ticketTemplateBase64 = ticketTemplateData?.base64EncodedString() ?? ""
 		let ticketTemplateSVG = ticketTemplatePath.flatMap { try? String(contentsOf: URL(fileURLWithPath: $0)) } ?? ""
 
 		var ticketNodes: [Node<HTML.BodyContext>] = []

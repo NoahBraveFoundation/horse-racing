@@ -91,8 +91,6 @@ type Mutation {
   addHorseToCart(roundId: UUID!, laneId: UUID!, horseName: String!, ownershipLabel: String!): Horse!
   addSponsorToCart(companyName: String!, companyLogoBase64: String): SponsorInterest!
   addTicketToCart(attendeeFirst: String!, attendeeLast: String!): Ticket!
-  setTicketSeatingPreference(ticketId: UUID!, seatingPreference: String): Ticket!
-  setTicketSeatAssignment(ticketId: UUID!, seatAssignment: String): Ticket!
   checkoutCart: Payment!
   createUser(email: String!, firstName: String!, lastName: String!): User!
   getOrCreateCart: Cart!
@@ -107,6 +105,8 @@ type Mutation {
   removeTicketFromCart(ticketId: UUID!): Boolean!
   renameHorse(horseId: UUID!, horseName: String!, ownershipLabel: String!): Horse!
   runAdminCleanup: Boolean!
+  setTicketSeatAssignment(ticketId: UUID!, seatAssignment: String): Ticket!
+  setTicketSeatingPreference(ticketId: UUID!, seatingPreference: String): Ticket!
   setUserAdmin(userId: UUID!, isAdmin: Boolean!): User!
   validateToken(token: String!): ValidateTokenPayload!
 }
@@ -155,12 +155,12 @@ type SponsorInterest {
 type Ticket {
   attendeeFirst: String!
   attendeeLast: String!
-  seatingPreference: String
-  seatAssignment: String
   canRemove: Boolean!
   costCents: Int!
   id: UUID
   owner: User!
+  seatAssignment: String
+  seatingPreference: String
   state: TicketState!
 }
 
