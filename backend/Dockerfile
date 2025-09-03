@@ -45,11 +45,15 @@ RUN [ -d /build/Resources ] && { mv /build/Resources ./Resources && chmod -R a-w
 FROM swift:6.1-slim AS runtime
 
 # Make sure all system packages are up to date, and install only essential packages.
-RUN export DEBIAN_FRONTEND=noninteractive \
- && apt-get -q update \
- && apt-get -q install -y --no-install-recommends ca-certificates tzdata curl \
-    fontconfig libjpeg-turbo-progs libxrender1 libfontconfig1 libx11-6 libxext6 libxrender1 \
-    google-chrome-stable zint \
+RUN apt-get update && apt-get install -y wget gnupg \
+ && wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | apt-key add - \
+ && echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" \
+      > /etc/apt/sources.list.d/google-chrome.list \
+ && apt-get update \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+      ca-certificates tzdata curl \
+      fontconfig libjpeg-turbo-progs libxrender1 libfontconfig1 libx11-6 libxext6 \
+      google-chrome-stable zint \
  && rm -rf /var/lib/apt/lists/*
 
 # Test that Chromium and Zint are working
