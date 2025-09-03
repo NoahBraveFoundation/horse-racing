@@ -65,6 +65,8 @@ let horseRacingSchema = try! Graphiti.Schema<HorseResolver, Request> {
         Field("id", at: \.id)
         Field("attendeeFirst", at: \.attendeeFirst)
         Field("attendeeLast", at: \.attendeeLast)
+        Field("seatingPreference", at: \.seatingPreference)
+        Field("seatAssignment", at: \.seatAssignment)
         Field("owner", with: \.$owner)
         Field("state", at: \.state)
         Field("canRemove", at: \.canRemove)
@@ -180,6 +182,7 @@ let horseRacingSchema = try! Graphiti.Schema<HorseResolver, Request> {
         Field("users", at: HorseResolver.allUsers)
         Field("pendingPayments", at: HorseResolver.pendingPayments)
         Field("allHorses", at: HorseResolver.allHorses)
+        Field("allTickets", at: HorseResolver.allTickets)
         Field("abandonedCarts", at: HorseResolver.abandonedCarts)
         Field("adminStats", at: HorseResolver.adminStats)
         Field("sponsorInterests", at: HorseResolver.allSponsorInterests)
@@ -232,6 +235,16 @@ let horseRacingSchema = try! Graphiti.Schema<HorseResolver, Request> {
             Argument("horseId", at: \.horseId)
             Argument("horseName", at: \.horseName)
             Argument("ownershipLabel", at: \.ownershipLabel)
+        }
+
+        Field("setTicketSeatingPreference", at: HorseResolver.setTicketSeatingPreference) {
+            Argument("ticketId", at: \.ticketId)
+            Argument("seatingPreference", at: \.seatingPreference)
+        }
+
+        Field("setTicketSeatAssignment", at: HorseResolver.setTicketSeatAssignment) {
+            Argument("ticketId", at: \.ticketId)
+            Argument("seatAssignment", at: \.seatAssignment)
         }
 
         Field("checkoutCart", at: HorseResolver.checkoutCart)

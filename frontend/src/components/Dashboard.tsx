@@ -12,6 +12,7 @@ import type { DashboardMarkPaidMutation } from '../__generated__/DashboardMarkPa
 import type { DashboardSetAdminMutation } from '../__generated__/DashboardSetAdminMutation.graphql';
 import type { DashboardReleaseHorseMutation } from '../__generated__/DashboardReleaseHorseMutation.graphql';
 import type { DashboardReleaseCartMutation } from '../__generated__/DashboardReleaseCartMutation.graphql';
+import type { DashboardSetSeatAssignmentMutation } from '../__generated__/DashboardSetSeatAssignmentMutation.graphql';
 
 const adminQuery = graphql`
   query DashboardAdminQuery {
@@ -19,6 +20,7 @@ const adminQuery = graphql`
     users { id email firstName lastName isAdmin }
     adminStats { ticketCount sponsorCount giftBasketCount }
     allHorses { id horseName state round { name } lane { number } owner { firstName lastName } }
+    allTickets { id attendeeFirst attendeeLast seatingPreference seatAssignment owner { firstName lastName } }
     abandonedCarts { id orderNumber user { id firstName lastName email } }
     sponsorInterests { id companyName companyLogoBase64 }
     giftBasketInterests { id description user { firstName lastName } }
@@ -46,6 +48,12 @@ const releaseHorseMutation = graphql`
 const releaseCartMutation = graphql`
   mutation DashboardReleaseCartMutation($cartId: UUID!) {
     releaseCart(cartId: $cartId) { id status }
+  }
+`;
+
+const setSeatAssignmentMutation = graphql`
+  mutation DashboardSetSeatAssignmentMutation($ticketId: UUID!, $seatAssignment: String) {
+    setTicketSeatAssignment(ticketId: $ticketId, seatAssignment: $seatAssignment) { id seatAssignment }
   }
 `;
 
@@ -91,6 +99,7 @@ export const Dashboard: React.FC = () => {
   const [commitReleaseHorse] = useMutation<DashboardReleaseHorseMutation>(releaseHorseMutation);
   const [commitReleaseCart] = useMutation<DashboardReleaseCartMutation>(releaseCartMutation);
   const [commitRunCleanup] = useMutation(runCleanupMutation);
+  const [commitSetSeatAssignment] = useMutation<DashboardSetSeatAssignmentMutation>(setSeatAssignmentMutation);
 
   const refresh = () => setRefreshKey(k => k + 1);
 
@@ -114,6 +123,10 @@ export const Dashboard: React.FC = () => {
 
   const onReleaseCart = (id: string) => {
     commitReleaseCart({ variables: { cartId: id }, onCompleted: refresh });
+  };
+
+  const onSetSeatAssignment = (id: string, seat: string) => {
+    commitSetSeatAssignment({ variables: { ticketId: id, seatAssignment: seat || null }, onCompleted: refresh });
   };
 
   const onRunCleanup = () => {
@@ -192,6 +205,36 @@ export const Dashboard: React.FC = () => {
               ))}
               {data.pendingPayments.length === 0 && (
                 <tr><td colSpan={3} className="py-2 text-center text-gray-500">No pending payments</td></tr>
+              )}
+            </tbody>
+          </table>
+        </section>
+
+        {/* Tickets */}
+        <section className="bg-white rounded-xl p-6 shadow">
+          <h2 className="text-xl font-semibold mb-4">Tickets</h2>
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="text-left border-b"><th className="py-2">Attendee</th><th>Owner</th><th>Seating Preference</th><th>Seat Assignment</th></tr>
+            </thead>
+            <tbody>
+              {data.allTickets.map(t => (
+                <tr key={t.id} className="border-b">
+                  <td className="py-2">{t.attendeeFirst} {t.attendeeLast}</td>
+                  <td>{t.owner.firstName} {t.owner.lastName}</td>
+                  <td>{t.seatingPreference || '-'}</td>
+                  <td>
+                    <input
+                      type="text"
+                      defaultValue={t.seatAssignment ?? ''}
+                      onBlur={e => onSetSeatAssignment(t.id, e.target.value)}
+                      className="border rounded px-1 py-0.5"
+                    />
+                  </td>
+                </tr>
+              ))}
+              {data.allTickets.length === 0 && (
+                <tr><td colSpan={4} className="py-2 text-center text-gray-500">No tickets</td></tr>
               )}
             </tbody>
           </table>

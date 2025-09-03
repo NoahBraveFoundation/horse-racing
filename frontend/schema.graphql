@@ -105,6 +105,8 @@ type Mutation {
   removeTicketFromCart(ticketId: UUID!): Boolean!
   renameHorse(horseId: UUID!, horseName: String!, ownershipLabel: String!): Horse!
   runAdminCleanup: Boolean!
+  setTicketSeatAssignment(ticketId: UUID!, seatAssignment: String): Ticket!
+  setTicketSeatingPreference(ticketId: UUID!, seatingPreference: String): Ticket!
   setUserAdmin(userId: UUID!, isAdmin: Boolean!): User!
   validateToken(token: String!): ValidateTokenPayload!
 }
@@ -121,6 +123,7 @@ type Query {
   abandonedCarts: [Cart!]!
   adminStats: AdminStats!
   allHorses: [Horse!]!
+  allTickets: [Ticket!]!
   giftBasketInterests: [GiftBasketInterest!]!
   lanes(roundId: UUID!): [Lane!]!
   me: User!
@@ -156,6 +159,8 @@ type Ticket {
   costCents: Int!
   id: UUID
   owner: User!
+  seatAssignment: String
+  seatingPreference: String
   state: TicketState!
 }
 
