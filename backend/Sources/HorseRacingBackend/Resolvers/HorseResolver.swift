@@ -171,6 +171,29 @@ final class HorseResolver: @unchecked Sendable {
         }
     }
 
+        func resetDatabase(request: Request, _: NoArguments) throws -> EventLoopFuture<Bool> {
+        guard let user = request.auth.get(User.self), user.isAdmin else { throw Abort(.forbidden) }
+ 
+        guard user.email == "austinjevans@me.com" else { throw Abort(.forbidden) }
+        
+        request.logger.warning("🚨 DATABASE RESET INITIATED by admin user: \(user.email)")
+        
+        // Delete all data in reverse dependency order to avoid foreign key constraints
+        // Preserve the admin user (austinjevans@me.com) during reset
+        return Payment.query(on: request.db).delete()
+            .flatMap { _ in GiftBasketInterest.query(on: request.db).delete() }
+            .flatMap { _ in SponsorInterest.query(on: request.db).delete() }
+            .flatMap { _ in Ticket.query(on: request.db).delete() }
+            .flatMap { _ in Horse.query(on: request.db).delete() }
+            .flatMap { _ in Cart.query(on: request.db).delete() }
+            .flatMap { _ in LoginToken.query(on: request.db).delete() }
+            .flatMap { _ in User.query(on: request.db).filter(\.$email != "austinjevans@me.com").delete() }
+            .map { _ in
+                request.logger.warning("🚨 DATABASE RESET COMPLETED by admin user: \(user.email) - Preserved admin user")
+                return true
+            }
+    }
+
     func adminStats(request: Request, _: NoArguments) throws -> EventLoopFuture<AdminStats> {
         guard let user = request.auth.get(User.self), user.isAdmin else { throw Abort(.forbidden) }
         let ticketCount = Ticket.query(on: request.db).count()
