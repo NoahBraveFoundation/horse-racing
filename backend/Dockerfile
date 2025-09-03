@@ -49,12 +49,13 @@ RUN export DEBIAN_FRONTEND=noninteractive \
  && apt-get -q update \
  && apt-get -q install -y --no-install-recommends ca-certificates tzdata curl \
     fontconfig libjpeg-turbo-progs libxrender1 libfontconfig1 libx11-6 libxext6 libxrender1 \
-    chromium-browser zint-qt \
+    chromium-browser zint \
  && rm -rf /var/lib/apt/lists/*
 
 # Test that Chromium and Zint are working
 RUN chromium-browser --version || echo "Warning: Chromium not working properly"
 RUN zint --version || echo "Warning: Zint not working properly"
+RUN which zint && zint --version
 
 # Create a vapor user and group with /app as its home directory
 RUN useradd --user-group --create-home --system --skel /dev/null --home-dir /app vapor
