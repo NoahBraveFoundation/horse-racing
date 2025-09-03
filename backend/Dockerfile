@@ -49,11 +49,11 @@ RUN export DEBIAN_FRONTEND=noninteractive \
  && apt-get -q update \
  && apt-get -q install -y --no-install-recommends ca-certificates tzdata curl \
     fontconfig libjpeg-turbo-progs libxrender1 libfontconfig1 libx11-6 libxext6 libxrender1 \
-    chromium-browser zint \
+    chromium zint \
  && rm -rf /var/lib/apt/lists/*
 
 # Test that Chromium and Zint are working
-RUN chromium-browser --version || echo "Warning: Chromium not working properly"
+RUN chromium --version || echo "Warning: Chromium not working properly"
 RUN zint --version || echo "Warning: Zint not working properly"
 RUN which zint && zint --version
 
@@ -69,7 +69,7 @@ COPY --from=build --chown=vapor:vapor /staging /app
 # Provide configuration needed by the built-in crash reporter and some sensible default behaviors.
 ENV SWIFT_BACKTRACE=enable=yes,sanitize=yes,threads=all,images=all,interactive=no,swift-backtrace=./swift-backtrace-static
 
-ENV CHROME_PATH=/usr/bin/chromium-browser
+ENV CHROME_PATH=/usr/bin/chromium
 ENV ZINT_PATH=/usr/bin/zint
 
 # Ensure all further commands run as the vapor user
