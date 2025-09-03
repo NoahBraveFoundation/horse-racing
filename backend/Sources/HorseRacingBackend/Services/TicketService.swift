@@ -2,7 +2,6 @@ import Foundation
 import Vapor
 import Plot
 import VaporWalletPasses
-import wkhtmltopdf
 import WalletPasses
 
 /// Service responsible for generating printable tickets (HTML/PDF)
@@ -48,101 +47,133 @@ struct TicketService {
 		return data
 	}()
 
+	// MARK: - Barcode Generation
+	
+	/// Generate a PDF417 barcode for a ticket using Zint CLI
+	/// - Parameters:
+	///   - ticket: The ticket to generate a barcode for
+	///   - req: The request context
+	/// - Returns: SVG data for the barcode
+	static func generateBarcode(for ticket: Ticket, on req: Request) async throws -> Data {
+		guard let ticketId = ticket.id else {
+			throw Abort(.internalServerError, reason: "Ticket ID is required for barcode generation")
+		}
+		
+		let ticketUuid = ticketId.uuidString
+		let tempDir = FileManager.default.temporaryDirectory
+		let barcodePath = tempDir.appendingPathComponent("barcode-\(ticketUuid).svg")
+		
+		// Use zint CLI to generate PDF417 barcode
+		let process = Process()
+		let zintPath = Environment.get("ZINT_PATH") ?? "/opt/homebrew/bin/zint"
+		process.executableURL = URL(fileURLWithPath: zintPath)
+		process.arguments = [
+			"--barcode=PDF417",
+			"-d", "NBT:\(ticketUuid)",
+			"--notext",
+			"--nobackground",
+			"-o", barcodePath.path
+		]
+		
+		try process.run()
+		process.waitUntilExit()
+		
+		guard process.terminationStatus == 0 else {
+			req.logger.error("Zint barcode generation failed with status: \(process.terminationStatus)")
+			throw Abort(.internalServerError, reason: "Failed to generate barcode")
+		}
+		
+		// Read the generated SVG file
+		let barcodeData = try Data(contentsOf: barcodePath)
+		
+		// Clean up temporary file
+		try? FileManager.default.removeItem(at: barcodePath)
+		
+		return barcodeData
+	}
+
 	// MARK: - Public API
 
 	/// Render an HTML page containing all tickets in the provided cart.
-	/// Uses Plot Swift DSLs to build the document.
+	/// Uses Plot Swift DSLs to build the document with new ticket template design.
 	/// - Returns: Complete HTML string ready for printing or PDF conversion.
 	static func renderTicketsHTML(for cart: Cart, user: User, on req: Request) async throws -> String {
 		let tickets = try await cart.$tickets.get(on: req.db)
+		return try await renderTicketsHTML(for: tickets, user: user, on: req)
+	}
 
+	/// Render an HTML page containing the provided tickets.
+	/// Uses Plot Swift DSLs to build the document with new ticket template design.
+	/// - Returns: Complete HTML string ready for printing or PDF conversion.
+	static func renderTicketsHTML(for tickets: [Ticket], user: User, on req: Request) async throws -> String {
 		let eventTitle = "A Night at the Races"
-		let eventUrl = "https://horses.noahbrave.org"
-		let eventMeta = "Sat Nov 22, 2025 • 6:00 PM • Tina's Country House & Garden"
-		let ticketPriceFormatted = Pricing.getFormattedPrice(for: .ticket)
 
-		// Lightweight inline styles adapted from the provided template
+		// New styles for the ticket template design
 		let styles = """
-		:root { --brand: #0891b2; --brand-ink: #075985; --ink: #111827; --muted: #6b7280; --border: #d1d5db; --bg: #ffffff; }
+		:root { --brand: #124322; --brand-ink: #075985; --ink: #111827; --muted: #6b7280; --border: #d1d5db; --bg: #ffffff; }
 		* { box-sizing: border-box; }
 		html, body { margin: 0; padding: 0; }
 		body { font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif; color: var(--ink); background: var(--bg); }
-		.container { max-width: 900px; margin: 24px auto; padding: 0 16px; }
-		.header { display: flex; align-items: baseline; justify-content: space-between; margin: 8px 0 16px; border-bottom: 3px solid var(--brand); padding-bottom: 8px; }
-		.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }
-		.ticket { border: 2px solid var(--brand); border-radius: 14px; overflow: hidden; page-break-inside: avoid; background: #fff; box-shadow: 0 2px 6px rgba(0,0,0,.06); }
-		.ticket__header { display: grid; grid-template-columns: 72px 1fr auto; align-items: center; gap: 12px; background: color-mix(in oklab, var(--brand) 10%, white); padding: 12px; border-bottom: 2px dashed var(--brand); }
-		.ticket__logo { width: 72px; height: 72px; object-fit: contain; }
-		.ticket__event h2 { margin: 0; font-size: 16px; line-height: 1.2; }
-		.ticket__url { margin: 2px 0 0; color: var(--brand-ink); font-weight: 600; font-size: 12px; }
-		.ticket__meta { margin: 2px 0 0; color: var(--muted); font-size: 12px; }
-		.ticket__price { font-size: 18px; font-weight: 800; color: var(--brand-ink); background: #fff; border: 2px solid var(--brand); padding: 6px 10px; border-radius: 10px; }
-		.ticket__body { padding: 12px; display: grid; gap: 4px; }
-		.label { color: var(--muted); font-weight: 600; margin-right: 6px; }
-		.ticket__barcode { margin: 0 12px 12px; border: 2px dashed var(--border); background: repeating-linear-gradient(90deg, #000 0 3px, #fff 3px 6px); height: 52px; position: relative; border-radius: 8px; overflow: hidden; }
-		.ticket__barcode span { position: absolute; inset: auto 8px 6px auto; background: #fff; color: #000; padding: 2px 6px; border-radius: 6px; font-size: 10px; border: 1px solid var(--border); }
-		.ticket__fineprint { font-size: 11px; color: var(--muted); border-top: 1px solid var(--border); padding: 10px 12px; }
+		.container { max-width: 1200px; margin: 24px auto; padding: 0 16px; }
+		.tickets { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; }
+		.ticket { position: relative; display: inline-block; width: 600px; }
+		.ticket-bg { width: 100%; height: auto; display: block; }
+		.overlay { position: absolute; font-family: "Georgia", serif; color: var(--brand); }
+		.name { top: 150px; left: 194px; font-size: 12px; font-weight: bold; width: 116px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+		.code { top: 170px; left: 220px; font-size: 12px; }
+		.barcode { top: 95px; right: 50px; width: 160px; }
+		.barcode img { width: 100%; height: auto; transform: rotate(90deg); }
 		"""
 
-		let logoURL = "https://horses.noahbrave.org/ticket-horse.png"
+		// Get the ticket template SVG from resources
+		let ticketTemplatePath = Bundle.module.path(forResource: "ticket-template", ofType: "svg")
+		let ticketTemplateData = ticketTemplatePath.flatMap { try? Data(contentsOf: URL(fileURLWithPath: $0)) }
+		let ticketTemplateBase64 = ticketTemplateData?.base64EncodedString() ?? ""
+		let ticketTemplateSVG = ticketTemplatePath.flatMap { try? String(contentsOf: URL(fileURLWithPath: $0)) } ?? ""
 
-		let ticketNodes: [Node<HTML.BodyContext>] = tickets.map { ticket in
-			.article(
+		var ticketNodes: [Node<HTML.BodyContext>] = []
+		for ticket in tickets {
+			// Generate barcode for this ticket
+			let barcodeData = try await generateBarcode(for: ticket, on: req)
+			let barcodeBase64 = barcodeData.base64EncodedString()
+			
+			let ticketNode: Node<HTML.BodyContext> = .div(
 				.class("ticket"),
 				.attribute(named: "aria-label", value: "Ticket for \(ticket.attendeeFirst) \(ticket.attendeeLast)"),
+				// .img(.class("ticket-bg"), .src("data:image/svg+xml;base64,\(ticketTemplateBase64)"), .alt("Ticket Background")),
+				.raw("""
+					<div class="ticket-bg">
+						\(ticketTemplateSVG)
+					</div>
+					"""),
 				.div(
-					.class("ticket__header"),
-					.img(.class("ticket__logo"), .src(logoURL), .alt("Logo")),
-					.div(
-						.class("ticket__event"),
-						.h2(.text(eventTitle)),
-						.p(.class("ticket__url"), .text(URL(string: eventUrl)?.host ?? eventUrl)),
-						.p(.class("ticket__meta"), .text(eventMeta))
-					),
-					.div(.class("ticket__price"), .text(ticketPriceFormatted))
+					.class("overlay name"),
+					.text("\(ticket.attendeeFirst) \(ticket.attendeeLast)")
 				),
 				.div(
-					.class("ticket__body"),
-					.p(
-						.class("ticket__name"),
-						.span(.class("label"), "Admit:"),
-						" \(ticket.attendeeFirst) \(ticket.attendeeLast)"
-					),
-					.p(
-						.class("ticket__code"),
-						.span(.class("label"), "Ticket ID:"),
-						" \(ticket.id?.uuidString.prefix(12) ?? "TBD")"
-					)
+					.class("overlay code"),
+					.text("NBT-\(ticket.id?.uuidString.prefix(5).uppercased() ?? "XXXXX")")
 				),
 				.div(
-					.class("ticket__barcode"),
-					.attribute(named: "aria-label", value: "Barcode placeholder"),
-					.attribute(named: "data-barcode", value: "TBD"),
-					.span("Barcode will be generated")
-				),
-				.footer(
-					.class("ticket__fineprint"),
-					"Please present this ticket at the entrance. Non-transferable. No refunds."
+					.class("overlay barcode"),
+					.img(.src("data:image/svg+xml;base64,\(barcodeBase64)"), .alt("Barcode"))
 				)
 			)
+			ticketNodes.append(ticketNode)
 		}
 
 		let document = HTML(
 			.head(
 				.title("\(eventTitle) — Tickets"),
 				.raw("<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">"),
+				.raw("<script src=\"https://unpkg.com/pagedjs/dist/paged.polyfill.js\"></script>"),
 				.raw("<style>\n\(styles)\n</style>")
 			),
 			.body(
 				.div(
 					.class("container"),
 					.div(
-						.class("header"),
-						.h1("\(eventTitle) — Tickets"),
-						.a(.href(eventUrl), "horses.noahbrave.org")
-					),
-					.section(
-						.class("grid"),
+						.class("tickets"),
 						.group(ticketNodes)
 					)
 				)
@@ -153,13 +184,68 @@ struct TicketService {
 		return html
 	}
 
-	/// Convert an HTML string to PDF data using the WKHTMLToPDF SPM package.
+	/// Convert an HTML string to PDF data using Chromium headless browser.
 	static func convertHTMLToPDF(_ html: String, on req: Request) throws -> EventLoopFuture<Data> {
-		// Use environment variable for wkhtmltopdf path, defaulting to our wrapper script
-		let wkhtmltopdfPath = Environment.get("WKHTMLTOPDF_PATH") ?? "/usr/local/bin/wkhtmltopdf"
-		let document = wkhtmltopdf.Document(margins: 10, path: wkhtmltopdfPath)
-		document.pages = [wkhtmltopdf.Page(html)]
-		return try document.generatePDF(on: req.application.threadPool, eventLoop: req.eventLoop)
+		let promise = req.eventLoop.makePromise(of: Data.self)
+		
+		// Run the PDF conversion in a background task
+		req.application.threadPool.submit { state in
+			do {
+				let pdfData = try convertHTMLToPDFSync(html, on: req)
+				promise.succeed(pdfData)
+			} catch {
+				promise.fail(error)
+			}
+		}
+		
+		return promise.futureResult
+	}
+	
+	/// Synchronous PDF conversion using Chromium
+	private static func convertHTMLToPDFSync(_ html: String, on req: Request) throws -> Data {
+		let chromePath = Environment.get("CHROME_PATH") ?? "/usr/bin/chromium-browser"
+		let tempDir = FileManager.default.temporaryDirectory
+		let htmlPath = tempDir.appendingPathComponent("tickets-\(UUID().uuidString).html")
+		let pdfPath = tempDir.appendingPathComponent("tickets-\(UUID().uuidString).pdf")
+		
+		defer {
+			// Clean up temporary files
+			try? FileManager.default.removeItem(at: htmlPath)
+			try? FileManager.default.removeItem(at: pdfPath)
+		}
+		
+		// Write HTML to temporary file
+		try html.write(to: htmlPath, atomically: true, encoding: .utf8)
+		
+		// Use Chromium to convert HTML to PDF
+		let process = Process()
+		process.executableURL = URL(fileURLWithPath: chromePath)
+		process.arguments = [
+			"--headless",
+			"--disable-gpu",
+			"--no-sandbox",
+			"--disable-dev-shm-usage",
+			"--disable-extensions",
+			"--disable-plugins",
+			"--disable-images",
+			"--print-to-pdf=\(pdfPath.path)",
+			"--print-to-pdf-no-header",
+			"--run-all-compositor-stages-before-draw",
+			"--virtual-time-budget=5000",
+			htmlPath.path
+		]
+		
+		try process.run()
+		process.waitUntilExit()
+		
+		guard process.terminationStatus == 0 else {
+			req.logger.error("Chromium PDF generation failed with status: \(process.terminationStatus)")
+			throw Abort(.internalServerError, reason: "Failed to generate PDF")
+		}
+		
+		// Read the generated PDF file
+		let pdfData = try Data(contentsOf: pdfPath)
+		return pdfData
 	}
 
 	/// Convenience: Render tickets from a cart to HTML and return PDF data.
@@ -209,7 +295,7 @@ struct TicketService {
 			barcodes: [
 				EventTicketBarcode(
 					format: style.barcodeFormat,
-					message: "\(ticket.id?.uuidString ?? "TICKET")",
+					message: "NBT:\(ticket.id?.uuidString ?? "TICKET")",
 					messageEncoding: "iso-8859-1"
 				)
 			],
@@ -335,5 +421,3 @@ struct PassStyle: Sendable {
 		}
 	)
 }
-
-

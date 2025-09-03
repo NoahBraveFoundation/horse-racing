@@ -175,9 +175,112 @@ func configurePassesService(_ app: Application) throws {
     app.logger.info("✅ PassBuilder service configured successfully")
 }
 
+// MARK: - Mock Data Helper
+
+struct MockTicketData {
+    let user: User
+    let cart: Cart
+    let tickets: [Ticket]
+}
+
+func createMockTicketData() async throws -> MockTicketData {
+    // Create mock user
+    let mockUser = User(
+        id: UUID(),
+        email: "austinjevans@me.com",
+        firstName: "Austin",
+        lastName: "Evans",
+        isAdmin: true
+    )
+    
+    // Create mock cart
+    let mockCart = Cart(
+        id: UUID(),
+        userID: mockUser.id!,
+        status: .checkedOut
+    )
+    
+    // Create 3 mock tickets
+    let mockTickets = [
+        Ticket(
+            id: UUID(),
+            ownerID: mockUser.id!,
+            attendeeFirst: "Austin",
+            attendeeLast: "Evans",
+            state: .confirmed,
+            canRemove: false
+        ),
+        Ticket(
+            id: UUID(),
+            ownerID: mockUser.id!,
+            attendeeFirst: "Sarah",
+            attendeeLast: "Johnson",
+            state: .confirmed,
+            canRemove: false
+        ),
+        Ticket(
+            id: UUID(),
+            ownerID: mockUser.id!,
+            attendeeFirst: "Michael",
+            attendeeLast: "Davis",
+            state: .confirmed,
+            canRemove: false
+        )
+    ]
+    
+    // Set up the mock cart with tickets
+    for ticket in mockTickets {
+        ticket.$cart.id = mockCart.id
+    }
+    
+    return MockTicketData(user: mockUser, cart: mockCart, tickets: mockTickets)
+}
+
 func configureRoutes(_ app: Application) throws {
     app.get("health") { req async throws -> String in
         "Horse Racing Backend is running! 🐎"
+    }
+    
+    // Test endpoint for HTML ticket preview
+    app.get("test", "tickets", "html") { req async throws -> Response in
+        req.logger.info("🎫 Generating test HTML with mock tickets")
+        
+        let mockData = try await createMockTicketData()
+        
+        req.logger.info("🎫 Generated mock data: \(mockData.tickets.count) tickets for \(mockData.user.email)")
+        
+        // Generate HTML
+        let html = try await TicketService.renderTicketsHTML(for: mockData.tickets, user: mockData.user, on: req)
+        
+        req.logger.info("✅ HTML generated successfully: \(html.count) characters")
+        
+        // Return HTML response
+        var headers = HTTPHeaders()
+        headers.add(name: .contentType, value: "text/html; charset=utf-8")
+        
+        return Response(status: .ok, headers: headers, body: .init(string: html))
+    }
+    
+    // Test endpoint for PDF generation with mock tickets
+    app.get("test", "tickets", "pdf") { req async throws -> Response in
+        req.logger.info("🎫 Generating test PDF with mock tickets")
+        
+        let mockData = try await createMockTicketData()
+        
+        req.logger.info("🎫 Generated mock data: \(mockData.tickets.count) tickets for \(mockData.user.email)")
+        
+        // Generate PDF using the mock tickets directly
+        let html = try await TicketService.renderTicketsHTML(for: mockData.tickets, user: mockData.user, on: req)
+        let pdfData = try await TicketService.convertHTMLToPDF(html, on: req).get()
+        
+        req.logger.info("✅ PDF generated successfully: \(pdfData.count) bytes")
+        
+        // Return PDF response
+        var headers = HTTPHeaders()
+        headers.add(name: .contentType, value: "application/pdf")
+        headers.add(name: .contentDisposition, value: "attachment; filename=\"test-tickets.pdf\"")
+        
+        return Response(status: .ok, headers: headers, body: .init(data: pdfData))
     }
 }
 

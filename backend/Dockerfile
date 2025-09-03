@@ -26,13 +26,18 @@ RUN --mount=type=cache,id=spm-build-cache,target=/build/.build \
     --mount=type=cache,id=spm-cache,target=/root/.swiftpm \
     swift build -c release --product HorseRacingBackend \
   && mkdir -p /staging \
-  && cp "$(swift build --package-path /build -c release --show-bin-path)/HorseRacingBackend" /staging/
+  && cp "$(swift build --package-path /build -c release --show-bin-path)/HorseRacingBackend" /staging/ \
+  && find -L "$(swift build --package-path /build -c release --show-bin-path)/" -regex '.*\.resources$' -exec cp -Ra {} /staging/ \;
 
 # Switch to the staging area
 WORKDIR /staging
 
 # Copy static swift backtracer binary to staging area
 RUN cp "/usr/libexec/swift/linux/swift-backtrace-static" ./
+
+# Copy any resources from the resources directory if the directory exists
+# Ensure that by default, neither the directory nor any of its contents are writable.
+RUN [ -d /build/Resources ] && { mv /build/Resources ./Resources && chmod -R a-w ./Resources; } || true
 
 # ================================
 # Run image
@@ -44,21 +49,12 @@ RUN export DEBIAN_FRONTEND=noninteractive \
  && apt-get -q update \
  && apt-get -q install -y --no-install-recommends ca-certificates tzdata curl \
     fontconfig libjpeg-turbo-progs libxrender1 libfontconfig1 libx11-6 libxext6 libxrender1 \
-    wkhtmltopdf xvfb \
+    chromium-browser zint-qt \
  && rm -rf /var/lib/apt/lists/*
 
-# Create a wrapper script for wkhtmltopdf to run with xvfb (virtual display)
-# This is necessary because wkhtmltopdf requires a display server, which isn't available in containers
-# xvfb provides a virtual framebuffer that allows wkhtmltopdf to render HTML to PDF
-RUN echo '#!/bin/bash\nxvfb-run -a --server-args="-screen 0, 1024x768x24" /usr/bin/wkhtmltopdf "$@"' > /usr/local/bin/wkhtmltopdf-wrapper \
- && chmod +x /usr/local/bin/wkhtmltopdf-wrapper
-
-# Also create a fallback script that tries the wrapper first, then falls back to direct execution
-RUN echo '#!/bin/bash\nif [ -x "/usr/local/bin/wkhtmltopdf-wrapper" ]; then\n  exec /usr/local/bin/wkhtmltopdf-wrapper "$@"\nelse\n  exec /usr/bin/wkhtmltopdf "$@"\nfi' > /usr/local/bin/wkhtmltopdf-fallback \
- && chmod +x /usr/local/bin/wkhtmltopdf-fallback
-
-# Test that wkhtmltopdf is working
-RUN /usr/local/bin/wkhtmltopdf-wrapper --version || /usr/bin/wkhtmltopdf --version || echo "Warning: wkhtmltopdf not working properly"
+# Test that Chromium and Zint are working
+RUN chromium-browser --version || echo "Warning: Chromium not working properly"
+RUN zint --version || echo "Warning: Zint not working properly"
 
 # Create a vapor user and group with /app as its home directory
 RUN useradd --user-group --create-home --system --skel /dev/null --home-dir /app vapor
@@ -72,8 +68,8 @@ COPY --from=build --chown=vapor:vapor /staging /app
 # Provide configuration needed by the built-in crash reporter and some sensible default behaviors.
 ENV SWIFT_BACKTRACE=enable=yes,sanitize=yes,threads=all,images=all,interactive=no,swift-backtrace=./swift-backtrace-static
 
-ENV WKHTMLTOPDF_PATH=/usr/local/bin/wkhtmltopdf
-ENV DISPLAY=:99
+ENV CHROME_PATH=/usr/bin/chromium-browser
+ENV ZINT_PATH=/usr/bin/zint
 
 # Ensure all further commands run as the vapor user
 USER vapor:vapor
