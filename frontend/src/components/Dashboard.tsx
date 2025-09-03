@@ -13,6 +13,7 @@ import type { DashboardSetAdminMutation } from '../__generated__/DashboardSetAdm
 import type { DashboardReleaseHorseMutation } from '../__generated__/DashboardReleaseHorseMutation.graphql';
 import type { DashboardReleaseCartMutation } from '../__generated__/DashboardReleaseCartMutation.graphql';
 import type { DashboardSetSeatAssignmentMutation } from '../__generated__/DashboardSetSeatAssignmentMutation.graphql';
+import type { DashboardResetDatabaseMutation } from '../__generated__/DashboardResetDatabaseMutation.graphql';
 
 const adminQuery = graphql`
   query DashboardAdminQuery {
@@ -63,6 +64,12 @@ const runCleanupMutation = graphql`
   }
 `;
 
+const resetDatabaseMutation = graphql`
+  mutation DashboardResetDatabaseMutation {
+    resetDatabase
+  }
+`;
+
 interface LocalUser {
   id: string;
   email: string;
@@ -99,6 +106,7 @@ export const Dashboard: React.FC = () => {
   const [commitReleaseHorse] = useMutation<DashboardReleaseHorseMutation>(releaseHorseMutation);
   const [commitReleaseCart] = useMutation<DashboardReleaseCartMutation>(releaseCartMutation);
   const [commitRunCleanup] = useMutation(runCleanupMutation);
+  const [commitResetDatabase] = useMutation<DashboardResetDatabaseMutation>(resetDatabaseMutation);
   const [commitSetSeatAssignment] = useMutation<DashboardSetSeatAssignmentMutation>(setSeatAssignmentMutation);
 
   const refresh = () => setRefreshKey(k => k + 1);
@@ -131,6 +139,26 @@ export const Dashboard: React.FC = () => {
 
   const onRunCleanup = () => {
     commitRunCleanup({ variables: {}, onCompleted: refresh });
+  };
+
+  const onResetDatabase = () => {
+    if (window.confirm('⚠️ WARNING: This will permanently delete ALL data in the database including users, horses, tickets, and payments. This action cannot be undone. Are you absolutely sure you want to proceed?')) {
+      if (window.confirm('🚨 FINAL WARNING: This will completely wipe the database. Type "RESET" to confirm.')) {
+        const confirmation = window.prompt('Type "RESET" to confirm database reset:');
+        if (confirmation === 'RESET') {
+          commitResetDatabase({ 
+            variables: {}, 
+            onCompleted: () => {
+              alert('Database has been reset. You will need to log in again.');
+              window.location.href = '/login';
+            },
+            onError: (error) => {
+              alert('Error resetting database: ' + error.message);
+            }
+          });
+        }
+      }
+    }
   };
 
   const onHoldHorses = data.allHorses.filter(h => h.state.toLowerCase() === 'on_hold');
@@ -332,6 +360,9 @@ export const Dashboard: React.FC = () => {
 
         <div className="flex items-center justify-center gap-3">
           <button onClick={onRunCleanup} className="inline-flex items-center px-6 py-3 border border-red-300 rounded-lg text-red-700 hover:bg-red-50">Run Cleanup</button>
+          {user.email === 'austinjevans@me.com' && (
+            <button onClick={onResetDatabase} className="inline-flex items-center px-6 py-3 border border-red-600 rounded-lg text-white bg-red-600 hover:bg-red-700 font-semibold">🚨 Reset Database</button>
+          )}
           <button onClick={handleLogout} className="inline-flex items-center px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">Logout</button>
         </div>
       </div>

@@ -104,6 +104,7 @@ type Mutation {
   removeSponsorFromCart(sponsorId: UUID!): Boolean!
   removeTicketFromCart(ticketId: UUID!): Boolean!
   renameHorse(horseId: UUID!, horseName: String!, ownershipLabel: String!): Horse!
+  resetDatabase: Boolean!
   runAdminCleanup: Boolean!
   setTicketSeatAssignment(ticketId: UUID!, seatAssignment: String): Ticket!
   setTicketSeatingPreference(ticketId: UUID!, seatingPreference: String): Ticket!
