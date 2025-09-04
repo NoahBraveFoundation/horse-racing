@@ -133,6 +133,11 @@ final class HorseResolver: @unchecked Sendable {
         return User.query(on: request.db).all()
     }
 
+    func userById(request: Request, arguments: UserIdArguments) throws -> EventLoopFuture<User> {
+        guard let currentUser = request.auth.get(User.self), currentUser.isAdmin else { throw Abort(.forbidden) }
+        return User.find(arguments.userId, on: request.db).unwrap(or: Abort(.notFound))
+    }
+
     func setUserAdmin(request: Request, arguments: SetUserAdminArguments) throws -> EventLoopFuture<User> {
         guard let currentUser = request.auth.get(User.self), currentUser.isAdmin else { throw Abort(.forbidden) }
         return User.find(arguments.userId, on: request.db)
@@ -400,6 +405,66 @@ final class HorseResolver: @unchecked Sendable {
                 .unwrap(or: Abort(.notFound))
                 .flatMap { g in g.delete(on: request.db).map { true } }
         }
+    }
+
+    func adminRemoveTicket(request: Request, arguments: AdminRemoveTicketArguments) throws -> EventLoopFuture<Bool> {
+        guard let admin = request.auth.get(User.self), admin.isAdmin else { throw Abort(.forbidden) }
+        return Ticket.find(arguments.ticketId, on: request.db)
+            .unwrap(or: Abort(.notFound))
+            .flatMap { ticket in
+                let cartId = ticket.$cart.id
+                let ownerId = ticket.$owner.id
+                return ticket.delete(on: request.db).flatMap {
+                    guard let cartId = cartId else {
+                        return request.eventLoop.makeSucceededFuture(true)
+                    }
+                    return Cart.find(cartId, on: request.db).flatMap { cart in
+                        guard let cart = cart, cart.status == .checkedOut else {
+                            return request.eventLoop.makeSucceededFuture(true)
+                        }
+                        return Payment.query(on: request.db)
+                            .filter(\.$user.$id == ownerId)
+                            .first()
+                            .flatMap { payment in
+                                guard let payment = payment else {
+                                    return request.eventLoop.makeSucceededFuture(true)
+                                }
+                                payment.totalCents = max(0, payment.totalCents - Pricing.ticketPriceCents)
+                                return payment.save(on: request.db).map { true }
+                            }
+                    }
+                }
+            }
+    }
+
+    func adminRemoveHorse(request: Request, arguments: AdminRemoveHorseArguments) throws -> EventLoopFuture<Bool> {
+        guard let admin = request.auth.get(User.self), admin.isAdmin else { throw Abort(.forbidden) }
+        return Horse.find(arguments.horseId, on: request.db)
+            .unwrap(or: Abort(.notFound))
+            .flatMap { horse in
+                let cartId = horse.$cart.id
+                let ownerId = horse.$owner.id
+                return horse.delete(on: request.db).flatMap {
+                    guard let cartId = cartId else {
+                        return request.eventLoop.makeSucceededFuture(true)
+                    }
+                    return Cart.find(cartId, on: request.db).flatMap { cart in
+                        guard let cart = cart, cart.status == .checkedOut else {
+                            return request.eventLoop.makeSucceededFuture(true)
+                        }
+                        return Payment.query(on: request.db)
+                            .filter(\.$user.$id == ownerId)
+                            .first()
+                            .flatMap { payment in
+                                guard let payment = payment else {
+                                    return request.eventLoop.makeSucceededFuture(true)
+                                }
+                                payment.totalCents = max(0, payment.totalCents - Pricing.horsePriceCents)
+                                return payment.save(on: request.db).map { true }
+                            }
+                    }
+                }
+            }
     }
 
     func renameHorse(request: Request, arguments: RenameHorseArguments) throws -> EventLoopFuture<Horse> {
@@ -802,6 +867,8 @@ extension HorseResolver {
     struct RemoveHorseFromCartArguments: Codable { let horseId: UUID }
     struct RemoveSponsorFromCartArguments: Codable { let sponsorId: UUID }
     struct RemoveGiftBasketFromCartArguments: Codable { let giftId: UUID }
+    struct AdminRemoveTicketArguments: Codable { let ticketId: UUID }
+    struct AdminRemoveHorseArguments: Codable { let horseId: UUID }
     struct RenameHorseArguments: Codable { let horseId: UUID; let horseName: String; let ownershipLabel: String }
     struct SetTicketSeatingPreferenceArguments: Codable { let ticketId: UUID; let seatingPreference: String? }
     struct SetTicketSeatAssignmentArguments: Codable { let ticketId: UUID; let seatAssignment: String? }
@@ -848,6 +915,7 @@ extension HorseResolver {
     struct ReleaseHorseArguments: Codable { let horseId: UUID }
 
     struct ReleaseCartArguments: Codable { let cartId: UUID }
+    struct UserIdArguments: Codable { let userId: UUID }
 
     struct AdminStats: Codable {
         let ticketCount: Int

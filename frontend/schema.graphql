@@ -102,6 +102,8 @@ type Mutation {
   removeHorseFromCart(horseId: UUID!): Boolean!
   removeSponsorFromCart(sponsorId: UUID!): Boolean!
   removeTicketFromCart(ticketId: UUID!): Boolean!
+  adminRemoveTicket(ticketId: UUID!): Boolean!
+  adminRemoveHorse(horseId: UUID!): Boolean!
   renameHorse(horseId: UUID!, horseName: String!, ownershipLabel: String!): Horse!
   resetDatabase: Boolean!
   runAdminCleanup: Boolean!
@@ -130,6 +132,7 @@ type Query {
   me: User!
   myCart: Cart
   paymentStatus: Payment
+  user(userId: UUID!): User!
   payments: [Payment!]!
   rounds: [Round!]!
   sponsorInterests: [SponsorInterest!]!
@@ -179,7 +182,8 @@ type User {
   id: UUID
   isAdmin: Boolean!
   lastName: String!
-  payment: [Payment!]!
+  payments: [Payment!]!
+  carts: [Cart!]!
   sponsorInterests: [SponsorInterest!]!
   tickets: [Ticket!]!
 }
