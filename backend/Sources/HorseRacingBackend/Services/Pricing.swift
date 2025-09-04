@@ -7,7 +7,7 @@ enum Pricing {
     static let horsePriceCents = 3000      // $30.00
     static let ticketPriceCents = 7500     // $75.00
     static let sponsorPriceCents = 10000   // $100.00
-    static let giftBasketPriceCents = 5000 // $50.00
+    static let giftBasketPriceCents = 0
     
     /// Calculate total cost for a collection of items
     /// - Parameters:
