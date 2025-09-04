@@ -15,10 +15,16 @@ struct VenmoLinkService {
     ///   - orderNumber: The order number to include in the note
     /// - Returns: Complete Venmo payment URL
     static func generatePaymentLink(total: Double, orderNumber: String) -> String {
-        let encodedTotal = encodeURIComponent(String(format: "%.2f", total))
-        let encodedNote = encodeURIComponent("A Night at the Races - Order #\(orderNumber)")
-        
-        return "\(baseURL)/\(venmoUser)?txn=pay&amount=\(encodedTotal)&note=\(encodedNote)"
+        // Build URL components to ensure query items are properly percent-encoded.
+        var components = URLComponents(string: "\(baseURL)/\(venmoUser)")
+        components?.queryItems = [
+            URLQueryItem(name: "txn", value: "pay"),
+            URLQueryItem(name: "amount", value: String(format: "%.2f", total)),
+            URLQueryItem(name: "note", value: "A Night at the Races - Order #\(orderNumber)")
+        ]
+
+        // Fallback to basic string construction if URL building fails for any reason.
+        return components?.url?.absoluteString ?? "\(baseURL)/\(venmoUser)"
     }
     
     /// Generate a Venmo payment link for a cart with total in cents
@@ -35,14 +41,5 @@ struct VenmoLinkService {
     /// - Returns: Venmo profile URL
     static func generateProfileLink() -> String {
         return "\(baseURL)/\(venmoUser)"
-    }
-    
-    // MARK: - Helper Methods
-    
-    /// Encode a string for use in a URL query parameter
-    /// - Parameter string: The string to encode
-    /// - Returns: URL-encoded string
-    private static func encodeURIComponent(_ string: String) -> String {
-        return string.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? string
     }
 }
