@@ -89,7 +89,7 @@ type LogoutPayload {
 type Mutation {
   addGiftBasketToCart(description: String!): GiftBasketInterest!
   addHorseToCart(roundId: UUID!, laneId: UUID!, horseName: String!, ownershipLabel: String!): Horse!
-  addSponsorToCart(companyName: String!, companyLogoBase64: String): SponsorInterest!
+  addSponsorToCart(companyName: String!, amountCents: Int!, companyLogoBase64: String): SponsorInterest!
   addTicketToCart(attendeeFirst: String!, attendeeLast: String!): Ticket!
   checkoutCart: Payment!
   createUser(email: String!, firstName: String!, lastName: String!): User!

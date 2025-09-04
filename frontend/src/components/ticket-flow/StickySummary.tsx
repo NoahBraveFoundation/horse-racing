@@ -37,6 +37,7 @@ const SummaryInner: React.FC<StickySummaryProps> = ({ hidePrices = false, onCont
 
   const ticketsTotal = (cart?.cost?.ticketsCents ?? 0) / 100;
   const horsesTotal = (cart?.cost?.horseCents ?? 0) / 100;
+  const sponsorTotal = (cart?.cost?.sponsorCents ?? 0) / 100;
   const grandTotal = (cart?.cost?.totalCents ?? 0) / 100;
 
   const pluralize = (word: string, count: number) => (count === 1 ? word : `${word}s`);
@@ -50,20 +51,45 @@ const SummaryInner: React.FC<StickySummaryProps> = ({ hidePrices = false, onCont
               <div className="text-center text-gray-700 text-sm">Tickets: {ticketCount}</div>
             ) : (
               <div className="w-full">
-                <div className="grid grid-cols-5 items-baseline gap-2 justify-items-center text-xl sm:text-2xl font-semibold text-gray-900">
-                  <span>${ticketsTotal.toLocaleString()}</span>
-                  <span className="text-gray-400">+</span>
-                  <span>${horsesTotal.toLocaleString()}</span>
-                  <span className="text-gray-400">=</span>
-                  <span>${grandTotal.toLocaleString()}</span>
-                </div>
-                <div className="mt-1 grid grid-cols-5 gap-2 justify-items-center text-[11px] sm:text-xs uppercase tracking-wide text-gray-500">
-                  <span>{pluralize('ticket', ticketCount)}</span>
-                  <span></span>
-                  <span>{pluralize('horse', horseCount)}</span>
-                  <span></span>
-                  <span>total</span>
-                </div>
+                {sponsorTotal > 0 ? (
+                  <>
+                    <div className="grid grid-cols-7 items-baseline gap-2 justify-items-center text-xl sm:text-2xl font-semibold text-gray-900">
+                      <span>${ticketsTotal.toLocaleString()}</span>
+                      <span className="text-gray-400">+</span>
+                      <span>${horsesTotal.toLocaleString()}</span>
+                      <span className="text-gray-400">+</span>
+                      <span>${sponsorTotal.toLocaleString()}</span>
+                      <span className="text-gray-400">=</span>
+                      <span>${grandTotal.toLocaleString()}</span>
+                    </div>
+                    <div className="mt-1 grid grid-cols-7 gap-2 justify-items-center text-[11px] sm:text-xs uppercase tracking-wide text-gray-500">
+                      <span>{pluralize('ticket', ticketCount)}</span>
+                      <span></span>
+                      <span>{pluralize('horse', horseCount)}</span>
+                      <span></span>
+                      <span>sponsor</span>
+                      <span></span>
+                      <span>total</span>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="grid grid-cols-5 items-baseline gap-2 justify-items-center text-xl sm:text-2xl font-semibold text-gray-900">
+                      <span>${ticketsTotal.toLocaleString()}</span>
+                      <span className="text-gray-400">+</span>
+                      <span>${horsesTotal.toLocaleString()}</span>
+                      <span className="text-gray-400">=</span>
+                      <span>${grandTotal.toLocaleString()}</span>
+                    </div>
+                    <div className="mt-1 grid grid-cols-5 gap-2 justify-items-center text-[11px] sm:text-xs uppercase tracking-wide text-gray-500">
+                      <span>{pluralize('ticket', ticketCount)}</span>
+                      <span></span>
+                      <span>{pluralize('horse', horseCount)}</span>
+                      <span></span>
+                      <span>total</span>
+                    </div>
+                  </>
+                )}
               </div>
             )}
           </div>

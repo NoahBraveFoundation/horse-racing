@@ -325,7 +325,7 @@ struct EmailService {
             sponsorInterests: sponsorInterests.map { sponsor in
                 SponsorTemplateData(
                     companyName: sponsor.companyName,
-                    costFormatted: Pricing.getFormattedPrice(for: .sponsor)
+                    costFormatted: Pricing.formatCurrency(sponsor.amountCents)
                 )
             },
             giftBasketInterests: giftBasketInterests.map { basket in
@@ -344,10 +344,11 @@ struct EmailService {
         sponsorInterests: [SponsorInterest],
         giftBasketInterests: [GiftBasketInterest]
     ) -> Int {
+        let sponsorTotal = sponsorInterests.reduce(0) { $0 + $1.amountCents }
         return Pricing.calculateTotalCents(
             horseCount: horses.count,
             ticketCount: tickets.count,
-            sponsorCount: sponsorInterests.count,
+            sponsorCents: sponsorTotal,
             giftBasketCount: giftBasketInterests.count
         )
     }

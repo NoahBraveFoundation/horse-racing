@@ -7,7 +7,7 @@ import type { SponsorStepQuery } from '../../__generated__/SponsorStepQuery.grap
 
 const SponsorQuery = graphql`
   query SponsorStepQuery {
-    myCart { id sponsorInterests { id companyName companyLogoBase64 } }
+    myCart { id sponsorInterests { id companyName companyLogoBase64 costCents } }
   }
 `;
 
@@ -29,11 +29,13 @@ const SponsorStep: React.FC<Props> = ({ onBack, onContinue }) => {
 
   const [wantSponsor, setWantSponsor] = useState(existing.length > 0);
   const [company, setCompany] = useState(existing[0]?.companyName || '');
+  const [amount, setAmount] = useState((existing[0]?.costCents ?? 10000) / 100);
   const [logoBase64, setLogoBase64] = useState<string | undefined>(existing[0]?.companyLogoBase64 || undefined);
   const [loading, setLoading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [companyError, setCompanyError] = useState<string | null>(null);
+  const [amountError, setAmountError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const validateAndSetFile = async (file: File) => {
@@ -69,15 +71,21 @@ const SponsorStep: React.FC<Props> = ({ onBack, onContinue }) => {
 
   const handleContinue = async () => {
     const trimmed = company.trim();
-    if (wantSponsor && !trimmed) {
-      setCompanyError('Please enter your company name.');
-      return;
+    if (wantSponsor) {
+      if (!trimmed) {
+        setCompanyError('Please enter your company name.');
+        return;
+      }
+      if (amount < 100) {
+        setAmountError('Minimum sponsorship is $100.');
+        return;
+      }
     }
 
     setLoading(true);
     try {
-      if (wantSponsor && trimmed && (existing.length === 0 || existing[0]?.companyName !== trimmed || existing[0]?.companyLogoBase64 !== logoBase64)) {
-        await addSponsor(trimmed, logoBase64);
+      if (wantSponsor && trimmed && (existing.length === 0 || existing[0]?.companyName !== trimmed || existing[0]?.companyLogoBase64 !== logoBase64 || existing[0]?.costCents !== Math.round(amount * 100))) {
+        await addSponsor(trimmed, amount, logoBase64);
       }
       if (!wantSponsor && existing.length > 0) {
         await removeSponsor(existing[0].id);
@@ -96,7 +104,7 @@ const SponsorStep: React.FC<Props> = ({ onBack, onContinue }) => {
 
         <div className="bg-white rounded-2xl shadow-xl border border-noahbrave-200 p-8">
           <label className="flex items-start gap-3">
-            <input type="checkbox" checked={wantSponsor} onChange={(e) => { setWantSponsor(e.target.checked); if (!e.target.checked) setCompanyError(null); }} className="mt-1" />
+            <input type="checkbox" checked={wantSponsor} onChange={(e) => { setWantSponsor(e.target.checked); if (!e.target.checked) { setCompanyError(null); setAmountError(null); } }} className="mt-1" />
             <span className="text-gray-800">My company wants to sponsor.</span>
           </label>
 
@@ -112,6 +120,20 @@ const SponsorStep: React.FC<Props> = ({ onBack, onContinue }) => {
                   aria-invalid={!!companyError}
                 />
                 {companyError && <p className="mt-2 text-sm text-red-600">{companyError}</p>}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Amount (USD)</label>
+                <input
+                  type="number"
+                  min={100}
+                  step="1"
+                  value={amount}
+                  onChange={(e) => { const val = parseFloat(e.target.value); setAmount(isNaN(val) ? 0 : val); if (amountError && val >= 100) setAmountError(null); }}
+                  className={`w-full rounded-lg border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-noahbrave-600 ${amountError ? 'border-red-400' : 'border-gray-300'}`}
+                  aria-invalid={!!amountError}
+                />
+                {amountError && <p className="mt-2 text-sm text-red-600">{amountError}</p>}
               </div>
 
               <div>

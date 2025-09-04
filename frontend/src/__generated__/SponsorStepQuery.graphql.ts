@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<fbf9981297a9d502812741adc3d93708>>
+ * @generated SignedSource<<dd9b3474d74f7a98f266aa4e18cfe784>>
  * @lightSyntaxTransform
  * @nogrep
  */
@@ -16,6 +16,7 @@ export type SponsorStepQuery$data = {
     readonly sponsorInterests: ReadonlyArray<{
       readonly companyLogoBase64: string | null | undefined;
       readonly companyName: string;
+      readonly costCents: number;
       readonly id: any | null | undefined;
     }>;
   } | null | undefined;
@@ -65,6 +66,13 @@ v1 = [
             "kind": "ScalarField",
             "name": "companyLogoBase64",
             "storageKey": null
+          },
+          {
+            "alias": null,
+            "args": null,
+            "kind": "ScalarField",
+            "name": "costCents",
+            "storageKey": null
           }
         ],
         "storageKey": null
@@ -91,16 +99,16 @@ return {
     "selections": (v1/*: any*/)
   },
   "params": {
-    "cacheID": "e8592d706da142efde489e51d2047ef8",
+    "cacheID": "8d67765ea9fc488c9fd19a6499da5ea0",
     "id": null,
     "metadata": {},
     "name": "SponsorStepQuery",
     "operationKind": "query",
-    "text": "query SponsorStepQuery {\n  myCart {\n    id\n    sponsorInterests {\n      id\n      companyName\n      companyLogoBase64\n    }\n  }\n}\n"
+    "text": "query SponsorStepQuery {\n  myCart {\n    id\n    sponsorInterests {\n      id\n      companyName\n      companyLogoBase64\n      costCents\n    }\n  }\n}\n"
   }
 };
 })();
 
-(node as any).hash = "bc5bcb7416982852d9ef74d75bb5bba1";
+(node as any).hash = "fe6933e7a4ab23341f9b94ef691797f9";
 
 export default node;
