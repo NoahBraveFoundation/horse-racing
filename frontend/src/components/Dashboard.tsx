@@ -21,7 +21,7 @@ const adminQuery = graphql`
     users { id email firstName lastName isAdmin }
     adminStats { ticketCount sponsorCount giftBasketCount }
     allHorses { id horseName state round { name } lane { number } owner { firstName lastName } }
-    allTickets { id attendeeFirst attendeeLast seatingPreference seatAssignment owner { firstName lastName } }
+    allTickets { id attendeeFirst attendeeLast seatingPreference seatAssignment state owner { firstName lastName } }
     abandonedCarts { id orderNumber user { id firstName lastName email } }
     sponsorInterests { id companyName companyLogoBase64 }
     giftBasketInterests { id description user { firstName lastName } }
@@ -164,6 +164,8 @@ export const Dashboard: React.FC = () => {
   };
 
   const onHoldHorses = data.allHorses.filter(h => h.state.toLowerCase() === 'on_hold');
+  const onHoldTickets = data.allTickets.filter(t => (t as any).state && (t as any).state.toLowerCase() === 'on_hold');
+  const nonOnHoldTickets = data.allTickets.filter(t => !(t as any).state || (t as any).state.toLowerCase() !== 'on_hold');
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-noahbrave-50 to-white font-body text-gray-800">
@@ -247,7 +249,7 @@ export const Dashboard: React.FC = () => {
           </table>
         </section>
 
-        {/* Tickets */}
+        {/* Tickets (excluding on-hold) */}
         <section className="bg-white rounded-xl p-6 shadow">
           <h2 className="text-xl font-semibold mb-4">Tickets</h2>
           <table className="w-full text-sm">
@@ -255,7 +257,7 @@ export const Dashboard: React.FC = () => {
               <tr className="text-left border-b"><th className="py-2">Attendee</th><th>Owner</th><th>Seating Preference</th><th>Seat Assignment</th></tr>
             </thead>
             <tbody>
-              {data.allTickets.map(t => (
+              {nonOnHoldTickets.map(t => (
                 <tr key={t.id} className="border-b">
                   <td className="py-2">{t.attendeeFirst} {t.attendeeLast}</td>
                   <td>{t.owner.firstName} {t.owner.lastName}</td>
@@ -270,8 +272,30 @@ export const Dashboard: React.FC = () => {
                   </td>
                 </tr>
               ))}
-              {data.allTickets.length === 0 && (
+              {nonOnHoldTickets.length === 0 && (
                 <tr><td colSpan={4} className="py-2 text-center text-gray-500">No tickets</td></tr>
+              )}
+            </tbody>
+          </table>
+        </section>
+
+        {/* On-hold Tickets */}
+        <section className="bg-white rounded-xl p-6 shadow">
+          <h2 className="text-xl font-semibold mb-4">On-hold Tickets</h2>
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="text-left border-b"><th className="py-2">Attendee</th><th>Owner</th><th>Status</th></tr>
+            </thead>
+            <tbody>
+              {onHoldTickets.map(t => (
+                <tr key={t.id} className="border-b">
+                  <td className="py-2">{t.attendeeFirst} {t.attendeeLast}</td>
+                  <td>{t.owner.firstName} {t.owner.lastName}</td>
+                  <td className="capitalize">on hold</td>
+                </tr>
+              ))}
+              {onHoldTickets.length === 0 && (
+                <tr><td colSpan={3} className="py-2 text-center text-gray-500">No on-hold tickets</td></tr>
               )}
             </tbody>
           </table>

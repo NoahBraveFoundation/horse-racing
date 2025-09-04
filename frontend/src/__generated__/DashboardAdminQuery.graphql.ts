@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<83885b28b526ea941fb6a716e336b024>>
+ * @generated SignedSource<<b20affb2dbf9e1c47118af349f88d801>>
  * @lightSyntaxTransform
  * @nogrep
  */
@@ -10,6 +10,7 @@
 
 import { ConcreteRequest } from 'relay-runtime';
 export type HorseEntryState = "confirmed" | "on_hold" | "pending_payment" | "%future added value";
+export type TicketState = "confirmed" | "on_hold" | "pending_payment" | "%future added value";
 export type DashboardAdminQuery$variables = Record<PropertyKey, never>;
 export type DashboardAdminQuery$data = {
   readonly abandonedCarts: ReadonlyArray<{
@@ -52,6 +53,7 @@ export type DashboardAdminQuery$data = {
     };
     readonly seatAssignment: string | null | undefined;
     readonly seatingPreference: string | null | undefined;
+    readonly state: TicketState;
   }>;
   readonly giftBasketInterests: ReadonlyArray<{
     readonly description: string;
@@ -134,21 +136,28 @@ v4 = {
   ],
   "storageKey": null
 },
-v5 = [
+v5 = {
+  "alias": null,
+  "args": null,
+  "kind": "ScalarField",
+  "name": "state",
+  "storageKey": null
+},
+v6 = [
   (v1/*: any*/),
   (v2/*: any*/)
 ],
-v6 = {
+v7 = {
   "alias": null,
   "args": null,
   "concreteType": "User",
   "kind": "LinkedField",
   "name": "owner",
   "plural": false,
-  "selections": (v5/*: any*/),
+  "selections": (v6/*: any*/),
   "storageKey": null
 },
-v7 = [
+v8 = [
   {
     "alias": null,
     "args": null,
@@ -246,13 +255,7 @@ v7 = [
         "name": "horseName",
         "storageKey": null
       },
-      {
-        "alias": null,
-        "args": null,
-        "kind": "ScalarField",
-        "name": "state",
-        "storageKey": null
-      },
+      (v5/*: any*/),
       {
         "alias": null,
         "args": null,
@@ -289,7 +292,7 @@ v7 = [
         ],
         "storageKey": null
       },
-      (v6/*: any*/)
+      (v7/*: any*/)
     ],
     "storageKey": null
   },
@@ -330,7 +333,8 @@ v7 = [
         "name": "seatAssignment",
         "storageKey": null
       },
-      (v6/*: any*/)
+      (v5/*: any*/),
+      (v7/*: any*/)
     ],
     "storageKey": null
   },
@@ -403,7 +407,7 @@ v7 = [
         "kind": "LinkedField",
         "name": "user",
         "plural": false,
-        "selections": (v5/*: any*/),
+        "selections": (v6/*: any*/),
         "storageKey": null
       }
     ],
@@ -416,7 +420,7 @@ return {
     "kind": "Fragment",
     "metadata": null,
     "name": "DashboardAdminQuery",
-    "selections": (v7/*: any*/),
+    "selections": (v8/*: any*/),
     "type": "Query",
     "abstractKey": null
   },
@@ -425,19 +429,19 @@ return {
     "argumentDefinitions": [],
     "kind": "Operation",
     "name": "DashboardAdminQuery",
-    "selections": (v7/*: any*/)
+    "selections": (v8/*: any*/)
   },
   "params": {
-    "cacheID": "b543ce8e6a6691c9cf199d3fdb3b0dd9",
+    "cacheID": "ab2b9bcda975529b7f9925b73aeeaf37",
     "id": null,
     "metadata": {},
     "name": "DashboardAdminQuery",
     "operationKind": "query",
-    "text": "query DashboardAdminQuery {\n  payments {\n    id\n    totalCents\n    paymentReceived\n    user {\n      id\n      firstName\n      lastName\n      email\n    }\n  }\n  users {\n    id\n    email\n    firstName\n    lastName\n    isAdmin\n  }\n  adminStats {\n    ticketCount\n    sponsorCount\n    giftBasketCount\n  }\n  allHorses {\n    id\n    horseName\n    state\n    round {\n      name\n    }\n    lane {\n      number\n    }\n    owner {\n      firstName\n      lastName\n    }\n  }\n  allTickets {\n    id\n    attendeeFirst\n    attendeeLast\n    seatingPreference\n    seatAssignment\n    owner {\n      firstName\n      lastName\n    }\n  }\n  abandonedCarts {\n    id\n    orderNumber\n    user {\n      id\n      firstName\n      lastName\n      email\n    }\n  }\n  sponsorInterests {\n    id\n    companyName\n    companyLogoBase64\n  }\n  giftBasketInterests {\n    id\n    description\n    user {\n      firstName\n      lastName\n    }\n  }\n}\n"
+    "text": "query DashboardAdminQuery {\n  payments {\n    id\n    totalCents\n    paymentReceived\n    user {\n      id\n      firstName\n      lastName\n      email\n    }\n  }\n  users {\n    id\n    email\n    firstName\n    lastName\n    isAdmin\n  }\n  adminStats {\n    ticketCount\n    sponsorCount\n    giftBasketCount\n  }\n  allHorses {\n    id\n    horseName\n    state\n    round {\n      name\n    }\n    lane {\n      number\n    }\n    owner {\n      firstName\n      lastName\n    }\n  }\n  allTickets {\n    id\n    attendeeFirst\n    attendeeLast\n    seatingPreference\n    seatAssignment\n    state\n    owner {\n      firstName\n      lastName\n    }\n  }\n  abandonedCarts {\n    id\n    orderNumber\n    user {\n      id\n      firstName\n      lastName\n      email\n    }\n  }\n  sponsorInterests {\n    id\n    companyName\n    companyLogoBase64\n  }\n  giftBasketInterests {\n    id\n    description\n    user {\n      firstName\n      lastName\n    }\n  }\n}\n"
   }
 };
 })();
 
-(node as any).hash = "b52cc3bb8ee964884363f0539794cc2f";
+(node as any).hash = "25bdc21db7e32955082e6852fb57bd97";
 
 export default node;
