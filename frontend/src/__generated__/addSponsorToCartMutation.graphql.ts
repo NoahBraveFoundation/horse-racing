@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<3cbb16d60bc458221d132c60c4da3ccf>>
+ * @generated SignedSource<<af7eae968eab00646ac54458336d2919>>
  * @lightSyntaxTransform
  * @nogrep
  */
@@ -10,6 +10,7 @@
 
 import { ConcreteRequest } from 'relay-runtime';
 export type addSponsorToCartMutation$variables = {
+  amountCents: number;
   companyLogoBase64?: string | null | undefined;
   companyName: string;
 };
@@ -29,17 +30,27 @@ const node: ConcreteRequest = (function(){
 var v0 = {
   "defaultValue": null,
   "kind": "LocalArgument",
-  "name": "companyLogoBase64"
+  "name": "amountCents"
 },
 v1 = {
   "defaultValue": null,
   "kind": "LocalArgument",
+  "name": "companyLogoBase64"
+},
+v2 = {
+  "defaultValue": null,
+  "kind": "LocalArgument",
   "name": "companyName"
 },
-v2 = [
+v3 = [
   {
     "alias": null,
     "args": [
+      {
+        "kind": "Variable",
+        "name": "amountCents",
+        "variableName": "amountCents"
+      },
       {
         "kind": "Variable",
         "name": "companyLogoBase64",
@@ -85,36 +96,38 @@ return {
   "fragment": {
     "argumentDefinitions": [
       (v0/*: any*/),
-      (v1/*: any*/)
+      (v1/*: any*/),
+      (v2/*: any*/)
     ],
     "kind": "Fragment",
     "metadata": null,
     "name": "addSponsorToCartMutation",
-    "selections": (v2/*: any*/),
+    "selections": (v3/*: any*/),
     "type": "Mutation",
     "abstractKey": null
   },
   "kind": "Request",
   "operation": {
     "argumentDefinitions": [
-      (v1/*: any*/),
-      (v0/*: any*/)
+      (v2/*: any*/),
+      (v0/*: any*/),
+      (v1/*: any*/)
     ],
     "kind": "Operation",
     "name": "addSponsorToCartMutation",
-    "selections": (v2/*: any*/)
+    "selections": (v3/*: any*/)
   },
   "params": {
-    "cacheID": "d0b097f76e91ffc89f216f22ab29567c",
+    "cacheID": "962a82405c6fef897b74d76cd4046b1d",
     "id": null,
     "metadata": {},
     "name": "addSponsorToCartMutation",
     "operationKind": "mutation",
-    "text": "mutation addSponsorToCartMutation(\n  $companyName: String!\n  $companyLogoBase64: String\n) {\n  addSponsorToCart(companyName: $companyName, companyLogoBase64: $companyLogoBase64) {\n    id\n    companyName\n    companyLogoBase64\n  }\n}\n"
+    "text": "mutation addSponsorToCartMutation(\n  $companyName: String!\n  $amountCents: Int!\n  $companyLogoBase64: String\n) {\n  addSponsorToCart(companyName: $companyName, amountCents: $amountCents, companyLogoBase64: $companyLogoBase64) {\n    id\n    companyName\n    companyLogoBase64\n  }\n}\n"
   }
 };
 })();
 
-(node as any).hash = "59712b73e1dd97b132961ef3c8330cf1";
+(node as any).hash = "96933e07bcfe7ef6772e5b7be961b572";
 
 export default node;

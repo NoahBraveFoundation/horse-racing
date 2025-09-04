@@ -66,7 +66,7 @@ type TicketFlowState = {
   addGiftBasketToCart: (description: string) => Promise<void>;
   removeGiftBasketFromCart: (giftId: string) => Promise<void>;
 
-  addSponsorToCart: (companyName: string, companyLogoBase64?: string) => Promise<void>;
+  addSponsorToCart: (companyName: string, amountDollars: number, companyLogoBase64?: string) => Promise<void>;
   removeSponsorFromCart: (sponsorId: string) => Promise<void>;
 
   checkoutCart: () => Promise<void>;
@@ -203,11 +203,11 @@ export const useTicketFlowStore = create<TicketFlowState>((set, get) => ({
       });
     }),
 
-  addSponsorToCart: (companyName: string, companyLogoBase64?: string) =>
+  addSponsorToCart: (companyName: string, amountDollars: number, companyLogoBase64?: string) =>
     new Promise<void>((resolve, reject) => {
       commitMutation<AddSponsorToCartMutation>(environment, {
         mutation: addSponsorToCartMutation,
-        variables: { companyName, companyLogoBase64 },
+        variables: { companyName, amountCents: Math.round(amountDollars * 100), companyLogoBase64 },
         onCompleted: () => { get().refreshCart(); resolve(); },
         onError: (err: Error) => reject(err),
       });

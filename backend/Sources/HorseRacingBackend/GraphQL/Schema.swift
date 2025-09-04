@@ -212,6 +212,7 @@ let horseRacingSchema = try! Graphiti.Schema<HorseResolver, Request> {
         }
         Field("addSponsorToCart", at: HorseResolver.addSponsorToCart) {
             Argument("companyName", at: \.companyName)
+            Argument("amountCents", at: \.amountCents)
             Argument("companyLogoBase64", at: \.companyLogoBase64)
         }
         Field("addGiftBasketToCart", at: HorseResolver.addGiftBasketToCart) {

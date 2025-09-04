@@ -335,8 +335,11 @@ final class HorseResolver: @unchecked Sendable {
 
     func addSponsorToCart(request: Request, arguments: AddSponsorToCartArguments) throws -> EventLoopFuture<SponsorInterest> {
         guard let user = request.auth.get(User.self), let userId = user.id else { throw Abort(.unauthorized) }
+        guard arguments.amountCents >= Pricing.minimumSponsorCents else {
+            return request.eventLoop.makeFailedFuture(Abort(.badRequest, reason: "Minimum sponsorship is $100"))
+        }
         return getOrCreateOpenCart(for: userId, on: request).flatMap { cart in
-            let si = SponsorInterest(userID: userId, companyName: arguments.companyName, companyLogoBase64: arguments.companyLogoBase64)
+            let si = SponsorInterest(userID: userId, companyName: arguments.companyName, amountCents: arguments.amountCents, companyLogoBase64: arguments.companyLogoBase64)
             si.$cart.id = cart.id
             return si.create(on: request.db).map { si }
         }
@@ -442,11 +445,12 @@ final class HorseResolver: @unchecked Sendable {
             // Load counts
             let ticketsFut = Ticket.query(on: request.db).filter(\.$cart.$id == cart.id!).count()
             let horsesFut = Horse.query(on: request.db).filter(\.$cart.$id == cart.id!).count()
-            let sponsorsFut = SponsorInterest.query(on: request.db).filter(\.$cart.$id == cart.id!).count()
+            let sponsorsFut = SponsorInterest.query(on: request.db).filter(\.$cart.$id == cart.id!).all()
 
-            return ticketsFut.and(horsesFut).and(sponsorsFut).flatMap { th, sponsorsCount in
+            return ticketsFut.and(horsesFut).and(sponsorsFut).flatMap { th, sponsors in
                 let (ticketsCount, horsesCount) = th
-                let total = ticketsCount * Pricing.ticketPriceCents + horsesCount * Pricing.horsePriceCents + sponsorsCount * Pricing.sponsorPriceCents
+                let sponsorCents = sponsors.reduce(0) { $0 + $1.amountCents }
+                let total = ticketsCount * Pricing.ticketPriceCents + horsesCount * Pricing.horsePriceCents + sponsorCents
 
                 // Transition states for tickets and horses
                 let updateTickets = Ticket.query(on: request.db)
@@ -621,14 +625,14 @@ final class HorseResolver: @unchecked Sendable {
         return { req, _, _ in
             let ticketsFut = Ticket.query(on: req.db).filter(\.$cart.$id == cart.id!).count()
             let horsesFut = Horse.query(on: req.db).filter(\.$cart.$id == cart.id!).count()
-            let sponsorsFut = SponsorInterest.query(on: req.db).filter(\.$cart.$id == cart.id!).count()
-            return ticketsFut.and(horsesFut).and(sponsorsFut).map { th, sponsorsCount in
+            let sponsorsFut = SponsorInterest.query(on: req.db).filter(\.$cart.$id == cart.id!).all()
+            return ticketsFut.and(horsesFut).and(sponsorsFut).map { th, sponsors in
                 let (ticketsCount, horsesCount) = th
                 let ticketsCents = ticketsCount * Pricing.ticketPriceCents
                 let horseCents = horsesCount * Pricing.horsePriceCents
-                let sponsorCents = sponsorsCount * Pricing.sponsorPriceCents
+                let sponsorCents = sponsors.reduce(0) { $0 + $1.amountCents }
                 let totalCents = ticketsCents + horseCents + sponsorCents
-                
+
                 return CartCost(
                     ticketsCents: ticketsCents,
                     horseCents: horseCents,
@@ -643,18 +647,19 @@ final class HorseResolver: @unchecked Sendable {
         return { req, _, _ in
             let ticketsFut = Ticket.query(on: req.db).filter(\.$cart.$id == cart.id!).count()
             let horsesFut = Horse.query(on: req.db).filter(\.$cart.$id == cart.id!).count()
-            let sponsorsFut = SponsorInterest.query(on: req.db).filter(\.$cart.$id == cart.id!).count()
+            let sponsorsFut = SponsorInterest.query(on: req.db).filter(\.$cart.$id == cart.id!).all()
             let giftBasketsFut = GiftBasketInterest.query(on: req.db).filter(\.$cart.$id == cart.id!).count()
-            
+
             return ticketsFut.and(horsesFut).and(sponsorsFut).and(giftBasketsFut).map { result in
-                let (((ticketsCount, horsesCount), sponsorsCount), giftBasketsCount) = result
+                let (((ticketsCount, horsesCount), sponsors), giftBasketsCount) = result
+                let sponsorCents = sponsors.reduce(0) { $0 + $1.amountCents }
                 let totalCents = Pricing.calculateTotalCents(
                     horseCount: horsesCount,
                     ticketCount: ticketsCount,
-                    sponsorCount: sponsorsCount,
+                    sponsorCents: sponsorCents,
                     giftBasketCount: giftBasketsCount
                 )
-                
+
                 let orderNumber = cart.orderNumber
                 return VenmoLinkService.generatePaymentLink(totalCents: totalCents, orderNumber: orderNumber)
             }
@@ -712,7 +717,7 @@ final class HorseResolver: @unchecked Sendable {
     
     static func sponsorCost(sponsor: SponsorInterest) -> (Request, NoArguments, EventLoopGroup) throws -> EventLoopFuture<Int> {
         return { req, _, _ in
-            return req.eventLoop.makeSucceededFuture(Pricing.sponsorPriceCents)
+            return req.eventLoop.makeSucceededFuture(sponsor.amountCents)
         }
     }
     
@@ -785,6 +790,7 @@ extension HorseResolver {
 
     struct AddSponsorToCartArguments: Codable {
         let companyName: String
+        let amountCents: Int
         let companyLogoBase64: String?
     }
 

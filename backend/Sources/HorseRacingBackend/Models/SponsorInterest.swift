@@ -10,11 +10,14 @@ final class SponsorInterest: Model, Content, @unchecked Sendable {
 	@Parent(key: "user_id")
 	var user: User
 
-	@Field(key: "company_name")
-	var companyName: String
+        @Field(key: "company_name")
+        var companyName: String
 
-	@OptionalField(key: "company_logo_base64")
-	var companyLogoBase64: String?
+        @OptionalField(key: "company_logo_base64")
+        var companyLogoBase64: String?
+
+        @Field(key: "amount_cents")
+        var amountCents: Int
 
 	@OptionalParent(key: "cart_id")
 	var cart: Cart?
@@ -24,10 +27,11 @@ final class SponsorInterest: Model, Content, @unchecked Sendable {
 
 	init() {}
 
-	init(id: UUID? = nil, userID: UUID, companyName: String, companyLogoBase64: String? = nil) {
-		self.id = id
-		self.$user.id = userID
-		self.companyName = companyName
-		self.companyLogoBase64 = companyLogoBase64
-	}
+        init(id: UUID? = nil, userID: UUID, companyName: String, amountCents: Int, companyLogoBase64: String? = nil) {
+                self.id = id
+                self.$user.id = userID
+                self.companyName = companyName
+                self.amountCents = amountCents
+                self.companyLogoBase64 = companyLogoBase64
+        }
 }

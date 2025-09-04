@@ -6,27 +6,27 @@ enum Pricing {
     // MARK: - Item Prices (in cents)
     static let horsePriceCents = 3000      // $30.00
     static let ticketPriceCents = 7500     // $75.00
-    static let sponsorPriceCents = 10000   // $100.00
-    static let giftBasketPriceCents = 0
+    static let minimumSponsorCents = 10000 // Minimum $100.00
+    static let giftBasketPriceCents = 0 // $0.00
     
     /// Calculate total cost for a collection of items
     /// - Parameters:
     ///   - horseCount: Number of horses
     ///   - ticketCount: Number of tickets
-    ///   - sponsorCount: Number of sponsor interests
+    ///   - sponsorCents: Total sponsor contribution in cents
     ///   - giftBasketCount: Number of gift basket interests
     /// - Returns: Total cost in cents
     static func calculateTotalCents(
         horseCount: Int = 0,
         ticketCount: Int = 0,
-        sponsorCount: Int = 0,
+        sponsorCents: Int = 0,
         giftBasketCount: Int = 0
     ) -> Int {
         let horseCost = horseCount * horsePriceCents
         let ticketCost = ticketCount * ticketPriceCents
-        let sponsorCost = sponsorCount * sponsorPriceCents
+        let sponsorCost = sponsorCents
         let basketCost = giftBasketCount * giftBasketPriceCents
-        
+
         return horseCost + ticketCost + sponsorCost + basketCost
     }
     
@@ -52,7 +52,7 @@ enum Pricing {
         case .ticket:
             return formatCurrency(ticketPriceCents)
         case .sponsor:
-            return formatCurrency(sponsorPriceCents)
+            return formatCurrency(minimumSponsorCents)
         case .giftBasket:
             return formatCurrency(giftBasketPriceCents)
         }
@@ -68,7 +68,7 @@ enum Pricing {
         case .ticket:
             return ticketPriceCents
         case .sponsor:
-            return sponsorPriceCents
+            return minimumSponsorCents
         case .giftBasket:
             return giftBasketPriceCents
         }
