@@ -118,7 +118,9 @@ export const Dashboard: React.FC = () => {
   if (!user) return null;
 
   const onMarkPaid = (id: string) => {
-    commitMarkPaid({ variables: { paymentId: id }, onCompleted: refresh });
+    if (window.confirm('Mark this payment as received?')) {
+      commitMarkPaid({ variables: { paymentId: id }, onCompleted: refresh });
+    }
   };
 
   const onToggleAdmin = (id: string, isAdmin: boolean) => {
