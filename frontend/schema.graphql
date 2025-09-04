@@ -96,7 +96,6 @@ type Mutation {
   getOrCreateCart: Cart!
   login(email: String!, redirectTo: String): LoginPayload!
   logout: LogoutPayload!
-  markPaymentReceived(paymentId: UUID!): Payment!
   releaseCart(cartId: UUID!): Cart!
   releaseHorse(horseId: UUID!): Boolean!
   removeGiftBasketFromCart(giftId: UUID!): Boolean!
@@ -106,6 +105,7 @@ type Mutation {
   renameHorse(horseId: UUID!, horseName: String!, ownershipLabel: String!): Horse!
   resetDatabase: Boolean!
   runAdminCleanup: Boolean!
+  setPaymentReceived(paymentId: UUID!, received: Boolean!): Payment!
   setTicketSeatAssignment(ticketId: UUID!, seatAssignment: String): Ticket!
   setTicketSeatingPreference(ticketId: UUID!, seatingPreference: String): Ticket!
   setUserAdmin(userId: UUID!, isAdmin: Boolean!): User!
@@ -130,7 +130,7 @@ type Query {
   me: User!
   myCart: Cart
   paymentStatus: Payment
-  pendingPayments: [Payment!]!
+  payments: [Payment!]!
   rounds: [Round!]!
   sponsorInterests: [SponsorInterest!]!
   users: [User!]!
