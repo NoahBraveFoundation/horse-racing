@@ -1,1 +1,3861 @@
-{"data":{"__schema":{"subscriptionType":null,"types":[{"kind":"OBJECT","fields":[{"name":"giftBasketCount","description":null,"args":[],"type":{"kind":"NON_NULL","name":null,"ofType":{"kind":"SCALAR","name":"Int","ofType":null}},"isDeprecated":false,"deprecationReason":null},{"name":"sponsorCount","description":null,"args":[],"type":{"kind":"NON_NULL","name":null,"ofType":{"kind":"SCALAR","name":"Int","ofType":null}},"isDeprecated":false,"deprecationReason":null},{"name":"ticketCount","description":null,"args":[],"type":{"name":null,"ofType":{"kind":"SCALAR","ofType":null,"name":"Int"},"kind":"NON_NULL"},"isDeprecated":false,"deprecationReason":null}],"inputFields":null,"interfaces":[],"possibleTypes":null,"description":null,"enumValues":null,"name":"AdminStats"},{"kind":"SCALAR","inputFields":null,"name":"Boolean","interfaces":null,"enumValues":null,"fields":null,"description":"The `Boolean` scalar type represents `true` or `false`.","possibleTypes":null},{"inputFields":null,"description":null,"kind":"OBJECT","fields":[{"name":"cost","description":null,"args":[],"type":{"ofType":{"name":"CartCost","kind":"OBJECT","ofType":null},"kind":"NON_NULL","name":null},"isDeprecated":false,"deprecationReason":null},{"name":"giftBasketInterests","description":null,"args":[],"type":{"name":null,"kind":"NON_NULL","ofType":{"ofType":{"kind":"NON_NULL","name":null,"ofType":{"name":"GiftBasketInterest","ofType":null,"kind":"OBJECT"}},"name":null,"kind":"LIST"}},"isDeprecated":false,"deprecationReason":null},{"name":"horses","description":null,"args":[],"type":{"ofType":{"ofType":{"kind":"NON_NULL","name":null,"ofType":{"name":"Horse","ofType":null,"kind":"OBJECT"}},"kind":"LIST","name":null},"kind":"NON_NULL","name":null},"isDeprecated":false,"deprecationReason":null},{"name":"id","description":null,"args":[],"type":{"ofType":null,"name":"UUID","kind":"SCALAR"},"isDeprecated":false,"deprecationReason":null},{"name":"orderNumber","type":{"name":null,"ofType":{"kind":"SCALAR","name":"String","ofType":null},"kind":"NON_NULL"},"isDeprecated":false,"deprecationReason":null,"description":null,"args":[]},{"name":"sponsorInterests","type":{"ofType":{"kind":"LIST","ofType":{"name":null,"kind":"NON_NULL","ofType":{"kind":"OBJECT","name":"SponsorInterest","ofType":null}},"name":null},"kind":"NON_NULL","name":null},"isDeprecated":false,"deprecationReason":null,"description":null,"args":[]},{"name":"status","type":{"name":null,"kind":"NON_NULL","ofType":{"kind":"ENUM","name":"CartStatus","ofType":null}},"isDeprecated":false,"deprecationReason":null,"description":null,"args":[]},{"name":"tickets","type":{"ofType":{"ofType":{"ofType":{"name":"Ticket","kind":"OBJECT","ofType":null},"name":null,"kind":"NON_NULL"},"name":null,"kind":"LIST"},"kind":"NON_NULL","name":null},"isDeprecated":false,"deprecationReason":null,"description":null,"args":[]},{"name":"user","type":{"kind":"NON_NULL","ofType":{"kind":"OBJECT","ofType":null,"name":"User"},"name":null},"isDeprecated":false,"deprecationReason":null,"description":null,"args":[]},{"name":"venmoLink","type":{"name":null,"kind":"NON_NULL","ofType":{"kind":"SCALAR","name":"String","ofType":null}},"isDeprecated":false,"deprecationReason":null,"description":null,"args":[]},{"name":"venmoUser","type":{"name":null,"ofType":{"name":"String","kind":"SCALAR","ofType":null},"kind":"NON_NULL"},"isDeprecated":false,"deprecationReason":null,"description":null,"args":[]}],"name":"Cart","enumValues":null,"possibleTypes":null,"interfaces":[]},{"description":null,"possibleTypes":null,"fields":[{"isDeprecated":false,"args":[],"type":{"kind":"NON_NULL","name":null,"ofType":{"kind":"SCALAR","ofType":null,"name":"Int"}},"description":null,"deprecationReason":null,"name":"horseCents"},{"isDeprecated":false,"args":[],"type":{"kind":"NON_NULL","ofType":{"ofType":null,"name":"Int","kind":"SCALAR"},"name":null},"description":null,"deprecationReason":null,"name":"sponsorCents"},{"isDeprecated":false,"args":[],"type":{"ofType":{"ofType":null,"kind":"SCALAR","name":"Int"},"kind":"NON_NULL","name":null},"description":null,"deprecationReason":null,"name":"ticketsCents"},{"isDeprecated":false,"args":[],"type":{"ofType":{"kind":"SCALAR","name":"Int","ofType":null},"kind":"NON_NULL","name":null},"description":null,"deprecationReason":null,"name":"totalCents"}],"interfaces":[],"enumValues":null,"name":"CartCost","inputFields":null,"kind":"OBJECT"},{"description":null,"fields":null,"kind":"ENUM","enumValues":[{"description":null,"deprecationReason":null,"name":"open","isDeprecated":false},{"description":null,"deprecationReason":null,"name":"checkedOut","isDeprecated":false},{"description":null,"deprecationReason":null,"name":"abandoned","isDeprecated":false}],"inputFields":null,"possibleTypes":null,"name":"CartStatus","interfaces":null},{"description":null,"fields":null,"kind":"SCALAR","enumValues":null,"inputFields":null,"possibleTypes":null,"name":"Date","interfaces":null},{"description":null,"fields":[{"description":null,"type":{"name":null,"kind":"NON_NULL","ofType":{"name":"Int","kind":"SCALAR","ofType":null}},"deprecationReason":null,"name":"costCents","args":[],"isDeprecated":false},{"description":null,"type":{"kind":"NON_NULL","name":null,"ofType":{"name":"String","kind":"SCALAR","ofType":null}},"deprecationReason":null,"name":"description","args":[],"isDeprecated":false},{"description":null,"type":{"ofType":null,"kind":"SCALAR","name":"UUID"},"deprecationReason":null,"name":"id","args":[],"isDeprecated":false},{"description":null,"type":{"name":null,"kind":"NON_NULL","ofType":{"kind":"OBJECT","name":"User","ofType":null}},"deprecationReason":null,"name":"user","args":[],"isDeprecated":false}],"kind":"OBJECT","enumValues":null,"inputFields":null,"possibleTypes":null,"name":"GiftBasketInterest","interfaces":[]},{"description":null,"fields":[{"description":null,"type":{"kind":"NON_NULL","ofType":{"name":"Int","kind":"SCALAR","ofType":null},"name":null},"deprecationReason":null,"name":"costCents","args":[],"isDeprecated":false},{"description":null,"type":{"kind":"NON_NULL","ofType":{"ofType":null,"kind":"SCALAR","name":"String"},"name":null},"deprecationReason":null,"name":"horseName","args":[],"isDeprecated":false},{"description":null,"type":{"kind":"SCALAR","ofType":null,"name":"UUID"},"deprecationReason":null,"name":"id","args":[],"isDeprecated":false},{"description":null,"type":{"name":null,"ofType":{"name":"Lane","ofType":null,"kind":"OBJECT"},"kind":"NON_NULL"},"deprecationReason":null,"name":"lane","args":[],"isDeprecated":false},{"description":null,"type":{"name":null,"kind":"NON_NULL","ofType":{"name":"User","ofType":null,"kind":"OBJECT"}},"deprecationReason":null,"name":"owner","args":[],"isDeprecated":false},{"description":null,"type":{"kind":"NON_NULL","name":null,"ofType":{"ofType":null,"name":"String","kind":"SCALAR"}},"deprecationReason":null,"name":"ownershipLabel","args":[],"isDeprecated":false},{"description":null,"type":{"name":null,"ofType":{"kind":"OBJECT","ofType":null,"name":"Round"},"kind":"NON_NULL"},"deprecationReason":null,"name":"round","args":[],"isDeprecated":false},{"description":null,"type":{"kind":"NON_NULL","name":null,"ofType":{"kind":"ENUM","name":"HorseEntryState","ofType":null}},"deprecationReason":null,"name":"state","args":[],"isDeprecated":false}],"kind":"OBJECT","enumValues":null,"inputFields":null,"possibleTypes":null,"name":"Horse","interfaces":[]},{"description":null,"fields":null,"kind":"ENUM","enumValues":[{"name":"on_hold","description":null,"deprecationReason":null,"isDeprecated":false},{"name":"pending_payment","description":null,"deprecationReason":null,"isDeprecated":false},{"name":"confirmed","description":null,"deprecationReason":null,"isDeprecated":false}],"inputFields":null,"possibleTypes":null,"interfaces":null,"name":"HorseEntryState"},{"description":"The `Int` scalar type represents non-fractional signed whole numeric values. Int can represent values between -(2^31) and 2^31 - 1.","fields":null,"kind":"SCALAR","enumValues":null,"inputFields":null,"possibleTypes":null,"interfaces":null,"name":"Int"},{"description":null,"fields":[{"isDeprecated":false,"name":"horse","description":null,"deprecationReason":null,"args":[],"type":{"name":"Horse","kind":"OBJECT","ofType":null}},{"isDeprecated":false,"name":"id","description":null,"deprecationReason":null,"args":[],"type":{"kind":"SCALAR","name":"UUID","ofType":null}},{"isDeprecated":false,"name":"number","description":null,"deprecationReason":null,"args":[],"type":{"ofType":{"name":"Int","ofType":null,"kind":"SCALAR"},"name":null,"kind":"NON_NULL"}},{"isDeprecated":false,"name":"round","description":null,"deprecationReason":null,"args":[],"type":{"kind":"NON_NULL","name":null,"ofType":{"ofType":null,"name":"Round","kind":"OBJECT"}}}],"kind":"OBJECT","enumValues":null,"inputFields":null,"possibleTypes":null,"interfaces":[],"name":"Lane"},{"description":null,"fields":[{"isDeprecated":false,"name":"message","description":null,"deprecationReason":null,"args":[],"type":{"kind":"NON_NULL","ofType":{"name":"String","kind":"SCALAR","ofType":null},"name":null}},{"isDeprecated":false,"name":"success","description":null,"deprecationReason":null,"args":[],"type":{"ofType":{"kind":"SCALAR","ofType":null,"name":"Boolean"},"kind":"NON_NULL","name":null}},{"isDeprecated":false,"name":"tokenId","description":null,"deprecationReason":null,"args":[],"type":{"kind":"NON_NULL","name":null,"ofType":{"name":"String","ofType":null,"kind":"SCALAR"}}}],"kind":"OBJECT","enumValues":null,"inputFields":null,"possibleTypes":null,"interfaces":[],"name":"LoginPayload"},{"description":null,"fields":[{"isDeprecated":false,"name":"message","description":null,"deprecationReason":null,"args":[],"type":{"ofType":{"name":"String","ofType":null,"kind":"SCALAR"},"name":null,"kind":"NON_NULL"}},{"isDeprecated":false,"name":"success","description":null,"deprecationReason":null,"args":[],"type":{"kind":"NON_NULL","ofType":{"name":"Boolean","kind":"SCALAR","ofType":null},"name":null}}],"kind":"OBJECT","enumValues":null,"inputFields":null,"possibleTypes":null,"interfaces":[],"name":"LogoutPayload"},{"description":null,"fields":[{"isDeprecated":false,"name":"addGiftBasketToCart","description":null,"deprecationReason":null,"args":[{"name":"description","description":null,"defaultValue":null,"type":{"name":null,"kind":"NON_NULL","ofType":{"kind":"SCALAR","name":"String","ofType":null}}}],"type":{"ofType":{"kind":"OBJECT","name":"GiftBasketInterest","ofType":null},"name":null,"kind":"NON_NULL"}},{"name":"addHorseToCart","type":{"name":null,"kind":"NON_NULL","ofType":{"name":"Horse","kind":"OBJECT","ofType":null}},"deprecationReason":null,"isDeprecated":false,"description":null,"args":[{"name":"roundId","description":null,"type":{"name":null,"kind":"NON_NULL","ofType":{"name":"UUID","kind":"SCALAR","ofType":null}},"defaultValue":null},{"name":"laneId","description":null,"type":{"kind":"NON_NULL","name":null,"ofType":{"kind":"SCALAR","ofType":null,"name":"UUID"}},"defaultValue":null},{"name":"horseName","description":null,"type":{"kind":"NON_NULL","name":null,"ofType":{"kind":"SCALAR","ofType":null,"name":"String"}},"defaultValue":null},{"name":"ownershipLabel","description":null,"type":{"name":null,"kind":"NON_NULL","ofType":{"ofType":null,"kind":"SCALAR","name":"String"}},"defaultValue":null}]},{"name":"addSponsorToCart","type":{"kind":"NON_NULL","name":null,"ofType":{"ofType":null,"kind":"OBJECT","name":"SponsorInterest"}},"deprecationReason":null,"isDeprecated":false,"description":null,"args":[{"name":"companyName","type":{"kind":"NON_NULL","name":null,"ofType":{"name":"String","ofType":null,"kind":"SCALAR"}},"defaultValue":null,"description":null},{"name":"companyLogoBase64","type":{"name":"String","kind":"SCALAR","ofType":null},"defaultValue":null,"description":null}]},{"name":"addTicketToCart","type":{"name":null,"ofType":{"name":"Ticket","ofType":null,"kind":"OBJECT"},"kind":"NON_NULL"},"deprecationReason":null,"isDeprecated":false,"description":null,"args":[{"description":null,"name":"attendeeFirst","defaultValue":null,"type":{"name":null,"ofType":{"kind":"SCALAR","name":"String","ofType":null},"kind":"NON_NULL"}},{"description":null,"name":"attendeeLast","defaultValue":null,"type":{"kind":"NON_NULL","name":null,"ofType":{"kind":"SCALAR","ofType":null,"name":"String"}}}]},{"name":"checkoutCart","type":{"name":null,"ofType":{"ofType":null,"name":"Payment","kind":"OBJECT"},"kind":"NON_NULL"},"deprecationReason":null,"isDeprecated":false,"description":null,"args":[]},{"name":"createUser","type":{"name":null,"kind":"NON_NULL","ofType":{"kind":"OBJECT","name":"User","ofType":null}},"deprecationReason":null,"isDeprecated":false,"description":null,"args":[{"name":"email","description":null,"defaultValue":null,"type":{"name":null,"ofType":{"kind":"SCALAR","ofType":null,"name":"String"},"kind":"NON_NULL"}},{"name":"firstName","description":null,"defaultValue":null,"type":{"kind":"NON_NULL","name":null,"ofType":{"ofType":null,"kind":"SCALAR","name":"String"}}},{"name":"lastName","description":null,"defaultValue":null,"type":{"ofType":{"name":"String","ofType":null,"kind":"SCALAR"},"name":null,"kind":"NON_NULL"}}]},{"description":null,"deprecationReason":null,"name":"getOrCreateCart","type":{"kind":"NON_NULL","name":null,"ofType":{"name":"Cart","ofType":null,"kind":"OBJECT"}},"args":[],"isDeprecated":false},{"description":null,"deprecationReason":null,"name":"login","type":{"ofType":{"kind":"OBJECT","ofType":null,"name":"LoginPayload"},"kind":"NON_NULL","name":null},"args":[{"defaultValue":null,"name":"email","type":{"ofType":{"ofType":null,"kind":"SCALAR","name":"String"},"name":null,"kind":"NON_NULL"},"description":null},{"defaultValue":null,"name":"redirectTo","type":{"kind":"SCALAR","name":"String","ofType":null},"description":null}],"isDeprecated":false},{"description":null,"deprecationReason":null,"name":"logout","type":{"kind":"NON_NULL","name":null,"ofType":{"kind":"OBJECT","name":"LogoutPayload","ofType":null}},"args":[],"isDeprecated":false},{"description":null,"deprecationReason":null,"name":"markPaymentReceived","type":{"name":null,"kind":"NON_NULL","ofType":{"kind":"OBJECT","ofType":null,"name":"Payment"}},"args":[{"name":"paymentId","type":{"ofType":{"name":"UUID","ofType":null,"kind":"SCALAR"},"name":null,"kind":"NON_NULL"},"description":null,"defaultValue":null}],"isDeprecated":false},{"description":null,"deprecationReason":null,"name":"releaseCart","type":{"kind":"NON_NULL","ofType":{"name":"Cart","kind":"OBJECT","ofType":null},"name":null},"args":[{"description":null,"type":{"kind":"NON_NULL","name":null,"ofType":{"kind":"SCALAR","ofType":null,"name":"UUID"}},"defaultValue":null,"name":"cartId"}],"isDeprecated":false},{"name":"releaseHorse","deprecationReason":null,"args":[{"type":{"name":null,"ofType":{"ofType":null,"kind":"SCALAR","name":"UUID"},"kind":"NON_NULL"},"defaultValue":null,"name":"horseId","description":null}],"type":{"ofType":{"kind":"SCALAR","ofType":null,"name":"Boolean"},"kind":"NON_NULL","name":null},"description":null,"isDeprecated":false},{"name":"removeGiftBasketFromCart","deprecationReason":null,"args":[{"description":null,"type":{"ofType":{"ofType":null,"kind":"SCALAR","name":"UUID"},"kind":"NON_NULL","name":null},"name":"giftId","defaultValue":null}],"type":{"ofType":{"kind":"SCALAR","name":"Boolean","ofType":null},"kind":"NON_NULL","name":null},"description":null,"isDeprecated":false},{"name":"removeHorseFromCart","deprecationReason":null,"args":[{"description":null,"name":"horseId","type":{"name":null,"ofType":{"name":"UUID","ofType":null,"kind":"SCALAR"},"kind":"NON_NULL"},"defaultValue":null}],"type":{"name":null,"kind":"NON_NULL","ofType":{"name":"Boolean","kind":"SCALAR","ofType":null}},"description":null,"isDeprecated":false},{"name":"removeSponsorFromCart","deprecationReason":null,"args":[{"defaultValue":null,"description":null,"name":"sponsorId","type":{"kind":"NON_NULL","ofType":{"name":"UUID","kind":"SCALAR","ofType":null},"name":null}}],"type":{"ofType":{"name":"Boolean","kind":"SCALAR","ofType":null},"kind":"NON_NULL","name":null},"description":null,"isDeprecated":false},{"name":"removeTicketFromCart","deprecationReason":null,"args":[{"description":null,"type":{"kind":"NON_NULL","name":null,"ofType":{"ofType":null,"name":"UUID","kind":"SCALAR"}},"defaultValue":null,"name":"ticketId"}],"type":{"kind":"NON_NULL","ofType":{"kind":"SCALAR","ofType":null,"name":"Boolean"},"name":null},"description":null,"isDeprecated":false},{"name":"renameHorse","deprecationReason":null,"args":[{"name":"horseId","description":null,"type":{"ofType":{"name":"UUID","ofType":null,"kind":"SCALAR"},"kind":"NON_NULL","name":null},"defaultValue":null},{"name":"horseName","description":null,"type":{"ofType":{"kind":"SCALAR","name":"String","ofType":null},"name":null,"kind":"NON_NULL"},"defaultValue":null},{"description":null,"defaultValue":null,"type":{"kind":"NON_NULL","name":null,"ofType":{"ofType":null,"kind":"SCALAR","name":"String"}},"name":"ownershipLabel"}],"type":{"kind":"NON_NULL","ofType":{"ofType":null,"kind":"OBJECT","name":"Horse"},"name":null},"description":null,"isDeprecated":false},{"args":[],"isDeprecated":false,"deprecationReason":null,"description":null,"type":{"kind":"NON_NULL","ofType":{"kind":"SCALAR","ofType":null,"name":"Boolean"},"name":null},"name":"resetDatabase"},{"args":[],"isDeprecated":false,"deprecationReason":null,"description":null,"type":{"ofType":{"name":"Boolean","ofType":null,"kind":"SCALAR"},"kind":"NON_NULL","name":null},"name":"runAdminCleanup"},{"args":[{"defaultValue":null,"description":null,"type":{"ofType":{"name":"UUID","ofType":null,"kind":"SCALAR"},"kind":"NON_NULL","name":null},"name":"ticketId"},{"defaultValue":null,"description":null,"type":{"name":"String","ofType":null,"kind":"SCALAR"},"name":"seatAssignment"}],"isDeprecated":false,"deprecationReason":null,"description":null,"type":{"ofType":{"name":"Ticket","ofType":null,"kind":"OBJECT"},"kind":"NON_NULL","name":null},"name":"setTicketSeatAssignment"},{"args":[{"type":{"name":null,"kind":"NON_NULL","ofType":{"name":"UUID","kind":"SCALAR","ofType":null}},"defaultValue":null,"description":null,"name":"ticketId"},{"type":{"kind":"SCALAR","ofType":null,"name":"String"},"defaultValue":null,"description":null,"name":"seatingPreference"}],"isDeprecated":false,"deprecationReason":null,"description":null,"type":{"kind":"NON_NULL","name":null,"ofType":{"ofType":null,"kind":"OBJECT","name":"Ticket"}},"name":"setTicketSeatingPreference"},{"args":[{"description":null,"type":{"kind":"NON_NULL","ofType":{"name":"UUID","ofType":null,"kind":"SCALAR"},"name":null},"defaultValue":null,"name":"userId"},{"description":null,"type":{"kind":"NON_NULL","name":null,"ofType":{"kind":"SCALAR","ofType":null,"name":"Boolean"}},"defaultValue":null,"name":"isAdmin"}],"isDeprecated":false,"deprecationReason":null,"description":null,"type":{"kind":"NON_NULL","name":null,"ofType":{"ofType":null,"name":"User","kind":"OBJECT"}},"name":"setUserAdmin"},{"deprecationReason":null,"type":{"name":null,"ofType":{"kind":"OBJECT","name":"ValidateTokenPayload","ofType":null},"kind":"NON_NULL"},"description":null,"isDeprecated":false,"name":"validateToken","args":[{"type":{"name":null,"kind":"NON_NULL","ofType":{"ofType":null,"name":"String","kind":"SCALAR"}},"name":"token","defaultValue":null,"description":null}]}],"kind":"OBJECT","enumValues":null,"inputFields":null,"possibleTypes":null,"interfaces":[],"name":"Mutation"},{"description":null,"kind":"OBJECT","fields":[{"description":null,"deprecationReason":null,"name":"id","args":[],"isDeprecated":false,"type":{"name":"UUID","kind":"SCALAR","ofType":null}},{"description":null,"deprecationReason":null,"name":"paymentReceived","args":[],"isDeprecated":false,"type":{"kind":"NON_NULL","name":null,"ofType":{"ofType":null,"kind":"SCALAR","name":"Boolean"}}},{"description":null,"deprecationReason":null,"name":"paymentReceivedAt","args":[],"isDeprecated":false,"type":{"kind":"SCALAR","ofType":null,"name":"Date"}},{"description":null,"deprecationReason":null,"name":"totalCents","args":[],"isDeprecated":false,"type":{"kind":"NON_NULL","name":null,"ofType":{"kind":"SCALAR","ofType":null,"name":"Int"}}},{"description":null,"deprecationReason":null,"name":"user","args":[],"isDeprecated":false,"type":{"kind":"NON_NULL","ofType":{"kind":"OBJECT","name":"User","ofType":null},"name":null}}],"enumValues":null,"inputFields":null,"possibleTypes":null,"interfaces":[],"name":"Payment"},{"description":null,"kind":"OBJECT","fields":[{"description":null,"deprecationReason":null,"name":"abandonedCarts","args":[],"isDeprecated":false,"type":{"ofType":{"name":null,"ofType":{"name":null,"ofType":{"ofType":null,"name":"Cart","kind":"OBJECT"},"kind":"NON_NULL"},"kind":"LIST"},"kind":"NON_NULL","name":null}},{"description":null,"deprecationReason":null,"name":"adminStats","args":[],"isDeprecated":false,"type":{"kind":"NON_NULL","ofType":{"kind":"OBJECT","name":"AdminStats","ofType":null},"name":null}},{"description":null,"deprecationReason":null,"name":"allHorses","args":[],"isDeprecated":false,"type":{"ofType":{"ofType":{"name":null,"ofType":{"kind":"OBJECT","name":"Horse","ofType":null},"kind":"NON_NULL"},"kind":"LIST","name":null},"kind":"NON_NULL","name":null}},{"description":null,"deprecationReason":null,"name":"allTickets","args":[],"isDeprecated":false,"type":{"ofType":{"name":null,"ofType":{"ofType":{"name":"Ticket","kind":"OBJECT","ofType":null},"kind":"NON_NULL","name":null},"kind":"LIST"},"kind":"NON_NULL","name":null}},{"description":null,"type":{"ofType":{"name":null,"kind":"LIST","ofType":{"ofType":{"kind":"OBJECT","name":"GiftBasketInterest","ofType":null},"name":null,"kind":"NON_NULL"}},"name":null,"kind":"NON_NULL"},"isDeprecated":false,"name":"giftBasketInterests","deprecationReason":null,"args":[]},{"description":null,"type":{"name":null,"ofType":{"ofType":{"kind":"NON_NULL","name":null,"ofType":{"ofType":null,"kind":"OBJECT","name":"Lane"}},"name":null,"kind":"LIST"},"kind":"NON_NULL"},"isDeprecated":false,"name":"lanes","deprecationReason":null,"args":[{"name":"roundId","type":{"name":null,"kind":"NON_NULL","ofType":{"ofType":null,"kind":"SCALAR","name":"UUID"}},"description":null,"defaultValue":null}]},{"description":null,"type":{"kind":"NON_NULL","name":null,"ofType":{"kind":"OBJECT","ofType":null,"name":"User"}},"isDeprecated":false,"name":"me","deprecationReason":null,"args":[]},{"description":null,"type":{"kind":"OBJECT","name":"Cart","ofType":null},"isDeprecated":false,"name":"myCart","deprecationReason":null,"args":[]},{"description":null,"type":{"kind":"OBJECT","name":"Payment","ofType":null},"isDeprecated":false,"name":"paymentStatus","deprecationReason":null,"args":[]},{"description":null,"type":{"kind":"NON_NULL","ofType":{"ofType":{"kind":"NON_NULL","name":null,"ofType":{"ofType":null,"name":"Payment","kind":"OBJECT"}},"kind":"LIST","name":null},"name":null},"isDeprecated":false,"name":"pendingPayments","deprecationReason":null,"args":[]},{"description":null,"type":{"ofType":{"ofType":{"name":null,"kind":"NON_NULL","ofType":{"name":"Round","kind":"OBJECT","ofType":null}},"kind":"LIST","name":null},"kind":"NON_NULL","name":null},"isDeprecated":false,"name":"rounds","deprecationReason":null,"args":[]},{"description":null,"type":{"kind":"NON_NULL","name":null,"ofType":{"ofType":{"name":null,"ofType":{"kind":"OBJECT","ofType":null,"name":"SponsorInterest"},"kind":"NON_NULL"},"kind":"LIST","name":null}},"isDeprecated":false,"name":"sponsorInterests","deprecationReason":null,"args":[]},{"description":null,"args":[],"isDeprecated":false,"deprecationReason":null,"name":"users","type":{"kind":"NON_NULL","name":null,"ofType":{"kind":"LIST","ofType":{"ofType":{"name":"User","ofType":null,"kind":"OBJECT"},"name":null,"kind":"NON_NULL"},"name":null}}}],"enumValues":null,"inputFields":null,"possibleTypes":null,"interfaces":[],"name":"Query"},{"description":null,"fields":[{"args":[],"name":"endAt","description":null,"type":{"name":null,"ofType":{"name":"Date","ofType":null,"kind":"SCALAR"},"kind":"NON_NULL"},"isDeprecated":false,"deprecationReason":null},{"args":[],"name":"horses","description":null,"type":{"kind":"NON_NULL","ofType":{"name":null,"ofType":{"kind":"NON_NULL","ofType":{"name":"Horse","kind":"OBJECT","ofType":null},"name":null},"kind":"LIST"},"name":null},"isDeprecated":false,"deprecationReason":null},{"args":[],"name":"id","description":null,"type":{"name":"UUID","kind":"SCALAR","ofType":null},"isDeprecated":false,"deprecationReason":null},{"args":[],"name":"lanes","description":null,"type":{"name":null,"kind":"NON_NULL","ofType":{"kind":"LIST","name":null,"ofType":{"name":null,"kind":"NON_NULL","ofType":{"kind":"OBJECT","name":"Lane","ofType":null}}}},"isDeprecated":false,"deprecationReason":null},{"args":[],"name":"name","description":null,"type":{"name":null,"kind":"NON_NULL","ofType":{"name":"String","ofType":null,"kind":"SCALAR"}},"isDeprecated":false,"deprecationReason":null},{"args":[],"name":"startAt","description":null,"type":{"name":null,"ofType":{"kind":"SCALAR","ofType":null,"name":"Date"},"kind":"NON_NULL"},"isDeprecated":false,"deprecationReason":null}],"kind":"OBJECT","enumValues":null,"inputFields":null,"possibleTypes":null,"interfaces":[],"name":"Round"},{"description":null,"fields":[{"args":[],"name":"companyLogoBase64","description":null,"type":{"ofType":null,"kind":"SCALAR","name":"String"},"isDeprecated":false,"deprecationReason":null},{"args":[],"name":"companyName","description":null,"type":{"kind":"NON_NULL","name":null,"ofType":{"ofType":null,"name":"String","kind":"SCALAR"}},"isDeprecated":false,"deprecationReason":null},{"args":[],"name":"costCents","description":null,"type":{"ofType":{"ofType":null,"kind":"SCALAR","name":"Int"},"name":null,"kind":"NON_NULL"},"isDeprecated":false,"deprecationReason":null},{"isDeprecated":false,"name":"id","type":{"kind":"SCALAR","name":"UUID","ofType":null},"args":[],"description":null,"deprecationReason":null},{"isDeprecated":false,"name":"user","type":{"kind":"NON_NULL","ofType":{"name":"User","ofType":null,"kind":"OBJECT"},"name":null},"args":[],"description":null,"deprecationReason":null}],"kind":"OBJECT","enumValues":null,"inputFields":null,"possibleTypes":null,"interfaces":[],"name":"SponsorInterest"},{"description":"The `String` scalar type represents textual data, represented as UTF-8 character sequences. The String type is most often used by GraphQL to represent free-form human-readable text.","kind":"SCALAR","fields":null,"enumValues":null,"inputFields":null,"possibleTypes":null,"interfaces":null,"name":"String"},{"description":null,"kind":"OBJECT","fields":[{"type":{"ofType":{"kind":"SCALAR","ofType":null,"name":"String"},"kind":"NON_NULL","name":null},"description":null,"args":[],"deprecationReason":null,"isDeprecated":false,"name":"attendeeFirst"},{"type":{"kind":"NON_NULL","ofType":{"ofType":null,"kind":"SCALAR","name":"String"},"name":null},"description":null,"args":[],"deprecationReason":null,"isDeprecated":false,"name":"attendeeLast"},{"type":{"name":null,"kind":"NON_NULL","ofType":{"kind":"SCALAR","ofType":null,"name":"Boolean"}},"description":null,"args":[],"deprecationReason":null,"isDeprecated":false,"name":"canRemove"},{"type":{"name":null,"kind":"NON_NULL","ofType":{"name":"Int","ofType":null,"kind":"SCALAR"}},"description":null,"args":[],"deprecationReason":null,"isDeprecated":false,"name":"costCents"},{"type":{"ofType":null,"kind":"SCALAR","name":"UUID"},"description":null,"args":[],"deprecationReason":null,"isDeprecated":false,"name":"id"},{"type":{"kind":"NON_NULL","name":null,"ofType":{"name":"User","ofType":null,"kind":"OBJECT"}},"description":null,"args":[],"deprecationReason":null,"isDeprecated":false,"name":"owner"},{"type":{"name":"String","kind":"SCALAR","ofType":null},"description":null,"args":[],"deprecationReason":null,"isDeprecated":false,"name":"seatAssignment"},{"type":{"kind":"SCALAR","name":"String","ofType":null},"description":null,"args":[],"deprecationReason":null,"isDeprecated":false,"name":"seatingPreference"},{"type":{"name":null,"kind":"NON_NULL","ofType":{"name":"TicketState","kind":"ENUM","ofType":null}},"description":null,"args":[],"deprecationReason":null,"isDeprecated":false,"name":"state"}],"enumValues":null,"inputFields":null,"possibleTypes":null,"interfaces":[],"name":"Ticket"},{"description":null,"kind":"ENUM","fields":null,"enumValues":[{"description":null,"deprecationReason":null,"isDeprecated":false,"name":"on_hold"},{"description":null,"deprecationReason":null,"isDeprecated":false,"name":"pending_payment"},{"description":null,"deprecationReason":null,"isDeprecated":false,"name":"confirmed"}],"inputFields":null,"possibleTypes":null,"interfaces":null,"name":"TicketState"},{"description":null,"kind":"SCALAR","fields":null,"enumValues":null,"inputFields":null,"possibleTypes":null,"name":"UUID","interfaces":null},{"description":null,"kind":"OBJECT","fields":[{"isDeprecated":false,"name":"email","type":{"ofType":{"ofType":null,"name":"String","kind":"SCALAR"},"kind":"NON_NULL","name":null},"args":[],"description":null,"deprecationReason":null},{"isDeprecated":false,"name":"firstName","type":{"ofType":{"kind":"SCALAR","name":"String","ofType":null},"kind":"NON_NULL","name":null},"args":[],"description":null,"deprecationReason":null},{"description":null,"isDeprecated":false,"type":{"name":null,"kind":"NON_NULL","ofType":{"ofType":{"kind":"NON_NULL","name":null,"ofType":{"kind":"OBJECT","name":"GiftBasketInterest","ofType":null}},"name":null,"kind":"LIST"}},"args":[],"deprecationReason":null,"name":"giftBasketInterests"},{"description":null,"isDeprecated":false,"type":{"ofType":{"name":null,"kind":"LIST","ofType":{"kind":"NON_NULL","name":null,"ofType":{"kind":"OBJECT","ofType":null,"name":"Horse"}}},"kind":"NON_NULL","name":null},"args":[],"deprecationReason":null,"name":"horses"},{"description":null,"isDeprecated":false,"type":{"kind":"SCALAR","name":"UUID","ofType":null},"args":[],"deprecationReason":null,"name":"id"},{"description":null,"isDeprecated":false,"type":{"kind":"NON_NULL","ofType":{"ofType":null,"name":"Boolean","kind":"SCALAR"},"name":null},"args":[],"deprecationReason":null,"name":"isAdmin"},{"description":null,"isDeprecated":false,"type":{"ofType":{"kind":"SCALAR","ofType":null,"name":"String"},"name":null,"kind":"NON_NULL"},"args":[],"deprecationReason":null,"name":"lastName"},{"description":null,"isDeprecated":false,"type":{"ofType":{"kind":"LIST","name":null,"ofType":{"kind":"NON_NULL","ofType":{"kind":"OBJECT","name":"Payment","ofType":null},"name":null}},"kind":"NON_NULL","name":null},"args":[],"deprecationReason":null,"name":"payment"},{"description":null,"isDeprecated":false,"type":{"ofType":{"name":null,"ofType":{"ofType":{"kind":"OBJECT","ofType":null,"name":"SponsorInterest"},"kind":"NON_NULL","name":null},"kind":"LIST"},"name":null,"kind":"NON_NULL"},"args":[],"deprecationReason":null,"name":"sponsorInterests"},{"description":null,"isDeprecated":false,"type":{"name":null,"ofType":{"kind":"LIST","name":null,"ofType":{"name":null,"kind":"NON_NULL","ofType":{"name":"Ticket","kind":"OBJECT","ofType":null}}},"kind":"NON_NULL"},"args":[],"deprecationReason":null,"name":"tickets"}],"enumValues":null,"inputFields":null,"possibleTypes":null,"name":"User","interfaces":[]},{"description":null,"fields":[{"args":[],"name":"message","description":null,"type":{"ofType":{"ofType":null,"name":"String","kind":"SCALAR"},"name":null,"kind":"NON_NULL"},"isDeprecated":false,"deprecationReason":null},{"description":null,"name":"success","isDeprecated":false,"deprecationReason":null,"args":[],"type":{"kind":"NON_NULL","ofType":{"kind":"SCALAR","ofType":null,"name":"Boolean"},"name":null}},{"description":null,"name":"user","isDeprecated":false,"deprecationReason":null,"args":[],"type":{"kind":"OBJECT","name":"User","ofType":null}}],"kind":"OBJECT","enumValues":null,"inputFields":null,"possibleTypes":null,"name":"ValidateTokenPayload","interfaces":[]},{"description":"A Directive provides a way to describe alternate runtime execution and type validation behavior in a GraphQL document.\n\nIn some cases, you need to provide options to alter GraphQL\"s execution behavior in ways field arguments will not suffice, such as conditionally including or skipping a field. Directives provide this by describing additional information to the executor.","interfaces":[],"kind":"OBJECT","inputFields":null,"fields":[{"args":[],"isDeprecated":false,"type":{"ofType":{"kind":"LIST","name":null,"ofType":{"name":null,"ofType":{"kind":"OBJECT","ofType":null,"name":"__InputValue"},"kind":"NON_NULL"}},"name":null,"kind":"NON_NULL"},"description":null,"name":"args","deprecationReason":null},{"args":[],"isDeprecated":false,"type":{"name":"String","ofType":null,"kind":"SCALAR"},"description":null,"name":"description","deprecationReason":null},{"args":[],"isDeprecated":false,"type":{"name":null,"ofType":{"ofType":null,"kind":"SCALAR","name":"Boolean"},"kind":"NON_NULL"},"description":null,"name":"isRepeatable","deprecationReason":null},{"args":[],"isDeprecated":false,"type":{"ofType":{"ofType":{"ofType":{"kind":"ENUM","name":"__DirectiveLocation","ofType":null},"kind":"NON_NULL","name":null},"kind":"LIST","name":null},"name":null,"kind":"NON_NULL"},"description":null,"name":"locations","deprecationReason":null},{"args":[],"isDeprecated":false,"type":{"kind":"NON_NULL","name":null,"ofType":{"ofType":null,"kind":"SCALAR","name":"String"}},"description":null,"name":"name","deprecationReason":null}],"enumValues":null,"name":"__Directive","possibleTypes":null},{"description":"A Directive can be adjacent to many parts of the GraphQL language, a __DirectiveLocation describes one such possible adjacencies.","interfaces":null,"kind":"ENUM","inputFields":null,"fields":null,"enumValues":[{"isDeprecated":false,"deprecationReason":null,"description":"Location adjacent to a query operation.","name":"QUERY"},{"isDeprecated":false,"deprecationReason":null,"description":"Location adjacent to a mutation operation.","name":"MUTATION"},{"isDeprecated":false,"deprecationReason":null,"description":"Location adjacent to a subscription operation.","name":"SUBSCRIPTION"},{"isDeprecated":false,"deprecationReason":null,"description":"Location adjacent to a field.","name":"FIELD"},{"isDeprecated":false,"deprecationReason":null,"description":"Location adjacent to a fragment definition.","name":"FRAGMENT_DEFINITION"},{"isDeprecated":false,"deprecationReason":null,"description":"Location adjacent to a fragment spread.","name":"FRAGMENT_SPREAD"},{"isDeprecated":false,"deprecationReason":null,"description":"Location adjacent to an inline fragment.","name":"INLINE_FRAGMENT"},{"isDeprecated":false,"deprecationReason":null,"description":"Location adjacent to a schema definition.","name":"SCHEMA"},{"isDeprecated":false,"deprecationReason":null,"description":"Location adjacent to a scalar definition.","name":"SCALAR"},{"isDeprecated":false,"deprecationReason":null,"description":"Location adjacent to an object type definition.","name":"OBJECT"},{"isDeprecated":false,"deprecationReason":null,"description":"Location adjacent to a field definition.","name":"FIELD_DEFINITION"},{"deprecationReason":null,"description":"Location adjacent to an argument definition.","isDeprecated":false,"name":"ARGUMENT_DEFINITION"},{"deprecationReason":null,"description":"Location adjacent to an interface definition.","isDeprecated":false,"name":"INTERFACE"},{"deprecationReason":null,"description":"Location adjacent to a union definition.","isDeprecated":false,"name":"UNION"},{"deprecationReason":null,"description":"Location adjacent to an enum definition.","isDeprecated":false,"name":"ENUM"},{"deprecationReason":null,"description":"Location adjacent to an enum value definition.","isDeprecated":false,"name":"ENUM_VALUE"},{"deprecationReason":null,"description":"Location adjacent to an input object type definition.","isDeprecated":false,"name":"INPUT_OBJECT"},{"deprecationReason":null,"description":"Location adjacent to an input object field definition.","isDeprecated":false,"name":"INPUT_FIELD_DEFINITION"}],"name":"__DirectiveLocation","possibleTypes":null},{"description":"One possible value for a given Enum. Enum values are unique values, not a placeholder for a string or numeric value. However an Enum value is returned in a JSON response as a string.","kind":"OBJECT","inputFields":null,"interfaces":[],"fields":[{"description":null,"args":[],"isDeprecated":false,"type":{"kind":"SCALAR","name":"String","ofType":null},"deprecationReason":null,"name":"deprecationReason"},{"description":null,"args":[],"isDeprecated":false,"type":{"ofType":null,"kind":"SCALAR","name":"String"},"deprecationReason":null,"name":"description"},{"description":null,"args":[],"isDeprecated":false,"type":{"kind":"NON_NULL","name":null,"ofType":{"kind":"SCALAR","name":"Boolean","ofType":null}},"deprecationReason":null,"name":"isDeprecated"},{"description":null,"args":[],"isDeprecated":false,"type":{"name":null,"ofType":{"kind":"SCALAR","ofType":null,"name":"String"},"kind":"NON_NULL"},"deprecationReason":null,"name":"name"}],"enumValues":null,"name":"__EnumValue","possibleTypes":null},{"description":"Object and Interface types are described by a list of Fields, each of which has a name, potentially a list of arguments, and a return type.","kind":"OBJECT","inputFields":null,"interfaces":[],"fields":[{"description":null,"args":[],"isDeprecated":false,"type":{"kind":"NON_NULL","ofType":{"kind":"LIST","ofType":{"kind":"NON_NULL","ofType":{"kind":"OBJECT","name":"__InputValue","ofType":null},"name":null},"name":null},"name":null},"deprecationReason":null,"name":"args"},{"description":null,"args":[],"isDeprecated":false,"type":{"name":"String","kind":"SCALAR","ofType":null},"deprecationReason":null,"name":"deprecationReason"},{"description":null,"args":[],"isDeprecated":false,"type":{"name":"String","ofType":null,"kind":"SCALAR"},"deprecationReason":null,"name":"description"},{"description":null,"args":[],"isDeprecated":false,"type":{"kind":"NON_NULL","name":null,"ofType":{"kind":"SCALAR","name":"Boolean","ofType":null}},"deprecationReason":null,"name":"isDeprecated"},{"description":null,"args":[],"isDeprecated":false,"type":{"ofType":{"kind":"SCALAR","name":"String","ofType":null},"kind":"NON_NULL","name":null},"deprecationReason":null,"name":"name"},{"description":null,"args":[],"isDeprecated":false,"type":{"kind":"NON_NULL","ofType":{"name":"__Type","kind":"OBJECT","ofType":null},"name":null},"deprecationReason":null,"name":"type"}],"enumValues":null,"name":"__Field","possibleTypes":null},{"description":"Arguments provided to Fields or Directives and the input fields of an InputObject are represented as Input Values which describe their type and optionally a default value.","kind":"OBJECT","inputFields":null,"interfaces":[],"fields":[{"description":"A GraphQL-formatted string representing the default value for this input value.","args":[],"isDeprecated":false,"type":{"ofType":null,"name":"String","kind":"SCALAR"},"deprecationReason":null,"name":"defaultValue"},{"isDeprecated":false,"type":{"name":"String","ofType":null,"kind":"SCALAR"},"deprecationReason":null,"name":"description","description":null,"args":[]},{"isDeprecated":false,"type":{"name":null,"kind":"NON_NULL","ofType":{"ofType":null,"kind":"SCALAR","name":"String"}},"deprecationReason":null,"name":"name","description":null,"args":[]},{"isDeprecated":false,"type":{"name":null,"ofType":{"ofType":null,"kind":"OBJECT","name":"__Type"},"kind":"NON_NULL"},"deprecationReason":null,"name":"type","description":null,"args":[]}],"enumValues":null,"name":"__InputValue","possibleTypes":null},{"description":"A GraphQL Schema defines the capabilities of a GraphQL server. It exposes all available types and directives on the server, as well as the entry points for query, mutation, and subscription operations.","interfaces":[],"inputFields":null,"kind":"OBJECT","fields":[{"isDeprecated":false,"name":"directives","args":[],"deprecationReason":null,"type":{"ofType":{"kind":"LIST","name":null,"ofType":{"name":null,"ofType":{"name":"__Directive","kind":"OBJECT","ofType":null},"kind":"NON_NULL"}},"kind":"NON_NULL","name":null},"description":"A list of all directives supported by this server."},{"isDeprecated":false,"name":"mutationType","args":[],"deprecationReason":null,"type":{"kind":"OBJECT","ofType":null,"name":"__Type"},"description":"If this server supports mutation, the type that mutation operations will be rooted at."},{"isDeprecated":false,"name":"queryType","args":[],"deprecationReason":null,"type":{"ofType":{"name":"__Type","kind":"OBJECT","ofType":null},"kind":"NON_NULL","name":null},"description":"The type that query operations will be rooted at."},{"isDeprecated":false,"name":"subscriptionType","args":[],"deprecationReason":null,"type":{"kind":"OBJECT","ofType":null,"name":"__Type"},"description":"If this server support subscription, the type that subscription operations will be rooted at."},{"isDeprecated":false,"name":"types","args":[],"deprecationReason":null,"type":{"name":null,"kind":"NON_NULL","ofType":{"ofType":{"name":null,"ofType":{"name":"__Type","ofType":null,"kind":"OBJECT"},"kind":"NON_NULL"},"name":null,"kind":"LIST"}},"description":"A list of all types supported by this server."}],"enumValues":null,"name":"__Schema","possibleTypes":null},{"description":"The fundamental unit of any GraphQL Schema is the type. There are many kinds of types in GraphQL as represented by the `__TypeKind` enum.\n\nDepending on the kind of a type, certain fields describe information about that type. Scalar types provide no information beyond a name and description and optional `specifiedByURL`, while Enum types provide their values. Object and Interface types provide the fields they describe. Abstract types, Union and Interface, provide the Object types possible at runtime. List and NonNull types compose other types.","interfaces":[],"inputFields":null,"kind":"OBJECT","fields":[{"isDeprecated":false,"name":"description","args":[],"deprecationReason":null,"type":{"kind":"SCALAR","ofType":null,"name":"String"},"description":null},{"isDeprecated":false,"name":"enumValues","args":[{"defaultValue":"false","name":"includeDeprecated","description":null,"type":{"name":"Boolean","ofType":null,"kind":"SCALAR"}}],"deprecationReason":null,"type":{"name":null,"ofType":{"name":null,"ofType":{"ofType":null,"name":"__EnumValue","kind":"OBJECT"},"kind":"NON_NULL"},"kind":"LIST"},"description":null},{"isDeprecated":false,"name":"fields","args":[{"name":"includeDeprecated","description":null,"defaultValue":"false","type":{"kind":"SCALAR","ofType":null,"name":"Boolean"}}],"deprecationReason":null,"type":{"ofType":{"ofType":{"name":"__Field","kind":"OBJECT","ofType":null},"kind":"NON_NULL","name":null},"kind":"LIST","name":null},"description":null},{"isDeprecated":false,"deprecationReason":null,"type":{"name":null,"kind":"LIST","ofType":{"kind":"NON_NULL","ofType":{"ofType":null,"kind":"OBJECT","name":"__InputValue"},"name":null}},"description":null,"args":[],"name":"inputFields"},{"isDeprecated":false,"deprecationReason":null,"type":{"kind":"LIST","name":null,"ofType":{"name":null,"kind":"NON_NULL","ofType":{"kind":"OBJECT","name":"__Type","ofType":null}}},"description":null,"args":[],"name":"interfaces"},{"isDeprecated":false,"deprecationReason":null,"type":{"ofType":null,"kind":"SCALAR","name":"Boolean"},"description":null,"args":[],"name":"isOneOf"},{"isDeprecated":false,"deprecationReason":null,"type":{"name":null,"kind":"NON_NULL","ofType":{"name":"__TypeKind","ofType":null,"kind":"ENUM"}},"description":null,"args":[],"name":"kind"},{"isDeprecated":false,"deprecationReason":null,"type":{"name":"String","kind":"SCALAR","ofType":null},"description":null,"args":[],"name":"name"},{"isDeprecated":false,"deprecationReason":null,"type":{"name":"__Type","kind":"OBJECT","ofType":null},"description":null,"args":[],"name":"ofType"},{"isDeprecated":false,"deprecationReason":null,"type":{"name":null,"kind":"LIST","ofType":{"name":null,"ofType":{"name":"__Type","ofType":null,"kind":"OBJECT"},"kind":"NON_NULL"}},"description":null,"args":[],"name":"possibleTypes"},{"isDeprecated":false,"deprecationReason":null,"type":{"kind":"SCALAR","name":"String","ofType":null},"description":null,"args":[],"name":"specifiedByURL"}],"enumValues":null,"name":"__Type","possibleTypes":null},{"description":"An enum describing what kind of type a given `__Type` is.","interfaces":null,"inputFields":null,"kind":"ENUM","fields":null,"enumValues":[{"deprecationReason":null,"name":"SCALAR","isDeprecated":false,"description":"Indicates this type is a scalar."},{"deprecationReason":null,"name":"OBJECT","isDeprecated":false,"description":"Indicates this type is an object. `fields` and `interfaces` are valid fields."},{"deprecationReason":null,"name":"INTERFACE","isDeprecated":false,"description":"Indicates this type is an interface. `fields`, `interfaces`, and `possibleTypes` are valid fields."},{"deprecationReason":null,"name":"UNION","isDeprecated":false,"description":"Indicates this type is a union. `possibleTypes` is a valid field."},{"deprecationReason":null,"name":"ENUM","isDeprecated":false,"description":"Indicates this type is an enum. `enumValues` is a valid field."},{"deprecationReason":null,"name":"INPUT_OBJECT","isDeprecated":false,"description":"Indicates this type is an input object. `inputFields` is a valid field."},{"name":"LIST","deprecationReason":null,"isDeprecated":false,"description":"Indicates this type is a list. `ofType` is a valid field."},{"name":"NON_NULL","deprecationReason":null,"isDeprecated":false,"description":"Indicates this type is a non-null. `ofType` is a valid field."}],"name":"__TypeKind","possibleTypes":null}],"mutationType":{"name":"Mutation"},"directives":[{"locations":["FIELD","FRAGMENT_SPREAD","INLINE_FRAGMENT"],"description":"Directs the executor to include this field or fragment only when the `if` argument is true.","args":[{"defaultValue":null,"name":"if","type":{"kind":"NON_NULL","name":null,"ofType":{"ofType":null,"name":"Boolean","kind":"SCALAR"}},"description":"Included when true."}],"name":"include"},{"name":"skip","description":"Directs the executor to skip this field or fragment when the `if` argument is true.","locations":["FIELD","FRAGMENT_SPREAD","INLINE_FRAGMENT"],"args":[{"description":"Skipped when true.","type":{"name":null,"kind":"NON_NULL","ofType":{"ofType":null,"name":"Boolean","kind":"SCALAR"}},"defaultValue":null,"name":"if"}]},{"name":"deprecated","description":"Marks an element of a GraphQL schema as no longer supported.","locations":["FIELD_DEFINITION","ARGUMENT_DEFINITION","INPUT_FIELD_DEFINITION","ENUM_VALUE"],"args":[{"description":"Explains why this element was deprecated, usually also including a suggestion for how to access supported similar data. Formatted in [Markdown](https:\/\/daringfireball.net\/projects\/markdown\/).","type":{"kind":"SCALAR","ofType":null,"name":"String"},"name":"reason","defaultValue":"\"No longer supported\""}]},{"name":"specifiedBy","description":"Exposes a URL that specifies the behavior of this scalar.","locations":["SCALAR"],"args":[{"defaultValue":null,"name":"url","description":"The URL that specifies the behavior of this scalar.","type":{"kind":"NON_NULL","name":null,"ofType":{"name":"String","kind":"SCALAR","ofType":null}}}]},{"name":"oneOf","description":"Indicates exactly one field must be supplied and this field must not be `null`.","locations":["INPUT_OBJECT"],"args":[]}],"queryType":{"name":"Query"}}}}
+{
+  "__schema": {
+    "description": null,
+    "queryType": {
+      "name": "Query",
+      "kind": "OBJECT"
+    },
+    "mutationType": {
+      "name": "Mutation",
+      "kind": "OBJECT"
+    },
+    "subscriptionType": null,
+    "types": [
+      {
+        "kind": "OBJECT",
+        "name": "AdminStats",
+        "description": null,
+        "specifiedByURL": null,
+        "isOneOf": null,
+        "fields": [
+          {
+            "name": "giftBasketCount",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "Int",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "sponsorCount",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "Int",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "ticketCount",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "Int",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
+        "inputFields": null,
+        "interfaces": [],
+        "enumValues": null,
+        "possibleTypes": null
+      },
+      {
+        "kind": "SCALAR",
+        "name": "Int",
+        "description": "The `Int` scalar type represents non-fractional signed whole numeric values. Int can represent values between -(2^31) and 2^31 - 1.",
+        "specifiedByURL": null,
+        "isOneOf": null,
+        "fields": null,
+        "inputFields": null,
+        "interfaces": null,
+        "enumValues": null,
+        "possibleTypes": null
+      },
+      {
+        "kind": "OBJECT",
+        "name": "Cart",
+        "description": null,
+        "specifiedByURL": null,
+        "isOneOf": null,
+        "fields": [
+          {
+            "name": "cost",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "OBJECT",
+                "name": "CartCost",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "giftBasketInterests",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "LIST",
+                "name": null,
+                "ofType": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": {
+                    "kind": "OBJECT",
+                    "name": "GiftBasketInterest",
+                    "ofType": null
+                  }
+                }
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "horses",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "LIST",
+                "name": null,
+                "ofType": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": {
+                    "kind": "OBJECT",
+                    "name": "Horse",
+                    "ofType": null
+                  }
+                }
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "id",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "UUID",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "orderNumber",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "String",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "sponsorInterests",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "LIST",
+                "name": null,
+                "ofType": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": {
+                    "kind": "OBJECT",
+                    "name": "SponsorInterest",
+                    "ofType": null
+                  }
+                }
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "status",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "ENUM",
+                "name": "CartStatus",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "tickets",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "LIST",
+                "name": null,
+                "ofType": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": {
+                    "kind": "OBJECT",
+                    "name": "Ticket",
+                    "ofType": null
+                  }
+                }
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "user",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "OBJECT",
+                "name": "User",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "venmoLink",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "String",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "venmoUser",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "String",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
+        "inputFields": null,
+        "interfaces": [],
+        "enumValues": null,
+        "possibleTypes": null
+      },
+      {
+        "kind": "SCALAR",
+        "name": "String",
+        "description": "The `String` scalar type represents textual data, represented as UTF-8 character sequences. The String type is most often used by GraphQL to represent free-form human-readable text.",
+        "specifiedByURL": null,
+        "isOneOf": null,
+        "fields": null,
+        "inputFields": null,
+        "interfaces": null,
+        "enumValues": null,
+        "possibleTypes": null
+      },
+      {
+        "kind": "OBJECT",
+        "name": "CartCost",
+        "description": null,
+        "specifiedByURL": null,
+        "isOneOf": null,
+        "fields": [
+          {
+            "name": "horseCents",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "Int",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "sponsorCents",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "Int",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "ticketsCents",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "Int",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "totalCents",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "Int",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
+        "inputFields": null,
+        "interfaces": [],
+        "enumValues": null,
+        "possibleTypes": null
+      },
+      {
+        "kind": "ENUM",
+        "name": "CartStatus",
+        "description": null,
+        "specifiedByURL": null,
+        "isOneOf": null,
+        "fields": null,
+        "inputFields": null,
+        "interfaces": null,
+        "enumValues": [
+          {
+            "name": "open",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "checkedOut",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "abandoned",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
+        "possibleTypes": null
+      },
+      {
+        "kind": "SCALAR",
+        "name": "Date",
+        "description": null,
+        "specifiedByURL": null,
+        "isOneOf": null,
+        "fields": null,
+        "inputFields": null,
+        "interfaces": null,
+        "enumValues": null,
+        "possibleTypes": null
+      },
+      {
+        "kind": "OBJECT",
+        "name": "GiftBasketInterest",
+        "description": null,
+        "specifiedByURL": null,
+        "isOneOf": null,
+        "fields": [
+          {
+            "name": "costCents",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "Int",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "description",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "String",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "id",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "UUID",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "user",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "OBJECT",
+                "name": "User",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
+        "inputFields": null,
+        "interfaces": [],
+        "enumValues": null,
+        "possibleTypes": null
+      },
+      {
+        "kind": "OBJECT",
+        "name": "Horse",
+        "description": null,
+        "specifiedByURL": null,
+        "isOneOf": null,
+        "fields": [
+          {
+            "name": "costCents",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "Int",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "horseName",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "String",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "id",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "UUID",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "lane",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "OBJECT",
+                "name": "Lane",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "owner",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "OBJECT",
+                "name": "User",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "ownershipLabel",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "String",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "round",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "OBJECT",
+                "name": "Round",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "state",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "ENUM",
+                "name": "HorseEntryState",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
+        "inputFields": null,
+        "interfaces": [],
+        "enumValues": null,
+        "possibleTypes": null
+      },
+      {
+        "kind": "ENUM",
+        "name": "HorseEntryState",
+        "description": null,
+        "specifiedByURL": null,
+        "isOneOf": null,
+        "fields": null,
+        "inputFields": null,
+        "interfaces": null,
+        "enumValues": [
+          {
+            "name": "on_hold",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "pending_payment",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "confirmed",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
+        "possibleTypes": null
+      },
+      {
+        "kind": "OBJECT",
+        "name": "Lane",
+        "description": null,
+        "specifiedByURL": null,
+        "isOneOf": null,
+        "fields": [
+          {
+            "name": "horse",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "OBJECT",
+              "name": "Horse",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "id",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "UUID",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "number",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "Int",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "round",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "OBJECT",
+                "name": "Round",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
+        "inputFields": null,
+        "interfaces": [],
+        "enumValues": null,
+        "possibleTypes": null
+      },
+      {
+        "kind": "OBJECT",
+        "name": "LoginPayload",
+        "description": null,
+        "specifiedByURL": null,
+        "isOneOf": null,
+        "fields": [
+          {
+            "name": "message",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "String",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "success",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "Boolean",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "tokenId",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "String",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
+        "inputFields": null,
+        "interfaces": [],
+        "enumValues": null,
+        "possibleTypes": null
+      },
+      {
+        "kind": "SCALAR",
+        "name": "Boolean",
+        "description": "The `Boolean` scalar type represents `true` or `false`.",
+        "specifiedByURL": null,
+        "isOneOf": null,
+        "fields": null,
+        "inputFields": null,
+        "interfaces": null,
+        "enumValues": null,
+        "possibleTypes": null
+      },
+      {
+        "kind": "OBJECT",
+        "name": "LogoutPayload",
+        "description": null,
+        "specifiedByURL": null,
+        "isOneOf": null,
+        "fields": [
+          {
+            "name": "message",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "String",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "success",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "Boolean",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
+        "inputFields": null,
+        "interfaces": [],
+        "enumValues": null,
+        "possibleTypes": null
+      },
+      {
+        "kind": "OBJECT",
+        "name": "Mutation",
+        "description": null,
+        "specifiedByURL": null,
+        "isOneOf": null,
+        "fields": [
+          {
+            "name": "addGiftBasketToCart",
+            "description": null,
+            "args": [
+              {
+                "name": "description",
+                "description": null,
+                "type": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": {
+                    "kind": "SCALAR",
+                    "name": "String",
+                    "ofType": null
+                  }
+                },
+                "defaultValue": null,
+                "isDeprecated": false,
+                "deprecationReason": null
+              }
+            ],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "OBJECT",
+                "name": "GiftBasketInterest",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "addHorseToCart",
+            "description": null,
+            "args": [
+              {
+                "name": "roundId",
+                "description": null,
+                "type": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": {
+                    "kind": "SCALAR",
+                    "name": "UUID",
+                    "ofType": null
+                  }
+                },
+                "defaultValue": null,
+                "isDeprecated": false,
+                "deprecationReason": null
+              },
+              {
+                "name": "laneId",
+                "description": null,
+                "type": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": {
+                    "kind": "SCALAR",
+                    "name": "UUID",
+                    "ofType": null
+                  }
+                },
+                "defaultValue": null,
+                "isDeprecated": false,
+                "deprecationReason": null
+              },
+              {
+                "name": "horseName",
+                "description": null,
+                "type": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": {
+                    "kind": "SCALAR",
+                    "name": "String",
+                    "ofType": null
+                  }
+                },
+                "defaultValue": null,
+                "isDeprecated": false,
+                "deprecationReason": null
+              },
+              {
+                "name": "ownershipLabel",
+                "description": null,
+                "type": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": {
+                    "kind": "SCALAR",
+                    "name": "String",
+                    "ofType": null
+                  }
+                },
+                "defaultValue": null,
+                "isDeprecated": false,
+                "deprecationReason": null
+              }
+            ],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "OBJECT",
+                "name": "Horse",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "addSponsorToCart",
+            "description": null,
+            "args": [
+              {
+                "name": "companyName",
+                "description": null,
+                "type": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": {
+                    "kind": "SCALAR",
+                    "name": "String",
+                    "ofType": null
+                  }
+                },
+                "defaultValue": null,
+                "isDeprecated": false,
+                "deprecationReason": null
+              },
+              {
+                "name": "companyLogoBase64",
+                "description": null,
+                "type": {
+                  "kind": "SCALAR",
+                  "name": "String",
+                  "ofType": null
+                },
+                "defaultValue": null,
+                "isDeprecated": false,
+                "deprecationReason": null
+              }
+            ],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "OBJECT",
+                "name": "SponsorInterest",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "addTicketToCart",
+            "description": null,
+            "args": [
+              {
+                "name": "attendeeFirst",
+                "description": null,
+                "type": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": {
+                    "kind": "SCALAR",
+                    "name": "String",
+                    "ofType": null
+                  }
+                },
+                "defaultValue": null,
+                "isDeprecated": false,
+                "deprecationReason": null
+              },
+              {
+                "name": "attendeeLast",
+                "description": null,
+                "type": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": {
+                    "kind": "SCALAR",
+                    "name": "String",
+                    "ofType": null
+                  }
+                },
+                "defaultValue": null,
+                "isDeprecated": false,
+                "deprecationReason": null
+              }
+            ],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "OBJECT",
+                "name": "Ticket",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "checkoutCart",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "OBJECT",
+                "name": "Payment",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "createUser",
+            "description": null,
+            "args": [
+              {
+                "name": "email",
+                "description": null,
+                "type": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": {
+                    "kind": "SCALAR",
+                    "name": "String",
+                    "ofType": null
+                  }
+                },
+                "defaultValue": null,
+                "isDeprecated": false,
+                "deprecationReason": null
+              },
+              {
+                "name": "firstName",
+                "description": null,
+                "type": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": {
+                    "kind": "SCALAR",
+                    "name": "String",
+                    "ofType": null
+                  }
+                },
+                "defaultValue": null,
+                "isDeprecated": false,
+                "deprecationReason": null
+              },
+              {
+                "name": "lastName",
+                "description": null,
+                "type": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": {
+                    "kind": "SCALAR",
+                    "name": "String",
+                    "ofType": null
+                  }
+                },
+                "defaultValue": null,
+                "isDeprecated": false,
+                "deprecationReason": null
+              }
+            ],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "OBJECT",
+                "name": "User",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "getOrCreateCart",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "OBJECT",
+                "name": "Cart",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "login",
+            "description": null,
+            "args": [
+              {
+                "name": "email",
+                "description": null,
+                "type": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": {
+                    "kind": "SCALAR",
+                    "name": "String",
+                    "ofType": null
+                  }
+                },
+                "defaultValue": null,
+                "isDeprecated": false,
+                "deprecationReason": null
+              },
+              {
+                "name": "redirectTo",
+                "description": null,
+                "type": {
+                  "kind": "SCALAR",
+                  "name": "String",
+                  "ofType": null
+                },
+                "defaultValue": null,
+                "isDeprecated": false,
+                "deprecationReason": null
+              }
+            ],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "OBJECT",
+                "name": "LoginPayload",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "logout",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "OBJECT",
+                "name": "LogoutPayload",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "setPaymentReceived",
+            "description": null,
+            "args": [
+              {
+                "name": "paymentId",
+                "description": null,
+                "type": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": {
+                    "kind": "SCALAR",
+                    "name": "UUID",
+                    "ofType": null
+                  }
+                },
+                "defaultValue": null,
+                "isDeprecated": false,
+                "deprecationReason": null
+              },
+              {
+                "name": "received",
+                "description": null,
+                "type": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": {
+                    "kind": "SCALAR",
+                    "name": "Boolean",
+                    "ofType": null
+                  }
+                },
+                "defaultValue": null,
+                "isDeprecated": false,
+                "deprecationReason": null
+              }
+            ],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "OBJECT",
+                "name": "Payment",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "releaseCart",
+            "description": null,
+            "args": [
+              {
+                "name": "cartId",
+                "description": null,
+                "type": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": {
+                    "kind": "SCALAR",
+                    "name": "UUID",
+                    "ofType": null
+                  }
+                },
+                "defaultValue": null,
+                "isDeprecated": false,
+                "deprecationReason": null
+              }
+            ],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "OBJECT",
+                "name": "Cart",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "releaseHorse",
+            "description": null,
+            "args": [
+              {
+                "name": "horseId",
+                "description": null,
+                "type": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": {
+                    "kind": "SCALAR",
+                    "name": "UUID",
+                    "ofType": null
+                  }
+                },
+                "defaultValue": null,
+                "isDeprecated": false,
+                "deprecationReason": null
+              }
+            ],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "Boolean",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "removeGiftBasketFromCart",
+            "description": null,
+            "args": [
+              {
+                "name": "giftId",
+                "description": null,
+                "type": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": {
+                    "kind": "SCALAR",
+                    "name": "UUID",
+                    "ofType": null
+                  }
+                },
+                "defaultValue": null,
+                "isDeprecated": false,
+                "deprecationReason": null
+              }
+            ],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "Boolean",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "removeHorseFromCart",
+            "description": null,
+            "args": [
+              {
+                "name": "horseId",
+                "description": null,
+                "type": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": {
+                    "kind": "SCALAR",
+                    "name": "UUID",
+                    "ofType": null
+                  }
+                },
+                "defaultValue": null,
+                "isDeprecated": false,
+                "deprecationReason": null
+              }
+            ],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "Boolean",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "removeSponsorFromCart",
+            "description": null,
+            "args": [
+              {
+                "name": "sponsorId",
+                "description": null,
+                "type": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": {
+                    "kind": "SCALAR",
+                    "name": "UUID",
+                    "ofType": null
+                  }
+                },
+                "defaultValue": null,
+                "isDeprecated": false,
+                "deprecationReason": null
+              }
+            ],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "Boolean",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "removeTicketFromCart",
+            "description": null,
+            "args": [
+              {
+                "name": "ticketId",
+                "description": null,
+                "type": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": {
+                    "kind": "SCALAR",
+                    "name": "UUID",
+                    "ofType": null
+                  }
+                },
+                "defaultValue": null,
+                "isDeprecated": false,
+                "deprecationReason": null
+              }
+            ],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "Boolean",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "renameHorse",
+            "description": null,
+            "args": [
+              {
+                "name": "horseId",
+                "description": null,
+                "type": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": {
+                    "kind": "SCALAR",
+                    "name": "UUID",
+                    "ofType": null
+                  }
+                },
+                "defaultValue": null,
+                "isDeprecated": false,
+                "deprecationReason": null
+              },
+              {
+                "name": "horseName",
+                "description": null,
+                "type": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": {
+                    "kind": "SCALAR",
+                    "name": "String",
+                    "ofType": null
+                  }
+                },
+                "defaultValue": null,
+                "isDeprecated": false,
+                "deprecationReason": null
+              },
+              {
+                "name": "ownershipLabel",
+                "description": null,
+                "type": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": {
+                    "kind": "SCALAR",
+                    "name": "String",
+                    "ofType": null
+                  }
+                },
+                "defaultValue": null,
+                "isDeprecated": false,
+                "deprecationReason": null
+              }
+            ],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "OBJECT",
+                "name": "Horse",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "resetDatabase",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "Boolean",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "runAdminCleanup",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "Boolean",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "setTicketSeatAssignment",
+            "description": null,
+            "args": [
+              {
+                "name": "ticketId",
+                "description": null,
+                "type": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": {
+                    "kind": "SCALAR",
+                    "name": "UUID",
+                    "ofType": null
+                  }
+                },
+                "defaultValue": null,
+                "isDeprecated": false,
+                "deprecationReason": null
+              },
+              {
+                "name": "seatAssignment",
+                "description": null,
+                "type": {
+                  "kind": "SCALAR",
+                  "name": "String",
+                  "ofType": null
+                },
+                "defaultValue": null,
+                "isDeprecated": false,
+                "deprecationReason": null
+              }
+            ],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "OBJECT",
+                "name": "Ticket",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "setTicketSeatingPreference",
+            "description": null,
+            "args": [
+              {
+                "name": "ticketId",
+                "description": null,
+                "type": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": {
+                    "kind": "SCALAR",
+                    "name": "UUID",
+                    "ofType": null
+                  }
+                },
+                "defaultValue": null,
+                "isDeprecated": false,
+                "deprecationReason": null
+              },
+              {
+                "name": "seatingPreference",
+                "description": null,
+                "type": {
+                  "kind": "SCALAR",
+                  "name": "String",
+                  "ofType": null
+                },
+                "defaultValue": null,
+                "isDeprecated": false,
+                "deprecationReason": null
+              }
+            ],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "OBJECT",
+                "name": "Ticket",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "setUserAdmin",
+            "description": null,
+            "args": [
+              {
+                "name": "userId",
+                "description": null,
+                "type": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": {
+                    "kind": "SCALAR",
+                    "name": "UUID",
+                    "ofType": null
+                  }
+                },
+                "defaultValue": null,
+                "isDeprecated": false,
+                "deprecationReason": null
+              },
+              {
+                "name": "isAdmin",
+                "description": null,
+                "type": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": {
+                    "kind": "SCALAR",
+                    "name": "Boolean",
+                    "ofType": null
+                  }
+                },
+                "defaultValue": null,
+                "isDeprecated": false,
+                "deprecationReason": null
+              }
+            ],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "OBJECT",
+                "name": "User",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "validateToken",
+            "description": null,
+            "args": [
+              {
+                "name": "token",
+                "description": null,
+                "type": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": {
+                    "kind": "SCALAR",
+                    "name": "String",
+                    "ofType": null
+                  }
+                },
+                "defaultValue": null,
+                "isDeprecated": false,
+                "deprecationReason": null
+              }
+            ],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "OBJECT",
+                "name": "ValidateTokenPayload",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
+        "inputFields": null,
+        "interfaces": [],
+        "enumValues": null,
+        "possibleTypes": null
+      },
+      {
+        "kind": "OBJECT",
+        "name": "Payment",
+        "description": null,
+        "specifiedByURL": null,
+        "isOneOf": null,
+        "fields": [
+          {
+            "name": "id",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "UUID",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "paymentReceived",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "Boolean",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "paymentReceivedAt",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "Date",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "totalCents",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "Int",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "user",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "OBJECT",
+                "name": "User",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
+        "inputFields": null,
+        "interfaces": [],
+        "enumValues": null,
+        "possibleTypes": null
+      },
+      {
+        "kind": "OBJECT",
+        "name": "Query",
+        "description": null,
+        "specifiedByURL": null,
+        "isOneOf": null,
+        "fields": [
+          {
+            "name": "abandonedCarts",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "LIST",
+                "name": null,
+                "ofType": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": {
+                    "kind": "OBJECT",
+                    "name": "Cart",
+                    "ofType": null
+                  }
+                }
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "adminStats",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "OBJECT",
+                "name": "AdminStats",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "allHorses",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "LIST",
+                "name": null,
+                "ofType": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": {
+                    "kind": "OBJECT",
+                    "name": "Horse",
+                    "ofType": null
+                  }
+                }
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "allTickets",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "LIST",
+                "name": null,
+                "ofType": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": {
+                    "kind": "OBJECT",
+                    "name": "Ticket",
+                    "ofType": null
+                  }
+                }
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "giftBasketInterests",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "LIST",
+                "name": null,
+                "ofType": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": {
+                    "kind": "OBJECT",
+                    "name": "GiftBasketInterest",
+                    "ofType": null
+                  }
+                }
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "lanes",
+            "description": null,
+            "args": [
+              {
+                "name": "roundId",
+                "description": null,
+                "type": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": {
+                    "kind": "SCALAR",
+                    "name": "UUID",
+                    "ofType": null
+                  }
+                },
+                "defaultValue": null,
+                "isDeprecated": false,
+                "deprecationReason": null
+              }
+            ],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "LIST",
+                "name": null,
+                "ofType": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": {
+                    "kind": "OBJECT",
+                    "name": "Lane",
+                    "ofType": null
+                  }
+                }
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "me",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "OBJECT",
+                "name": "User",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "myCart",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "OBJECT",
+              "name": "Cart",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "paymentStatus",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "OBJECT",
+              "name": "Payment",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "payments",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "LIST",
+                "name": null,
+                "ofType": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": {
+                    "kind": "OBJECT",
+                    "name": "Payment",
+                    "ofType": null
+                  }
+                }
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "rounds",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "LIST",
+                "name": null,
+                "ofType": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": {
+                    "kind": "OBJECT",
+                    "name": "Round",
+                    "ofType": null
+                  }
+                }
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "sponsorInterests",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "LIST",
+                "name": null,
+                "ofType": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": {
+                    "kind": "OBJECT",
+                    "name": "SponsorInterest",
+                    "ofType": null
+                  }
+                }
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "users",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "LIST",
+                "name": null,
+                "ofType": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": {
+                    "kind": "OBJECT",
+                    "name": "User",
+                    "ofType": null
+                  }
+                }
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
+        "inputFields": null,
+        "interfaces": [],
+        "enumValues": null,
+        "possibleTypes": null
+      },
+      {
+        "kind": "OBJECT",
+        "name": "Round",
+        "description": null,
+        "specifiedByURL": null,
+        "isOneOf": null,
+        "fields": [
+          {
+            "name": "endAt",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "Date",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "horses",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "LIST",
+                "name": null,
+                "ofType": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": {
+                    "kind": "OBJECT",
+                    "name": "Horse",
+                    "ofType": null
+                  }
+                }
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "id",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "UUID",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "lanes",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "LIST",
+                "name": null,
+                "ofType": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": {
+                    "kind": "OBJECT",
+                    "name": "Lane",
+                    "ofType": null
+                  }
+                }
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "name",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "String",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "startAt",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "Date",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
+        "inputFields": null,
+        "interfaces": [],
+        "enumValues": null,
+        "possibleTypes": null
+      },
+      {
+        "kind": "OBJECT",
+        "name": "SponsorInterest",
+        "description": null,
+        "specifiedByURL": null,
+        "isOneOf": null,
+        "fields": [
+          {
+            "name": "companyLogoBase64",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "companyName",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "String",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "costCents",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "Int",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "id",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "UUID",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "user",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "OBJECT",
+                "name": "User",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
+        "inputFields": null,
+        "interfaces": [],
+        "enumValues": null,
+        "possibleTypes": null
+      },
+      {
+        "kind": "OBJECT",
+        "name": "Ticket",
+        "description": null,
+        "specifiedByURL": null,
+        "isOneOf": null,
+        "fields": [
+          {
+            "name": "attendeeFirst",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "String",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "attendeeLast",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "String",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "canRemove",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "Boolean",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "costCents",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "Int",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "id",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "UUID",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "owner",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "OBJECT",
+                "name": "User",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "seatAssignment",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "seatingPreference",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "state",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "ENUM",
+                "name": "TicketState",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
+        "inputFields": null,
+        "interfaces": [],
+        "enumValues": null,
+        "possibleTypes": null
+      },
+      {
+        "kind": "ENUM",
+        "name": "TicketState",
+        "description": null,
+        "specifiedByURL": null,
+        "isOneOf": null,
+        "fields": null,
+        "inputFields": null,
+        "interfaces": null,
+        "enumValues": [
+          {
+            "name": "on_hold",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "pending_payment",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "confirmed",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
+        "possibleTypes": null
+      },
+      {
+        "kind": "OBJECT",
+        "name": "User",
+        "description": null,
+        "specifiedByURL": null,
+        "isOneOf": null,
+        "fields": [
+          {
+            "name": "email",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "String",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "firstName",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "String",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "giftBasketInterests",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "LIST",
+                "name": null,
+                "ofType": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": {
+                    "kind": "OBJECT",
+                    "name": "GiftBasketInterest",
+                    "ofType": null
+                  }
+                }
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "horses",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "LIST",
+                "name": null,
+                "ofType": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": {
+                    "kind": "OBJECT",
+                    "name": "Horse",
+                    "ofType": null
+                  }
+                }
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "id",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "UUID",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "isAdmin",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "Boolean",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "lastName",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "String",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "payment",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "LIST",
+                "name": null,
+                "ofType": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": {
+                    "kind": "OBJECT",
+                    "name": "Payment",
+                    "ofType": null
+                  }
+                }
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "sponsorInterests",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "LIST",
+                "name": null,
+                "ofType": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": {
+                    "kind": "OBJECT",
+                    "name": "SponsorInterest",
+                    "ofType": null
+                  }
+                }
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "tickets",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "LIST",
+                "name": null,
+                "ofType": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": {
+                    "kind": "OBJECT",
+                    "name": "Ticket",
+                    "ofType": null
+                  }
+                }
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
+        "inputFields": null,
+        "interfaces": [],
+        "enumValues": null,
+        "possibleTypes": null
+      },
+      {
+        "kind": "SCALAR",
+        "name": "UUID",
+        "description": null,
+        "specifiedByURL": null,
+        "isOneOf": null,
+        "fields": null,
+        "inputFields": null,
+        "interfaces": null,
+        "enumValues": null,
+        "possibleTypes": null
+      },
+      {
+        "kind": "OBJECT",
+        "name": "ValidateTokenPayload",
+        "description": null,
+        "specifiedByURL": null,
+        "isOneOf": null,
+        "fields": [
+          {
+            "name": "message",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "String",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "success",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "Boolean",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "user",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "OBJECT",
+              "name": "User",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
+        "inputFields": null,
+        "interfaces": [],
+        "enumValues": null,
+        "possibleTypes": null
+      },
+      {
+        "kind": "OBJECT",
+        "name": "__Schema",
+        "description": "A GraphQL Schema defines the capabilities of a GraphQL server. It exposes all available types and directives on the server, as well as the entry points for query, mutation, and subscription operations.",
+        "specifiedByURL": null,
+        "isOneOf": null,
+        "fields": [
+          {
+            "name": "description",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "types",
+            "description": "A list of all types supported by this server.",
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "LIST",
+                "name": null,
+                "ofType": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": {
+                    "kind": "OBJECT",
+                    "name": "__Type",
+                    "ofType": null
+                  }
+                }
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "queryType",
+            "description": "The type that query operations will be rooted at.",
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "OBJECT",
+                "name": "__Type",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "mutationType",
+            "description": "If this server supports mutation, the type that mutation operations will be rooted at.",
+            "args": [],
+            "type": {
+              "kind": "OBJECT",
+              "name": "__Type",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "subscriptionType",
+            "description": "If this server support subscription, the type that subscription operations will be rooted at.",
+            "args": [],
+            "type": {
+              "kind": "OBJECT",
+              "name": "__Type",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "directives",
+            "description": "A list of all directives supported by this server.",
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "LIST",
+                "name": null,
+                "ofType": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": {
+                    "kind": "OBJECT",
+                    "name": "__Directive",
+                    "ofType": null
+                  }
+                }
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
+        "inputFields": null,
+        "interfaces": [],
+        "enumValues": null,
+        "possibleTypes": null
+      },
+      {
+        "kind": "OBJECT",
+        "name": "__Type",
+        "description": "The fundamental unit of any GraphQL Schema is the type. There are many kinds of types in GraphQL as represented by the `__TypeKind` enum.\n\nDepending on the kind of a type, certain fields describe information about that type. Scalar types provide no information beyond a name, description and optional `specifiedByURL`, while Enum types provide their values. Object and Interface types provide the fields they describe. Abstract types, Union and Interface, provide the Object types possible at runtime. List and NonNull types compose other types.",
+        "specifiedByURL": null,
+        "isOneOf": null,
+        "fields": [
+          {
+            "name": "kind",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "ENUM",
+                "name": "__TypeKind",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "name",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "description",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "specifiedByURL",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "fields",
+            "description": null,
+            "args": [
+              {
+                "name": "includeDeprecated",
+                "description": null,
+                "type": {
+                  "kind": "SCALAR",
+                  "name": "Boolean",
+                  "ofType": null
+                },
+                "defaultValue": "false",
+                "isDeprecated": false,
+                "deprecationReason": null
+              }
+            ],
+            "type": {
+              "kind": "LIST",
+              "name": null,
+              "ofType": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "OBJECT",
+                  "name": "__Field",
+                  "ofType": null
+                }
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "interfaces",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "LIST",
+              "name": null,
+              "ofType": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "OBJECT",
+                  "name": "__Type",
+                  "ofType": null
+                }
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "possibleTypes",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "LIST",
+              "name": null,
+              "ofType": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "OBJECT",
+                  "name": "__Type",
+                  "ofType": null
+                }
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "enumValues",
+            "description": null,
+            "args": [
+              {
+                "name": "includeDeprecated",
+                "description": null,
+                "type": {
+                  "kind": "SCALAR",
+                  "name": "Boolean",
+                  "ofType": null
+                },
+                "defaultValue": "false",
+                "isDeprecated": false,
+                "deprecationReason": null
+              }
+            ],
+            "type": {
+              "kind": "LIST",
+              "name": null,
+              "ofType": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "OBJECT",
+                  "name": "__EnumValue",
+                  "ofType": null
+                }
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "inputFields",
+            "description": null,
+            "args": [
+              {
+                "name": "includeDeprecated",
+                "description": null,
+                "type": {
+                  "kind": "SCALAR",
+                  "name": "Boolean",
+                  "ofType": null
+                },
+                "defaultValue": "false",
+                "isDeprecated": false,
+                "deprecationReason": null
+              }
+            ],
+            "type": {
+              "kind": "LIST",
+              "name": null,
+              "ofType": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "OBJECT",
+                  "name": "__InputValue",
+                  "ofType": null
+                }
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "ofType",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "OBJECT",
+              "name": "__Type",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "isOneOf",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "Boolean",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
+        "inputFields": null,
+        "interfaces": [],
+        "enumValues": null,
+        "possibleTypes": null
+      },
+      {
+        "kind": "ENUM",
+        "name": "__TypeKind",
+        "description": "An enum describing what kind of type a given `__Type` is.",
+        "specifiedByURL": null,
+        "isOneOf": null,
+        "fields": null,
+        "inputFields": null,
+        "interfaces": null,
+        "enumValues": [
+          {
+            "name": "SCALAR",
+            "description": "Indicates this type is a scalar.",
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "OBJECT",
+            "description": "Indicates this type is an object. `fields` and `interfaces` are valid fields.",
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "INTERFACE",
+            "description": "Indicates this type is an interface. `fields`, `interfaces`, and `possibleTypes` are valid fields.",
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "UNION",
+            "description": "Indicates this type is a union. `possibleTypes` is a valid field.",
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "ENUM",
+            "description": "Indicates this type is an enum. `enumValues` is a valid field.",
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "INPUT_OBJECT",
+            "description": "Indicates this type is an input object. `inputFields` is a valid field.",
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "LIST",
+            "description": "Indicates this type is a list. `ofType` is a valid field.",
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "NON_NULL",
+            "description": "Indicates this type is a non-null. `ofType` is a valid field.",
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
+        "possibleTypes": null
+      },
+      {
+        "kind": "OBJECT",
+        "name": "__Field",
+        "description": "Object and Interface types are described by a list of Fields, each of which has a name, potentially a list of arguments, and a return type.",
+        "specifiedByURL": null,
+        "isOneOf": null,
+        "fields": [
+          {
+            "name": "name",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "String",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "description",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "args",
+            "description": null,
+            "args": [
+              {
+                "name": "includeDeprecated",
+                "description": null,
+                "type": {
+                  "kind": "SCALAR",
+                  "name": "Boolean",
+                  "ofType": null
+                },
+                "defaultValue": "false",
+                "isDeprecated": false,
+                "deprecationReason": null
+              }
+            ],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "LIST",
+                "name": null,
+                "ofType": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": {
+                    "kind": "OBJECT",
+                    "name": "__InputValue",
+                    "ofType": null
+                  }
+                }
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "type",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "OBJECT",
+                "name": "__Type",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "isDeprecated",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "Boolean",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "deprecationReason",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
+        "inputFields": null,
+        "interfaces": [],
+        "enumValues": null,
+        "possibleTypes": null
+      },
+      {
+        "kind": "OBJECT",
+        "name": "__InputValue",
+        "description": "Arguments provided to Fields or Directives and the input fields of an InputObject are represented as Input Values which describe their type and optionally a default value.",
+        "specifiedByURL": null,
+        "isOneOf": null,
+        "fields": [
+          {
+            "name": "name",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "String",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "description",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "type",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "OBJECT",
+                "name": "__Type",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "defaultValue",
+            "description": "A GraphQL-formatted string representing the default value for this input value.",
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "isDeprecated",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "Boolean",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "deprecationReason",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
+        "inputFields": null,
+        "interfaces": [],
+        "enumValues": null,
+        "possibleTypes": null
+      },
+      {
+        "kind": "OBJECT",
+        "name": "__EnumValue",
+        "description": "One possible value for a given Enum. Enum values are unique values, not a placeholder for a string or numeric value. However an Enum value is returned in a JSON response as a string.",
+        "specifiedByURL": null,
+        "isOneOf": null,
+        "fields": [
+          {
+            "name": "name",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "String",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "description",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "isDeprecated",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "Boolean",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "deprecationReason",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
+        "inputFields": null,
+        "interfaces": [],
+        "enumValues": null,
+        "possibleTypes": null
+      },
+      {
+        "kind": "OBJECT",
+        "name": "__Directive",
+        "description": "A Directive provides a way to describe alternate runtime execution and type validation behavior in a GraphQL document.\n\nIn some cases, you need to provide options to alter GraphQL's execution behavior in ways field arguments will not suffice, such as conditionally including or skipping a field. Directives provide this by describing additional information to the executor.",
+        "specifiedByURL": null,
+        "isOneOf": null,
+        "fields": [
+          {
+            "name": "name",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "String",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "description",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "isRepeatable",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "Boolean",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "locations",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "LIST",
+                "name": null,
+                "ofType": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": {
+                    "kind": "ENUM",
+                    "name": "__DirectiveLocation",
+                    "ofType": null
+                  }
+                }
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "args",
+            "description": null,
+            "args": [
+              {
+                "name": "includeDeprecated",
+                "description": null,
+                "type": {
+                  "kind": "SCALAR",
+                  "name": "Boolean",
+                  "ofType": null
+                },
+                "defaultValue": "false",
+                "isDeprecated": false,
+                "deprecationReason": null
+              }
+            ],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "LIST",
+                "name": null,
+                "ofType": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": {
+                    "kind": "OBJECT",
+                    "name": "__InputValue",
+                    "ofType": null
+                  }
+                }
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
+        "inputFields": null,
+        "interfaces": [],
+        "enumValues": null,
+        "possibleTypes": null
+      },
+      {
+        "kind": "ENUM",
+        "name": "__DirectiveLocation",
+        "description": "A Directive can be adjacent to many parts of the GraphQL language, a __DirectiveLocation describes one such possible adjacencies.",
+        "specifiedByURL": null,
+        "isOneOf": null,
+        "fields": null,
+        "inputFields": null,
+        "interfaces": null,
+        "enumValues": [
+          {
+            "name": "QUERY",
+            "description": "Location adjacent to a query operation.",
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "MUTATION",
+            "description": "Location adjacent to a mutation operation.",
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "SUBSCRIPTION",
+            "description": "Location adjacent to a subscription operation.",
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "FIELD",
+            "description": "Location adjacent to a field.",
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "FRAGMENT_DEFINITION",
+            "description": "Location adjacent to a fragment definition.",
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "FRAGMENT_SPREAD",
+            "description": "Location adjacent to a fragment spread.",
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "INLINE_FRAGMENT",
+            "description": "Location adjacent to an inline fragment.",
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "VARIABLE_DEFINITION",
+            "description": "Location adjacent to a variable definition.",
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "SCHEMA",
+            "description": "Location adjacent to a schema definition.",
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "SCALAR",
+            "description": "Location adjacent to a scalar definition.",
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "OBJECT",
+            "description": "Location adjacent to an object type definition.",
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "FIELD_DEFINITION",
+            "description": "Location adjacent to a field definition.",
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "ARGUMENT_DEFINITION",
+            "description": "Location adjacent to an argument definition.",
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "INTERFACE",
+            "description": "Location adjacent to an interface definition.",
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "UNION",
+            "description": "Location adjacent to a union definition.",
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "ENUM",
+            "description": "Location adjacent to an enum definition.",
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "ENUM_VALUE",
+            "description": "Location adjacent to an enum value definition.",
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "INPUT_OBJECT",
+            "description": "Location adjacent to an input object type definition.",
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "INPUT_FIELD_DEFINITION",
+            "description": "Location adjacent to an input object field definition.",
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
+        "possibleTypes": null
+      }
+    ],
+    "directives": [
+      {
+        "name": "specifiedBy",
+        "description": "Exposes a URL that specifies the behavior of this scalar.",
+        "isRepeatable": false,
+        "locations": [
+          "SCALAR"
+        ],
+        "args": [
+          {
+            "name": "url",
+            "description": "The URL that specifies the behavior of this scalar.",
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "String",
+                "ofType": null
+              }
+            },
+            "defaultValue": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ]
+      },
+      {
+        "name": "oneOf",
+        "description": "Indicates exactly one field must be supplied and this field must not be `null`.",
+        "isRepeatable": false,
+        "locations": [
+          "INPUT_OBJECT"
+        ],
+        "args": []
+      },
+      {
+        "name": "include",
+        "description": "Directs the executor to include this field or fragment only when the `if` argument is true.",
+        "isRepeatable": false,
+        "locations": [
+          "FIELD",
+          "FRAGMENT_SPREAD",
+          "INLINE_FRAGMENT"
+        ],
+        "args": [
+          {
+            "name": "if",
+            "description": "Included when true.",
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "Boolean",
+                "ofType": null
+              }
+            },
+            "defaultValue": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ]
+      },
+      {
+        "name": "skip",
+        "description": "Directs the executor to skip this field or fragment when the `if` argument is true.",
+        "isRepeatable": false,
+        "locations": [
+          "FIELD",
+          "FRAGMENT_SPREAD",
+          "INLINE_FRAGMENT"
+        ],
+        "args": [
+          {
+            "name": "if",
+            "description": "Skipped when true.",
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "Boolean",
+                "ofType": null
+              }
+            },
+            "defaultValue": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ]
+      },
+      {
+        "name": "deprecated",
+        "description": "Marks an element of a GraphQL schema as no longer supported.",
+        "isRepeatable": false,
+        "locations": [
+          "FIELD_DEFINITION",
+          "ARGUMENT_DEFINITION",
+          "INPUT_FIELD_DEFINITION",
+          "ENUM_VALUE"
+        ],
+        "args": [
+          {
+            "name": "reason",
+            "description": "Explains why this element was deprecated, usually also including a suggestion for how to access supported similar data. Formatted using the Markdown syntax, as specified by [CommonMark](https://commonmark.org/).",
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "defaultValue": "\"No longer supported\"",
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ]
+      }
+    ]
+  }
+}

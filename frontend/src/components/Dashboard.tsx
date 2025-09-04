@@ -8,7 +8,7 @@ import DashboardBoard from './horse-board/DashboardBoard';
 import ErrorBoundary from './common/ErrorBoundary';
 import ErrorFallback from './common/ErrorFallback';
 import type { DashboardAdminQuery } from '../__generated__/DashboardAdminQuery.graphql';
-import type { DashboardMarkPaidMutation } from '../__generated__/DashboardMarkPaidMutation.graphql';
+import type { DashboardSetPaymentReceivedMutation } from '../__generated__/DashboardSetPaymentReceivedMutation.graphql';
 import type { DashboardSetAdminMutation } from '../__generated__/DashboardSetAdminMutation.graphql';
 import type { DashboardReleaseHorseMutation } from '../__generated__/DashboardReleaseHorseMutation.graphql';
 import type { DashboardReleaseCartMutation } from '../__generated__/DashboardReleaseCartMutation.graphql';
@@ -17,7 +17,7 @@ import type { DashboardResetDatabaseMutation } from '../__generated__/DashboardR
 
 const adminQuery = graphql`
   query DashboardAdminQuery {
-    pendingPayments { id totalCents user { id firstName lastName email } }
+    payments { id totalCents paymentReceived user { id firstName lastName email } }
     users { id email firstName lastName isAdmin }
     adminStats { ticketCount sponsorCount giftBasketCount }
     allHorses { id horseName state round { name } lane { number } owner { firstName lastName } }
@@ -28,9 +28,9 @@ const adminQuery = graphql`
   }
 `;
 
-const markPaidMutation = graphql`
-  mutation DashboardMarkPaidMutation($paymentId: UUID!) {
-    markPaymentReceived(paymentId: $paymentId) { id paymentReceived }
+const setPaymentReceivedMutation = graphql`
+  mutation DashboardSetPaymentReceivedMutation($paymentId: UUID!, $received: Boolean!) {
+    setPaymentReceived(paymentId: $paymentId, received: $received) { id paymentReceived }
   }
 `;
 
@@ -101,7 +101,7 @@ export const Dashboard: React.FC = () => {
 
   const data = useLazyLoadQuery<DashboardAdminQuery>(adminQuery, {}, { fetchKey: refreshKey, fetchPolicy: 'network-only' });
 
-  const [commitMarkPaid] = useMutation<DashboardMarkPaidMutation>(markPaidMutation);
+  const [commitSetPaymentReceived] = useMutation<DashboardSetPaymentReceivedMutation>(setPaymentReceivedMutation);
   const [commitSetAdmin] = useMutation<DashboardSetAdminMutation>(setAdminMutation);
   const [commitReleaseHorse] = useMutation<DashboardReleaseHorseMutation>(releaseHorseMutation);
   const [commitReleaseCart] = useMutation<DashboardReleaseCartMutation>(releaseCartMutation);
@@ -117,9 +117,9 @@ export const Dashboard: React.FC = () => {
 
   if (!user) return null;
 
-  const onMarkPaid = (id: string) => {
-    if (window.confirm('Mark this payment as received?')) {
-      commitMarkPaid({ variables: { paymentId: id }, onCompleted: refresh });
+  const onSetPaymentReceived = (id: string, received: boolean) => {
+    if (window.confirm(`Set this payment as ${received ? 'received' : 'not received'}?`)) {
+      commitSetPaymentReceived({ variables: { paymentId: id, received }, onCompleted: refresh });
     }
   };
 
@@ -223,18 +223,25 @@ export const Dashboard: React.FC = () => {
           <h2 className="text-xl font-semibold mb-4">Payments</h2>
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-left border-b"><th className="py-2">User</th><th>Total</th><th></th></tr>
+              <tr className="text-left border-b"><th className="py-2">User</th><th>Total</th><th>Status</th><th></th></tr>
             </thead>
             <tbody>
-              {data.pendingPayments.map(p => (
+              {data.payments.map(p => (
                 <tr key={p.id} className="border-b">
                   <td className="py-2">{p.user.firstName} {p.user.lastName} ({p.user.email})</td>
                   <td>${(p.totalCents/100).toFixed(2)}</td>
-                  <td><button className="text-blue-600" onClick={() => onMarkPaid(p.id)}>Mark Paid</button></td>
+                  <td>{p.paymentReceived ? 'Paid' : 'Pending'}</td>
+                  <td>
+                    {p.paymentReceived ? (
+                      <button className="text-blue-600" onClick={() => onSetPaymentReceived(p.id, false)}>Unmark Paid</button>
+                    ) : (
+                      <button className="text-blue-600" onClick={() => onSetPaymentReceived(p.id, true)}>Mark Paid</button>
+                    )}
+                  </td>
                 </tr>
               ))}
-              {data.pendingPayments.length === 0 && (
-                <tr><td colSpan={3} className="py-2 text-center text-gray-500">No pending payments</td></tr>
+              {data.payments.length === 0 && (
+                <tr><td colSpan={4} className="py-2 text-center text-gray-500">No payments</td></tr>
               )}
             </tbody>
           </table>

@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<112e84be0c69078c266dcefdf4cd00ce>>
+ * @generated SignedSource<<2abf90f2d82a85e7b1970b22a1efac88>>
  * @lightSyntaxTransform
  * @nogrep
  */
@@ -9,18 +9,19 @@
 // @ts-nocheck
 
 import { ConcreteRequest } from 'relay-runtime';
-export type DashboardMarkPaidMutation$variables = {
+export type DashboardSetPaymentReceivedMutation$variables = {
   paymentId: any;
+  received: boolean;
 };
-export type DashboardMarkPaidMutation$data = {
-  readonly markPaymentReceived: {
+export type DashboardSetPaymentReceivedMutation$data = {
+  readonly setPaymentReceived: {
     readonly id: any | null | undefined;
     readonly paymentReceived: boolean;
   };
 };
-export type DashboardMarkPaidMutation = {
-  response: DashboardMarkPaidMutation$data;
-  variables: DashboardMarkPaidMutation$variables;
+export type DashboardSetPaymentReceivedMutation = {
+  response: DashboardSetPaymentReceivedMutation$data;
+  variables: DashboardSetPaymentReceivedMutation$variables;
 };
 
 const node: ConcreteRequest = (function(){
@@ -29,6 +30,11 @@ var v0 = [
     "defaultValue": null,
     "kind": "LocalArgument",
     "name": "paymentId"
+  },
+  {
+    "defaultValue": null,
+    "kind": "LocalArgument",
+    "name": "received"
   }
 ],
 v1 = [
@@ -39,11 +45,16 @@ v1 = [
         "kind": "Variable",
         "name": "paymentId",
         "variableName": "paymentId"
+      },
+      {
+        "kind": "Variable",
+        "name": "received",
+        "variableName": "received"
       }
     ],
     "concreteType": "Payment",
     "kind": "LinkedField",
-    "name": "markPaymentReceived",
+    "name": "setPaymentReceived",
     "plural": false,
     "selections": [
       {
@@ -69,7 +80,7 @@ return {
     "argumentDefinitions": (v0/*: any*/),
     "kind": "Fragment",
     "metadata": null,
-    "name": "DashboardMarkPaidMutation",
+    "name": "DashboardSetPaymentReceivedMutation",
     "selections": (v1/*: any*/),
     "type": "Mutation",
     "abstractKey": null
@@ -78,20 +89,20 @@ return {
   "operation": {
     "argumentDefinitions": (v0/*: any*/),
     "kind": "Operation",
-    "name": "DashboardMarkPaidMutation",
+    "name": "DashboardSetPaymentReceivedMutation",
     "selections": (v1/*: any*/)
   },
   "params": {
-    "cacheID": "229467fb4c104acfeffa94d5bf95be2d",
+    "cacheID": "a1ed5437c0cd5d5361e97e660b9dee84",
     "id": null,
     "metadata": {},
-    "name": "DashboardMarkPaidMutation",
+    "name": "DashboardSetPaymentReceivedMutation",
     "operationKind": "mutation",
-    "text": "mutation DashboardMarkPaidMutation(\n  $paymentId: UUID!\n) {\n  markPaymentReceived(paymentId: $paymentId) {\n    id\n    paymentReceived\n  }\n}\n"
+    "text": "mutation DashboardSetPaymentReceivedMutation(\n  $paymentId: UUID!\n  $received: Boolean!\n) {\n  setPaymentReceived(paymentId: $paymentId, received: $received) {\n    id\n    paymentReceived\n  }\n}\n"
   }
 };
 })();
 
-(node as any).hash = "c74fc6c1cb65a5c30f71e9dd09980067";
+(node as any).hash = "e24b839ee4b6afafb65dab389c83c162";
 
 export default node;

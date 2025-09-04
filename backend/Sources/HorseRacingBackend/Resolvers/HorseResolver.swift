@@ -24,71 +24,105 @@ final class HorseResolver: @unchecked Sendable {
         return Payment.query(on: request.db).filter(\.$user.$id == user.id!).first()
     }
 
-    func markPaymentReceived(request: Request, arguments: MarkPaymentReceivedArguments) throws -> EventLoopFuture<Payment> {
+    func setPaymentReceived(request: Request, arguments: SetPaymentReceivedArguments) throws -> EventLoopFuture<Payment> {
         // Admin-only
         guard let currentUser = request.auth.get(User.self), currentUser.isAdmin else { throw Abort(.forbidden, reason: "Admin only") }
         return Payment.find(arguments.paymentId, on: request.db)
             .unwrap(or: Abort(.notFound))
             .flatMap { payment in
-                payment.paymentReceived = true
-                payment.paymentReceivedAt = Date()
+                payment.paymentReceived = arguments.received
+                payment.paymentReceivedAt = arguments.received ? Date() : nil
 
                 let userId = payment.$user.id
 
-                // Confirm any pending tickets for this user
-                let confirmTickets = Ticket.query(on: request.db)
-                    .filter(\.$owner.$id == userId)
-                    .filter(\.$state == .pendingPayment)
-                    .all()
-                    .flatMap { tickets in
-                        EventLoopFuture.whenAllSucceed(
-                            tickets.map { t in
-                                t.state = .confirmed
-                                return t.save(on: request.db)
-                            }, on: request.eventLoop
-                        )
-                    }
+                if arguments.received {
+                    // Confirm any pending tickets for this user
+                    let confirmTickets = Ticket.query(on: request.db)
+                        .filter(\.$owner.$id == userId)
+                        .filter(\.$state == .pendingPayment)
+                        .all()
+                        .flatMap { tickets in
+                            EventLoopFuture.whenAllSucceed(
+                                tickets.map { t in
+                                    t.state = .confirmed
+                                    return t.save(on: request.db)
+                                }, on: request.eventLoop
+                            )
+                        }
 
-                // Confirm any pending horses for this user
-                let confirmHorses = Horse.query(on: request.db)
-                    .filter(\.$owner.$id == userId)
-                    .filter(\.$state == .pendingPayment)
-                    .all()
-                    .flatMap { horses in
-                        EventLoopFuture.whenAllSucceed(
-                            horses.map { h in
-                                h.state = .confirmed
-                                return h.save(on: request.db)
-                            }, on: request.eventLoop
-                        )
-                    }
+                    // Confirm any pending horses for this user
+                    let confirmHorses = Horse.query(on: request.db)
+                        .filter(\.$owner.$id == userId)
+                        .filter(\.$state == .pendingPayment)
+                        .all()
+                        .flatMap { horses in
+                            EventLoopFuture.whenAllSucceed(
+                                horses.map { h in
+                                    h.state = .confirmed
+                                    return h.save(on: request.db)
+                                }, on: request.eventLoop
+                            )
+                        }
 
-                // Fetch most recent checked out cart for email
-                let cartFuture = Cart.query(on: request.db)
-                    .filter(\.$user.$id == userId)
-                    .filter(\.$status == .checkedOut)
-                    .sort(\.$updatedAt, .descending)
-                    .first()
+                    // Fetch most recent checked out cart for email
+                    let cartFuture = Cart.query(on: request.db)
+                        .filter(\.$user.$id == userId)
+                        .filter(\.$status == .checkedOut)
+                        .sort(\.$updatedAt, .descending)
+                        .first()
 
-                return confirmTickets
-                    .and(confirmHorses)
-                    .flatMap { _ in
-                        payment.save(on: request.db).flatMap { _ in
-                            cartFuture.flatMap { cart in
-                                guard let cart = cart else {
-                                    return request.eventLoop.makeSucceededFuture(payment)
-                                }
-                                return User.find(userId, on: request.db)
-                                    .unwrap(or: Abort(.notFound))
-                                    .map { user in
-                                        Task {
-                                            try? await EmailService.sendHorseRacingConfirmed(for: cart, user: user, on: request)
-                                        }
-                                        return payment
+                    return confirmTickets
+                        .and(confirmHorses)
+                        .flatMap { _ in
+                            payment.save(on: request.db).flatMap { _ in
+                                cartFuture.flatMap { cart in
+                                    guard let cart = cart else {
+                                        return request.eventLoop.makeSucceededFuture(payment)
                                     }
+                                    return User.find(userId, on: request.db)
+                                        .unwrap(or: Abort(.notFound))
+                                        .map { user in
+                                            Task {
+                                                try? await EmailService.sendHorseRacingConfirmed(for: cart, user: user, on: request)
+                                            }
+                                            return payment
+                                        }
+                                }
                             }
                         }
-                    }
+                } else {
+                    // Revert any confirmed tickets for this user back to pending payment
+                    let revertTickets = Ticket.query(on: request.db)
+                        .filter(\.$owner.$id == userId)
+                        .filter(\.$state == .confirmed)
+                        .all()
+                        .flatMap { tickets in
+                            EventLoopFuture.whenAllSucceed(
+                                tickets.map { t in
+                                    t.state = .pendingPayment
+                                    return t.save(on: request.db)
+                                }, on: request.eventLoop
+                            )
+                        }
+
+                    // Revert any confirmed horses for this user back to pending payment
+                    let revertHorses = Horse.query(on: request.db)
+                        .filter(\.$owner.$id == userId)
+                        .filter(\.$state == .confirmed)
+                        .all()
+                        .flatMap { horses in
+                            EventLoopFuture.whenAllSucceed(
+                                horses.map { h in
+                                    h.state = .pendingPayment
+                                    return h.save(on: request.db)
+                                }, on: request.eventLoop
+                            )
+                        }
+
+                    return revertTickets
+                        .and(revertHorses)
+                        .flatMap { _ in payment.save(on: request.db).map { payment } }
+                }
             }
     }
 
@@ -109,9 +143,9 @@ final class HorseResolver: @unchecked Sendable {
             }
     }
 
-    func pendingPayments(request: Request, _: NoArguments) throws -> EventLoopFuture<[Payment]> {
+    func payments(request: Request, _: NoArguments) throws -> EventLoopFuture<[Payment]> {
         guard let user = request.auth.get(User.self), user.isAdmin else { throw Abort(.forbidden) }
-        return Payment.query(on: request.db).filter(\.$paymentReceived == false).with(\.$user).all()
+        return Payment.query(on: request.db).with(\.$user).all()
     }
 
     func allHorses(request: Request, _: NoArguments) throws -> EventLoopFuture<[Horse]> {
@@ -723,8 +757,9 @@ extension HorseResolver {
         let description: String
     }
 
-    struct MarkPaymentReceivedArguments: Codable {
+    struct SetPaymentReceivedArguments: Codable {
         let paymentId: UUID
+        let received: Bool
     }
 
     struct CreateUserArguments: Codable {

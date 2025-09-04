@@ -180,7 +180,7 @@ let horseRacingSchema = try! Graphiti.Schema<HorseResolver, Request> {
         Field("paymentStatus", at: HorseResolver.getPaymentStatus)
         Field("myCart", at: HorseResolver.myCart)
         Field("users", at: HorseResolver.allUsers)
-        Field("pendingPayments", at: HorseResolver.pendingPayments)
+        Field("payments", at: HorseResolver.payments)
         Field("allHorses", at: HorseResolver.allHorses)
         Field("allTickets", at: HorseResolver.allTickets)
         Field("abandonedCarts", at: HorseResolver.abandonedCarts)
@@ -260,8 +260,9 @@ let horseRacingSchema = try! Graphiti.Schema<HorseResolver, Request> {
         Field("logout", at: HorseResolver.logout)
 
         // Payment management
-        Field("markPaymentReceived", at: HorseResolver.markPaymentReceived) {
+        Field("setPaymentReceived", at: HorseResolver.setPaymentReceived) {
             Argument("paymentId", at: \.paymentId)
+            Argument("received", at: \.received)
         }
         Field("setUserAdmin", at: HorseResolver.setUserAdmin) {
             Argument("userId", at: \.userId)

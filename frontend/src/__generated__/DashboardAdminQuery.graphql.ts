@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<f86884a3027d3b0ef25ea05e4572f187>>
+ * @generated SignedSource<<83885b28b526ea941fb6a716e336b024>>
  * @lightSyntaxTransform
  * @nogrep
  */
@@ -61,8 +61,9 @@ export type DashboardAdminQuery$data = {
       readonly lastName: string;
     };
   }>;
-  readonly pendingPayments: ReadonlyArray<{
+  readonly payments: ReadonlyArray<{
     readonly id: any | null | undefined;
+    readonly paymentReceived: boolean;
     readonly totalCents: number;
     readonly user: {
       readonly email: string;
@@ -153,7 +154,7 @@ v7 = [
     "args": null,
     "concreteType": "Payment",
     "kind": "LinkedField",
-    "name": "pendingPayments",
+    "name": "payments",
     "plural": true,
     "selections": [
       (v0/*: any*/),
@@ -162,6 +163,13 @@ v7 = [
         "args": null,
         "kind": "ScalarField",
         "name": "totalCents",
+        "storageKey": null
+      },
+      {
+        "alias": null,
+        "args": null,
+        "kind": "ScalarField",
+        "name": "paymentReceived",
         "storageKey": null
       },
       (v4/*: any*/)
@@ -420,16 +428,16 @@ return {
     "selections": (v7/*: any*/)
   },
   "params": {
-    "cacheID": "304d1e6266453af8eb50196bba693df2",
+    "cacheID": "b543ce8e6a6691c9cf199d3fdb3b0dd9",
     "id": null,
     "metadata": {},
     "name": "DashboardAdminQuery",
     "operationKind": "query",
-    "text": "query DashboardAdminQuery {\n  pendingPayments {\n    id\n    totalCents\n    user {\n      id\n      firstName\n      lastName\n      email\n    }\n  }\n  users {\n    id\n    email\n    firstName\n    lastName\n    isAdmin\n  }\n  adminStats {\n    ticketCount\n    sponsorCount\n    giftBasketCount\n  }\n  allHorses {\n    id\n    horseName\n    state\n    round {\n      name\n    }\n    lane {\n      number\n    }\n    owner {\n      firstName\n      lastName\n    }\n  }\n  allTickets {\n    id\n    attendeeFirst\n    attendeeLast\n    seatingPreference\n    seatAssignment\n    owner {\n      firstName\n      lastName\n    }\n  }\n  abandonedCarts {\n    id\n    orderNumber\n    user {\n      id\n      firstName\n      lastName\n      email\n    }\n  }\n  sponsorInterests {\n    id\n    companyName\n    companyLogoBase64\n  }\n  giftBasketInterests {\n    id\n    description\n    user {\n      firstName\n      lastName\n    }\n  }\n}\n"
+    "text": "query DashboardAdminQuery {\n  payments {\n    id\n    totalCents\n    paymentReceived\n    user {\n      id\n      firstName\n      lastName\n      email\n    }\n  }\n  users {\n    id\n    email\n    firstName\n    lastName\n    isAdmin\n  }\n  adminStats {\n    ticketCount\n    sponsorCount\n    giftBasketCount\n  }\n  allHorses {\n    id\n    horseName\n    state\n    round {\n      name\n    }\n    lane {\n      number\n    }\n    owner {\n      firstName\n      lastName\n    }\n  }\n  allTickets {\n    id\n    attendeeFirst\n    attendeeLast\n    seatingPreference\n    seatAssignment\n    owner {\n      firstName\n      lastName\n    }\n  }\n  abandonedCarts {\n    id\n    orderNumber\n    user {\n      id\n      firstName\n      lastName\n      email\n    }\n  }\n  sponsorInterests {\n    id\n    companyName\n    companyLogoBase64\n  }\n  giftBasketInterests {\n    id\n    description\n    user {\n      firstName\n      lastName\n    }\n  }\n}\n"
   }
 };
 })();
 
-(node as any).hash = "c3b55c998682fe8650bec8fde456c0c5";
+(node as any).hash = "b52cc3bb8ee964884363f0539794cc2f";
 
 export default node;

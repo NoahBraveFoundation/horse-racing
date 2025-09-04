@@ -96,7 +96,7 @@ type Mutation {
   getOrCreateCart: Cart!
   login(email: String!, redirectTo: String): LoginPayload!
   logout: LogoutPayload!
-  markPaymentReceived(paymentId: UUID!): Payment!
+  setPaymentReceived(paymentId: UUID!, received: Boolean!): Payment!
   releaseCart(cartId: UUID!): Cart!
   releaseHorse(horseId: UUID!): Boolean!
   removeGiftBasketFromCart(giftId: UUID!): Boolean!
@@ -130,7 +130,7 @@ type Query {
   me: User!
   myCart: Cart
   paymentStatus: Payment
-  pendingPayments: [Payment!]!
+  payments: [Payment!]!
   rounds: [Round!]!
   sponsorInterests: [SponsorInterest!]!
   users: [User!]!
