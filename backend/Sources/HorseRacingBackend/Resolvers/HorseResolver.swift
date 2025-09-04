@@ -676,7 +676,7 @@ final class HorseResolver: @unchecked Sendable {
             .first()
             .flatMap { existingUser -> EventLoopFuture<User> in
                 if let _ = existingUser {
-                    return request.eventLoop.makeFailedFuture(Abort(.conflict, reason: "User with this email already exists"))
+                    return request.eventLoop.makeFailedFuture(Abort(.conflict, reason: "User with this email already exists. Click 'Login' below and we will email you a link to continue."))
                 }
                 
                 let user = User(email: email, firstName: arguments.firstName, lastName: arguments.lastName)
