@@ -39,7 +39,8 @@ let horseRacingSchema = try! Graphiti.Schema<HorseResolver, Request> {
         Field("horses", with: \.$horses)
         Field("sponsorInterests", with: \.$sponsorInterests)
         Field("giftBasketInterests", with: \.$giftBasketInterests)
-        Field("payment", with: \.$payments)
+        Field("payments", with: \.$payments)
+        Field("carts", with: \.$carts)
     }
 
     // Round type
@@ -179,6 +180,9 @@ let horseRacingSchema = try! Graphiti.Schema<HorseResolver, Request> {
         }
         Field("paymentStatus", at: HorseResolver.getPaymentStatus)
         Field("myCart", at: HorseResolver.myCart)
+        Field("user", at: HorseResolver.userById) {
+            Argument("userId", at: \.userId)
+        }
         Field("users", at: HorseResolver.allUsers)
         Field("payments", at: HorseResolver.payments)
         Field("allHorses", at: HorseResolver.allHorses)
@@ -230,6 +234,13 @@ let horseRacingSchema = try! Graphiti.Schema<HorseResolver, Request> {
         }
         Field("removeGiftBasketFromCart", at: HorseResolver.removeGiftBasketFromCart) {
             Argument("giftId", at: \.giftId)
+        }
+
+        Field("adminRemoveTicket", at: HorseResolver.adminRemoveTicket) {
+            Argument("ticketId", at: \.ticketId)
+        }
+        Field("adminRemoveHorse", at: HorseResolver.adminRemoveHorse) {
+            Argument("horseId", at: \.horseId)
         }
 
         Field("renameHorse", at: HorseResolver.renameHorse) {

@@ -28,11 +28,14 @@ final class User: Model, Content, @unchecked Sendable {
 	@Children(for: \.$user)
 	var sponsorInterests: [SponsorInterest]
 
-	@Children(for: \.$user)
-	var giftBasketInterests: [GiftBasketInterest]
+        @Children(for: \.$user)
+        var giftBasketInterests: [GiftBasketInterest]
 
-	@Children(for: \.$user)
-	var payments: [Payment]
+        @Children(for: \.$user)
+        var payments: [Payment]
+
+        @Children(for: \.$user)
+        var carts: [Cart]
 
 	@Timestamp(key: "created_at", on: .create)
 	var createdAt: Date?

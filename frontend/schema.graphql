@@ -91,6 +91,8 @@ type Mutation {
   addHorseToCart(roundId: UUID!, laneId: UUID!, horseName: String!, ownershipLabel: String!): Horse!
   addSponsorToCart(companyName: String!, amountCents: Int!, companyLogoBase64: String): SponsorInterest!
   addTicketToCart(attendeeFirst: String!, attendeeLast: String!): Ticket!
+  adminRemoveHorse(horseId: UUID!): Boolean!
+  adminRemoveTicket(ticketId: UUID!): Boolean!
   checkoutCart: Payment!
   createUser(email: String!, firstName: String!, lastName: String!): User!
   getOrCreateCart: Cart!
@@ -133,6 +135,7 @@ type Query {
   payments: [Payment!]!
   rounds: [Round!]!
   sponsorInterests: [SponsorInterest!]!
+  user(userId: UUID!): User!
   users: [User!]!
 }
 
@@ -172,6 +175,7 @@ enum TicketState {
 }
 
 type User {
+  carts: [Cart!]!
   email: String!
   firstName: String!
   giftBasketInterests: [GiftBasketInterest!]!
@@ -179,7 +183,7 @@ type User {
   id: UUID
   isAdmin: Boolean!
   lastName: String!
-  payment: [Payment!]!
+  payments: [Payment!]!
   sponsorInterests: [SponsorInterest!]!
   tickets: [Ticket!]!
 }

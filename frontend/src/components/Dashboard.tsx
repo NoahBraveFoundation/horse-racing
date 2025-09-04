@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { graphql, useLazyLoadQuery, useMutation } from 'react-relay';
 import Header from './Header';
 import Footer from './Footer';
@@ -311,7 +311,7 @@ export const Dashboard: React.FC = () => {
             <tbody>
               {data.users.map(u => (
                 <tr key={u.id} className="border-b">
-                  <td className="py-2">{u.firstName} {u.lastName}</td>
+                  <td className="py-2"><Link to={`/dashboard/user/${u.id}`} className="text-blue-600">{u.firstName} {u.lastName}</Link></td>
                   <td>{u.email}</td>
                   <td>
                     <input type="checkbox" checked={u.isAdmin} onChange={e => onToggleAdmin(u.id, e.target.checked)} />
