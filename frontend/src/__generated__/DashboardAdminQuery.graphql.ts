@@ -27,6 +27,7 @@ export type DashboardAdminQuery$data = {
     readonly giftBasketCount: number;
     readonly sponsorCount: number;
     readonly ticketCount: number;
+    readonly totalPaymentsCents: number;
   };
   readonly allHorses: ReadonlyArray<{
     readonly horseName: string;
