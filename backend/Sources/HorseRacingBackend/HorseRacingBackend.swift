@@ -26,6 +26,8 @@ struct HorseRacingBackend {
             allowCredentials: true
         )
         app.middleware.use(CORSMiddleware(configuration: corsConfiguration))
+
+        app.routes.defaultMaxBodySize = "100mb"
         
         // Sessions (cookie-based)
         app.sessions.use(.fluent)
