@@ -238,9 +238,13 @@ final class HorseResolver: @unchecked Sendable {
         let ticketCount = Ticket.query(on: request.db).count()
         let sponsorCount = SponsorInterest.query(on: request.db).count()
         let giftCount = GiftBasketInterest.query(on: request.db).count()
-        return ticketCount.and(sponsorCount).and(giftCount).map { ts, gift in
-            let (t, s) = ts
-            return AdminStats(ticketCount: t, sponsorCount: s, giftBasketCount: gift)
+        let totalPayments = Payment.query(on: request.db)
+            .sum(\.$totalCents)
+            .map { $0 ?? 0 }
+        
+        return ticketCount.and(sponsorCount).and(giftCount).and(totalPayments).map { tsg, totalCents in
+            let ((t, s), g) = tsg
+            return AdminStats(ticketCount: t, sponsorCount: s, giftBasketCount: g, totalPaymentsCents: totalCents)
         }
     }
 
@@ -921,5 +925,6 @@ extension HorseResolver {
         let ticketCount: Int
         let sponsorCount: Int
         let giftBasketCount: Int
+        let totalPaymentsCents: Int
     }
 }

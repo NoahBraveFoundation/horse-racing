@@ -124,6 +124,7 @@ let horseRacingSchema = try! Graphiti.Schema<HorseResolver, Request> {
         Field("ticketCount", at: \.ticketCount)
         Field("sponsorCount", at: \.sponsorCount)
         Field("giftBasketCount", at: \.giftBasketCount)
+        Field("totalPaymentsCents", at: \.totalPaymentsCents)
     }
 
 

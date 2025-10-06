@@ -19,7 +19,7 @@ const adminQuery = graphql`
   query DashboardAdminQuery {
     payments { id totalCents paymentReceived user { id firstName lastName email } }
     users { id email firstName lastName isAdmin }
-    adminStats { ticketCount sponsorCount giftBasketCount }
+    adminStats { ticketCount sponsorCount giftBasketCount totalPaymentsCents }
     allHorses { id horseName state round { name } lane { number } owner { firstName lastName } }
     allTickets { id attendeeFirst attendeeLast seatingPreference seatAssignment state owner { firstName lastName } }
     abandonedCarts { id orderNumber user { id firstName lastName email } }
@@ -179,7 +179,7 @@ export const Dashboard: React.FC = () => {
         {/* Reports */}
         <section className="bg-white rounded-xl p-6 shadow">
           <h2 className="text-xl font-semibold mb-4">Reports</h2>
-          <div className="grid md:grid-cols-3 gap-4 text-center">
+          <div className="grid md:grid-cols-4 gap-4 text-center">
             <div>
               <div className="text-3xl font-bold">{data.adminStats.ticketCount}</div>
               <div className="text-sm text-gray-600">Tickets Sold</div>
@@ -191,6 +191,10 @@ export const Dashboard: React.FC = () => {
             <div>
               <div className="text-3xl font-bold">{data.adminStats.sponsorCount}</div>
               <div className="text-sm text-gray-600">Sponsors</div>
+            </div>
+            <div>
+              <div className="text-3xl font-bold">${(data.adminStats.totalPaymentsCents / 100).toFixed(2)}</div>
+              <div className="text-sm text-gray-600">Total Raised</div>
             </div>
           </div>
           {data.sponsorInterests.length > 0 && (
