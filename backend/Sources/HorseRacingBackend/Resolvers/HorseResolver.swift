@@ -249,6 +249,16 @@ final class HorseResolver: @unchecked Sendable {
         return SponsorInterest.query(on: request.db).all()
     }
 
+    func adminRemoveSponsorInterest(request: Request, arguments: AdminRemoveSponsorInterestArguments) throws -> EventLoopFuture<Bool> {
+        guard let user = request.auth.get(User.self), user.isAdmin else { throw Abort(.forbidden) }
+
+        return SponsorInterest.find(arguments.sponsorInterestId, on: request.db)
+            .unwrap(or: Abort(.notFound))
+            .flatMap { interest in
+                interest.delete(on: request.db).map { true }
+            }
+    }
+
     func submitSponsorInterest(request: Request, arguments: SubmitSponsorInterestArguments) throws -> EventLoopFuture<SponsorInterest> {
         let trimmedEmail = arguments.email.trimmingCharacters(in: .whitespacesAndNewlines)
         let trimmedName = arguments.name.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -918,6 +928,7 @@ extension HorseResolver {
     struct RemoveTicketFromCartArguments: Codable { let ticketId: UUID }
     struct RemoveHorseFromCartArguments: Codable { let horseId: UUID }
     struct RemoveSponsorFromCartArguments: Codable { let sponsorId: UUID }
+    struct AdminRemoveSponsorInterestArguments: Codable { let sponsorInterestId: UUID }
     struct RemoveGiftBasketFromCartArguments: Codable { let giftId: UUID }
     struct AdminRemoveTicketArguments: Codable { let ticketId: UUID }
     struct AdminRemoveHorseArguments: Codable { let horseId: UUID }

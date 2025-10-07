@@ -77,7 +77,14 @@ export type DashboardAdminQuery$data = {
   readonly sponsorInterests: ReadonlyArray<{
     readonly companyLogoBase64: string | null | undefined;
     readonly companyName: string;
+    readonly costCents: number;
     readonly id: any | null | undefined;
+    readonly user: {
+      readonly email: string;
+      readonly firstName: string;
+      readonly id: any | null | undefined;
+      readonly lastName: string;
+    };
   }>;
   readonly users: ReadonlyArray<{
     readonly email: string;
@@ -380,7 +387,15 @@ v8 = [
         "kind": "ScalarField",
         "name": "companyLogoBase64",
         "storageKey": null
-      }
+      },
+      {
+        "alias": null,
+        "args": null,
+        "kind": "ScalarField",
+        "name": "costCents",
+        "storageKey": null
+      },
+      (v4/*: any*/)
     ],
     "storageKey": null
   },
