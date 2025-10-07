@@ -41,6 +41,8 @@ let horseRacingSchema = try! Graphiti.Schema<HorseResolver, Request> {
         Field("giftBasketInterests", with: \.$giftBasketInterests)
         Field("payments", with: \.$payments)
         Field("carts", with: \.$carts)
+        Field("ticketScans", with: \.$ticketScans)
+        Field("scannedTickets", with: \.$scannedTickets)
     }
 
     // Round type
@@ -71,6 +73,10 @@ let horseRacingSchema = try! Graphiti.Schema<HorseResolver, Request> {
         Field("owner", with: \.$owner)
         Field("state", at: \.state)
         Field("canRemove", at: \.canRemove)
+        Field("scannedAt", at: \.scannedAt)
+        Field("scannedBy", with: \.$scannedBy)
+        Field("scanLocation", at: \.scanLocation)
+        Field("scans", with: \.$scans)
         Field("costCents", at: HorseResolver.ticketCost)
     }
 
@@ -120,6 +126,17 @@ let horseRacingSchema = try! Graphiti.Schema<HorseResolver, Request> {
         Field("createdAt", at: \.createdAt)
         Field("user", with: \.$user)
         Field("cart", with: \.$cart)
+    }
+
+    // TicketScan type
+    Type(TicketScan.self) {
+        Field("id", at: \.id)
+        Field("ticket", with: \.$ticket)
+        Field("scanner", with: \.$scanner)
+        Field("scanTimestamp", at: \.scanTimestamp)
+        Field("scanLocation", at: \.scanLocation)
+        Field("deviceInfo", at: \.deviceInfo)
+        Field("createdAt", at: \.createdAt)
     }
 
     Type(HorseResolver.AdminStats.self) {
@@ -173,6 +190,23 @@ let horseRacingSchema = try! Graphiti.Schema<HorseResolver, Request> {
         Field("message", at: \.message)
     }
 
+    // Scan Ticket
+    Type(HorseResolver.ScanTicketPayload.self) {
+        Field("success", at: \.success)
+        Field("message", at: \.message)
+        Field("ticket", at: \.ticket)
+        Field("alreadyScanned", at: \.alreadyScanned)
+        Field("previousScan", at: \.previousScan)
+    }
+
+    // Scanning Stats
+    Type(HorseResolver.ScanningStats.self) {
+        Field("totalScanned", at: \.totalScanned)
+        Field("totalTickets", at: \.totalTickets)
+        Field("scansByHour", at: \.scansByHour)
+        Field("recentScans", at: \.recentScans)
+    }
+
     // Queries
     Query {
         Field("me", at: HorseResolver.me)
@@ -193,6 +227,13 @@ let horseRacingSchema = try! Graphiti.Schema<HorseResolver, Request> {
         Field("adminStats", at: HorseResolver.adminStats)
         Field("sponsorInterests", at: HorseResolver.allSponsorInterests)
         Field("giftBasketInterests", at: HorseResolver.allGiftBasketInterests)
+        Field("scanningStats", at: HorseResolver.scanningStats)
+        Field("ticketByBarcode", at: HorseResolver.ticketByBarcode) {
+            Argument("barcode", at: \.barcode)
+        }
+        Field("recentScans", at: HorseResolver.recentScans) {
+            Argument("limit", at: \.limit)
+        }
     }
     
     // Mutations
@@ -300,5 +341,15 @@ let horseRacingSchema = try! Graphiti.Schema<HorseResolver, Request> {
         }
         Field("runAdminCleanup", at: HorseResolver.runAdminCleanup)
         Field("resetDatabase", at: HorseResolver.resetDatabase)
+        
+        // Ticket Scanning
+        Field("scanTicket", at: HorseResolver.scanTicket) {
+            Argument("ticketId", at: \.ticketId)
+            Argument("scanLocation", at: \.scanLocation)
+            Argument("deviceInfo", at: \.deviceInfo)
+        }
+        Field("undoScan", at: HorseResolver.undoScan) {
+            Argument("scanId", at: \.scanId)
+        }
     }
 }

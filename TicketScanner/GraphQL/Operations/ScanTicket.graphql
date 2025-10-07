@@ -1,0 +1,27 @@
+mutation ScanTicket($ticketId: UUID!, $scanLocation: String, $deviceInfo: String) {
+  scanTicket(ticketId: $ticketId, scanLocation: $scanLocation, deviceInfo: $deviceInfo) {
+    success
+    message
+    ticket {
+      id
+      attendeeFirst
+      attendeeLast
+      seatingPreference
+      seatAssignment
+      state
+      scannedAt
+      scanLocation
+    }
+    alreadyScanned
+    previousScan {
+      id
+      scanTimestamp
+      scanLocation
+      scanner {
+        firstName
+        lastName
+      }
+    }
+  }
+}
+

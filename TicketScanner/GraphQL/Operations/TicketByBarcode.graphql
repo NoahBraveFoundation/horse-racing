@@ -1,0 +1,13 @@
+query TicketByBarcode($barcode: String!) {
+  ticketByBarcode(barcode: $barcode) {
+    id
+    attendeeFirst
+    attendeeLast
+    seatingPreference
+    seatAssignment
+    state
+    scannedAt
+    scanLocation
+  }
+}
+

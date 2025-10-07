@@ -998,4 +998,196 @@ extension HorseResolver {
         let sponsorCount: Int
         let giftBasketCount: Int
     }
+    
+    // MARK: - Ticket Scanning
+    
+    struct ScanTicketPayload: Codable {
+        let success: Bool
+        let message: String
+        let ticket: Ticket?
+        let alreadyScanned: Bool
+        let previousScan: TicketScan?
+    }
+    
+    struct ScanningStats: Codable {
+        let totalScanned: Int
+        let totalTickets: Int
+        let scansByHour: [String: Int]
+        let recentScans: [TicketScan]
+    }
+    
+    struct ScanTicketArguments: Codable {
+        let ticketId: UUID
+        let scanLocation: String?
+        let deviceInfo: String?
+    }
+    
+    struct UndoScanArguments: Codable {
+        let scanId: UUID
+    }
+    
+    struct TicketByBarcodeArguments: Codable {
+        let barcode: String
+    }
+    
+    struct RecentScansArguments: Codable {
+        let limit: Int
+    }
+    
+    // MARK: - Scanning Resolver Methods
+    
+    func scanTicket(request: Request, arguments: ScanTicketArguments) throws -> EventLoopFuture<ScanTicketPayload> {
+        // Check if user is authenticated and is admin
+        guard let user = request.auth.get(User.self), user.isAdmin else {
+            throw Abort(.unauthorized, reason: "Admin authentication required")
+        }
+        
+        // Find the ticket
+        return Ticket.find(arguments.ticketId, on: request.db)
+            .unwrap(or: Abort(.notFound, reason: "Ticket not found"))
+            .flatMap { ticket in
+                // Check if ticket is already scanned
+                return TicketScan.query(on: request.db)
+                    .filter(\.$ticket.$id == arguments.ticketId)
+                    .first()
+                    .flatMap { existingScan in
+                        if let existingScan = existingScan {
+                            return request.eventLoop.makeSucceededFuture(ScanTicketPayload(
+                                success: false,
+                                message: "Ticket already scanned",
+                                ticket: ticket,
+                                alreadyScanned: true,
+                                previousScan: existingScan
+                            ))
+                        }
+                        
+                        // Create new scan record
+                        let scan = TicketScan(
+                            ticketID: arguments.ticketId,
+                            scannerUserID: user.requireID(),
+                            scanLocation: arguments.scanLocation,
+                            deviceInfo: arguments.deviceInfo
+                        )
+                        
+                        return scan.save(on: request.db)
+                            .flatMap { _ in
+                                // Update ticket with scan timestamp
+                                ticket.scannedAt = Date()
+                                ticket.scannedByUserID = user.id
+                                ticket.scanLocation = arguments.scanLocation
+                                
+                                return ticket.save(on: request.db)
+                                    .map { _ in
+                                        ScanTicketPayload(
+                                            success: true,
+                                            message: "Ticket scanned successfully",
+                                            ticket: ticket,
+                                            alreadyScanned: false,
+                                            previousScan: nil
+                                        )
+                                    }
+                            }
+                    }
+            }
+    }
+    
+    func undoScan(request: Request, arguments: UndoScanArguments) throws -> EventLoopFuture<ScanTicketPayload> {
+        // Check if user is authenticated and is admin
+        guard let user = request.auth.get(User.self), user.isAdmin else {
+            throw Abort(.unauthorized, reason: "Admin authentication required")
+        }
+        
+        return TicketScan.find(arguments.scanId, on: request.db)
+            .unwrap(or: Abort(.notFound, reason: "Scan record not found"))
+            .flatMap { scan in
+                // Get the ticket
+                return scan.$ticket.get(on: request.db)
+                    .flatMap { ticket in
+                        // Delete the scan record
+                        return scan.delete(on: request.db)
+                            .flatMap { _ in
+                                // Clear scan data from ticket
+                                ticket.scannedAt = nil
+                                ticket.scannedByUserID = nil
+                                ticket.scanLocation = nil
+                                
+                                return ticket.save(on: request.db)
+                                    .map { _ in
+                                        ScanTicketPayload(
+                                            success: true,
+                                            message: "Scan undone successfully",
+                                            ticket: ticket,
+                                            alreadyScanned: false,
+                                            previousScan: nil
+                                        )
+                                    }
+                            }
+                    }
+            }
+    }
+    
+    func ticketByBarcode(request: Request, arguments: TicketByBarcodeArguments) throws -> EventLoopFuture<Ticket?> {
+        // Parse barcode format: "NBT:UUID"
+        guard arguments.barcode.hasPrefix("NBT:"),
+              let ticketIdString = arguments.barcode.dropFirst(4).description,
+              let ticketId = UUID(uuidString: ticketIdString) else {
+            return request.eventLoop.makeSucceededFuture(nil)
+        }
+        
+        return Ticket.find(ticketId, on: request.db)
+    }
+    
+    func scanningStats(request: Request, _: NoArguments) throws -> EventLoopFuture<ScanningStats> {
+        // Check if user is authenticated and is admin
+        guard let user = request.auth.get(User.self), user.isAdmin else {
+            throw Abort(.unauthorized, reason: "Admin authentication required")
+        }
+        
+        let totalScanned = TicketScan.query(on: request.db).count()
+        let totalTickets = Ticket.query(on: request.db).count()
+        
+        // Get scans by hour for the last 24 hours
+        let oneDayAgo = Date().addingTimeInterval(-24 * 60 * 60)
+        let scansByHour = TicketScan.query(on: request.db)
+            .filter(\.$scanTimestamp >= oneDayAgo)
+            .all()
+            .map { scans in
+                scans.reduce(into: [String: Int]()) { result, scan in
+                    let hour = Calendar.current.component(.hour, from: scan.scanTimestamp)
+                    let hourKey = "\(hour):00"
+                    result[hourKey, default: 0] += 1
+                }
+            }
+        
+        let recentScans = TicketScan.query(on: request.db)
+            .with(\.$ticket)
+            .with(\.$scanner)
+            .sort(\.$scanTimestamp, .descending)
+            .limit(10)
+            .all()
+        
+        return totalScanned.and(totalTickets).and(scansByHour).and(recentScans)
+            .map { (scanned, tickets, hourly, recent) in
+                ScanningStats(
+                    totalScanned: scanned,
+                    totalTickets: tickets,
+                    scansByHour: hourly,
+                    recentScans: recent
+                )
+            }
+    }
+    
+    func recentScans(request: Request, arguments: RecentScansArguments) throws -> EventLoopFuture<[TicketScan]> {
+        // Check if user is authenticated and is admin
+        guard let user = request.auth.get(User.self), user.isAdmin else {
+            throw Abort(.unauthorized, reason: "Admin authentication required")
+        }
+        
+        return TicketScan.query(on: request.db)
+            .with(\.$ticket)
+            .with(\.$scanner)
+            .sort(\.$scanTimestamp, .descending)
+            .limit(arguments.limit)
+            .all()
+    }
 }
