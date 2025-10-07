@@ -249,6 +249,41 @@ final class HorseResolver: @unchecked Sendable {
         return SponsorInterest.query(on: request.db).all()
     }
 
+    func submitSponsorInterest(request: Request, arguments: SubmitSponsorInterestArguments) throws -> EventLoopFuture<SponsorInterest> {
+        let trimmedEmail = arguments.email.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedName = arguments.name.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedCompany = arguments.companyInfo.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        return User.query(on: request.db)
+            .filter(\.$email == trimmedEmail)
+            .first()
+            .flatMap { existing -> EventLoopFuture<User> in
+                if let existing = existing {
+                    return request.eventLoop.makeSucceededFuture(existing)
+                }
+
+                let nameComponents = trimmedName.split(separator: " ", maxSplits: 1, omittingEmptySubsequences: true)
+                let firstName = nameComponents.first.map(String.init) ?? trimmedName
+                let lastName = nameComponents.count > 1 ? String(nameComponents.last!) : ""
+
+                let newUser = User(email: trimmedEmail, firstName: firstName, lastName: lastName)
+                return newUser.create(on: request.db).map { newUser }
+            }
+            .flatMap { user in
+                do {
+                    let userID = try user.requireID()
+                    let sponsorInterest = SponsorInterest(
+                        userID: userID,
+                        companyName: trimmedCompany.isEmpty ? "" : trimmedCompany,
+                        amountCents: 0
+                    )
+                    return sponsorInterest.create(on: request.db).map { sponsorInterest }
+                } catch {
+                    return request.eventLoop.makeFailedFuture(error)
+                }
+            }
+    }
+
     func allGiftBasketInterests(request: Request, _: NoArguments) throws -> EventLoopFuture<[GiftBasketInterest]> {
         guard let user = request.auth.get(User.self), user.isAdmin else { throw Abort(.forbidden) }
         return GiftBasketInterest.query(on: request.db).all()
@@ -821,6 +856,12 @@ extension HorseResolver {
 
     struct SponsorInterestArguments: Codable {
         let companyName: String
+    }
+
+    struct SubmitSponsorInterestArguments: Codable {
+        let name: String
+        let email: String
+        let companyInfo: String
     }
 
     struct GiftBasketInterestArguments: Codable {
