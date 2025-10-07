@@ -252,7 +252,10 @@ final class HorseResolver: @unchecked Sendable {
     func submitSponsorInterest(request: Request, arguments: SubmitSponsorInterestArguments) throws -> EventLoopFuture<SponsorInterest> {
         let trimmedEmail = arguments.email.trimmingCharacters(in: .whitespacesAndNewlines)
         let trimmedName = arguments.name.trimmingCharacters(in: .whitespacesAndNewlines)
-        let trimmedCompany = arguments.companyInfo.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedCompany = arguments.companyName.trimmingCharacters(in: .whitespacesAndNewlines)
+        let sanitizedAmountUsd = arguments.amountUsd.isFinite ? arguments.amountUsd : 0
+        let amountCents = Int((sanitizedAmountUsd * 100).rounded())
+        let sanitizedLogo = arguments.companyLogoBase64?.trimmingCharacters(in: .whitespacesAndNewlines)
 
         return User.query(on: request.db)
             .filter(\.$email == trimmedEmail)
@@ -274,10 +277,16 @@ final class HorseResolver: @unchecked Sendable {
                     let userID = try user.requireID()
                     let sponsorInterest = SponsorInterest(
                         userID: userID,
-                        companyName: trimmedCompany.isEmpty ? "" : trimmedCompany,
-                        amountCents: 0
+                        companyName: trimmedCompany,
+                        amountCents: max(0, amountCents),
+                        companyLogoBase64: sanitizedLogo?.isEmpty == false ? sanitizedLogo : nil
                     )
-                    return sponsorInterest.create(on: request.db).map { sponsorInterest }
+                    return sponsorInterest.create(on: request.db).map { _ in
+                        Task {
+                            try? await EmailService.sendSponsorInterestConfirmation(to: user, interest: sponsorInterest, on: request)
+                        }
+                        return sponsorInterest
+                    }
                 } catch {
                     return request.eventLoop.makeFailedFuture(error)
                 }
@@ -861,7 +870,9 @@ extension HorseResolver {
     struct SubmitSponsorInterestArguments: Codable {
         let name: String
         let email: String
-        let companyInfo: String
+        let companyName: String
+        let amountUsd: Double
+        let companyLogoBase64: String?
     }
 
     struct GiftBasketInterestArguments: Codable {

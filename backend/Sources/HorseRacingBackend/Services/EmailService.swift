@@ -11,6 +11,7 @@ struct EmailService {
     private static let loginMagicLinkTemplateID = "d-30146812f5984bde82cfa312a8539fe7"
     private static let horseRacingCheckoutTemplateID = "d-3ae5734302034b1c9c95329a2889316d"
     private static let horseRacingConfirmedTemplateID = "d-9e37ab3d3fdd4b4098fc296bf76fb975"
+    private static let sponsorInterestTemplateID = "d-00000000000000000000000000000000" // TODO: Update with real template ID
     
     // MARK: - SendGrid Client
     private static func getSendGridClient(_ req: Request) -> SendGridClient {
@@ -177,6 +178,45 @@ struct EmailService {
         let attachmentCount = attachments.count
         let attachmentTypes = attachments.map { $0.type ?? "unknown" }.joined(separator: ", ")
         req.logger.info("Horse racing confirmed email sent to \(user.email) with \(attachmentCount) attachments: \(attachmentTypes)")
+    }
+
+    // MARK: - Sponsor Interest Email
+    static func sendSponsorInterestConfirmation(
+        to user: User,
+        interest: SponsorInterest,
+        on req: Request
+    ) async throws {
+        var templateData: [String: String] = [
+            "first_name": user.firstName,
+            "email": user.email,
+            "company_name": interest.companyName,
+            "amount_formatted": formatCurrency(interest.amountCents),
+            "amount_cents": String(interest.amountCents)
+        ]
+
+        if let logo = interest.companyLogoBase64 {
+            templateData["company_logo_base64"] = logo
+        }
+
+        let personalization = Personalization(
+            to: [EmailAddress(email: user.email, name: user.firstName)],
+            dynamicTemplateData: templateData
+        )
+
+        let email = SendGridEmail(
+            personalizations: [personalization],
+            from: EmailAddress(email: fromEmail, name: fromName),
+            templateID: sponsorInterestTemplateID,
+            mailSettings: .init(
+                bypassSpamManagement: .init(enable: true),
+                bypassBounceManagement: .init(enable: true)
+            )
+        )
+
+        let client = getSendGridClient(req)
+        try await client.send(email: email)
+
+        req.logger.info("Sponsor interest confirmation email sent to \(user.email) for company \(interest.companyName)")
     }
     
     /// Sends a confirmation email with custom attachment configuration.
