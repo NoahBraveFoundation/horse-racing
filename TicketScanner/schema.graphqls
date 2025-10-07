@@ -1,0 +1,91 @@
+scalar UUID
+scalar Date
+
+enum TicketState {
+  on_hold
+  pending_payment
+  confirmed
+}
+
+enum CartStatus {
+  open
+  checked_out
+  abandoned
+}
+
+type User {
+  id: UUID!
+  email: String!
+  firstName: String!
+  lastName: String!
+  isAdmin: Boolean!
+  tickets: [Ticket!]!
+  horses: [Horse!]!
+  sponsorInterests: [SponsorInterest!]!
+  giftBasketInterests: [GiftBasketInterest!]!
+  payments: [Payment!]!
+  carts: [Cart!]!
+  ticketScans: [TicketScan!]!
+  scannedTickets: [Ticket!]!
+}
+
+type Ticket {
+  id: UUID!
+  attendeeFirst: String!
+  attendeeLast: String!
+  seatingPreference: String
+  seatAssignment: String
+  owner: User!
+  state: TicketState!
+  canRemove: Boolean!
+  scannedAt: Date
+  scannedBy: User
+  scanLocation: String
+  scans: [TicketScan!]!
+  costCents: Int!
+}
+
+type TicketScan {
+  id: UUID!
+  ticket: Ticket!
+  scanner: User!
+  scanTimestamp: Date!
+  scanLocation: String
+  deviceInfo: String
+  createdAt: Date
+}
+
+type ScanningStats {
+  totalScanned: Int!
+  totalTickets: Int!
+  scansByHour: [String: Int!]!
+  recentScans: [TicketScan!]!
+}
+
+type ScanTicketPayload {
+  success: Boolean!
+  message: String!
+  ticket: Ticket
+  alreadyScanned: Boolean!
+  previousScan: TicketScan
+}
+
+type LoginPayload {
+  success: Boolean!
+  message: String!
+  tokenId: String
+}
+
+type Query {
+  me: User!
+  scanningStats: ScanningStats!
+  ticketByBarcode(barcode: String!): Ticket
+  recentScans(limit: Int!): [TicketScan!]!
+}
+
+type Mutation {
+  login(email: String!, redirectTo: String): LoginPayload!
+  scanTicket(ticketId: UUID!, scanLocation: String, deviceInfo: String): ScanTicketPayload!
+  undoScan(scanId: UUID!): ScanTicketPayload!
+}
+

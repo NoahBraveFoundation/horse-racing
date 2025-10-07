@@ -37,6 +37,12 @@ final class User: Model, Content, @unchecked Sendable {
         @Children(for: \.$user)
         var carts: [Cart]
 
+	@Children(for: \.$scanner)
+	var ticketScans: [TicketScan]
+
+	@Children(for: \.$scannedBy)
+	var scannedTickets: [Ticket]
+
 	@Timestamp(key: "created_at", on: .create)
 	var createdAt: Date?
 

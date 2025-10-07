@@ -31,6 +31,18 @@ final class Ticket: Model, Content, @unchecked Sendable {
 	@Field(key: "can_remove")
 	var canRemove: Bool
 
+	@OptionalField(key: "scanned_at")
+	var scannedAt: Date?
+
+	@OptionalParent(key: "scanned_by_user_id")
+	var scannedBy: User?
+
+	@OptionalField(key: "scan_location")
+	var scanLocation: String?
+
+	@Children(for: \.$ticket)
+	var scans: [TicketScan]
+
 	@Timestamp(key: "created_at", on: .create)
 	var createdAt: Date?
 

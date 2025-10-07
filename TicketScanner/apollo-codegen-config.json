@@ -1,0 +1,40 @@
+{
+  "schemaName": "HorseRacingAPI",
+  "input": {
+    "operationSearchPaths": [
+      "GraphQL/Operations/**/*.graphql"
+    ],
+    "schemaSearchPaths": [
+      "schema.graphqls"
+    ]
+  },
+  "output": {
+    "testMocks": {
+      "none": {}
+    },
+    "schemaTypes": {
+      "path": "./Generated/Schema",
+      "moduleType": {
+        "swiftPackageManager": {}
+      }
+    },
+    "operations": {
+      "inSchemaModule": {}
+    }
+  },
+  "schemaDownloadConfiguration": {
+    "downloadMethod": {
+      "introspection": {
+        "endpointURL": "http://localhost:8080/graphql",
+        "httpMethod": {
+          "POST": {}
+        },
+        "includeDeprecatedInputValues": false,
+        "includeIsRepeatable": false
+      }
+    },
+    "downloadTimeout": 60,
+    "headers": [],
+    "introspectionFormat": "SDL"
+  }
+}

@@ -1,0 +1,21 @@
+query ScanningStats {
+  scanningStats {
+    totalScanned
+    totalTickets
+    scansByHour
+    recentScans {
+      id
+      scanTimestamp
+      scanLocation
+      ticket {
+        attendeeFirst
+        attendeeLast
+      }
+      scanner {
+        firstName
+        lastName
+      }
+    }
+  }
+}
+

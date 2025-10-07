@@ -1,0 +1,8 @@
+mutation Login($email: String!, $redirectTo: String) {
+  login(email: $email, redirectTo: $redirectTo) {
+    success
+    message
+    tokenId
+  }
+}
+
