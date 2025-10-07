@@ -3,6 +3,7 @@ import horseGates from '../assets/horse-gates.jpg'
 import auctionRace from '../assets/dust.jpg'
 import wagering from '../assets/two-racers.jpg'
 import whyItMatters from '../assets/yes-and-2024.jpg'
+import { Link } from 'react-router-dom'
 
 export const About: React.FC = () => {
   return (
@@ -16,6 +17,9 @@ export const About: React.FC = () => {
             </p>
             <p className="text-lg text-gray-700 mb-6">
               Proceeds benefit the <a href="https://noahbrave.org" target="_blank" rel="noopener noreferrer" className="text-noahbrave-600 hover:text-noahbrave-700 hover:underline">NoahBRAVE Foundation</a>, which provides personalized support, raises awareness, and funds research for children and families battling terminal brain cancer. By joining us, you help ensure families know they are seen, valued, loved, and never alone in their fight.
+            </p>
+            <p className="text-lg text-gray-700 mb-6">
+              Can't make it but still want to help? <Link to="/sponsor" className="text-noahbrave-600 hover:text-noahbrave-700 hover:underline">Become a sponsor</Link> and support the cause from anywhere.
             </p>
           </div>
           <div>

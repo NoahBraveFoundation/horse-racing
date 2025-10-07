@@ -18,12 +18,22 @@ const fileToBase64 = (file: File): Promise<string> => new Promise((resolve, reje
   reader.readAsDataURL(file);
 });
 
-interface Props { onBack: () => void; onContinue: () => void }
+interface Props {
+  onBack: () => void;
+  onContinue: () => void;
+  subtitle?: string;
+  addSponsor?: (companyName: string, amountDollars: number, companyLogoBase64?: string) => Promise<void>;
+  removeSponsor?: (sponsorId: string) => Promise<void>;
+  cartRefreshKey?: number;
+}
 
-const SponsorStep: React.FC<Props> = ({ onBack, onContinue }) => {
-  const addSponsor = useTicketFlowStore((s) => s.addSponsorToCart);
-  const removeSponsor = useTicketFlowStore((s) => s.removeSponsorFromCart);
-  const cartRefreshKey = useTicketFlowStore((s) => s.cartRefreshKey);
+const SponsorStep: React.FC<Props> = ({ onBack, onContinue, subtitle, addSponsor: addSponsorProp, removeSponsor: removeSponsorProp, cartRefreshKey: cartKeyProp }) => {
+  const storeAddSponsor = useTicketFlowStore((s) => s.addSponsorToCart);
+  const storeRemoveSponsor = useTicketFlowStore((s) => s.removeSponsorFromCart);
+  const storeCartKey = useTicketFlowStore((s) => s.cartRefreshKey);
+  const addSponsor = addSponsorProp ?? storeAddSponsor;
+  const removeSponsor = removeSponsorProp ?? storeRemoveSponsor;
+  const cartRefreshKey = cartKeyProp ?? storeCartKey;
   const data = useLazyLoadQuery<SponsorStepQuery>(SponsorQuery, {}, { fetchKey: cartRefreshKey, fetchPolicy: 'network-only' });
   const existing = data?.myCart?.sponsorInterests ?? [];
 
@@ -100,7 +110,7 @@ const SponsorStep: React.FC<Props> = ({ onBack, onContinue }) => {
     <div className="min-h-screen bg-noahbrave-50 font-body pb-32">
       <div className="checker-top h-3" style={{ backgroundColor: 'var(--brand)' }} />
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <StepHeader title="Sponsor" subtitle="Step 6 of 8 — Sponsor the event" />
+        <StepHeader title="Sponsor" subtitle={subtitle || 'Step 6 of 8 — Sponsor the event'} />
 
         <div className="bg-white rounded-2xl shadow-xl border border-noahbrave-200 p-8">
           <label className="flex items-start gap-3">

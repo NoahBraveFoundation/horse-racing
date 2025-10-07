@@ -4,6 +4,7 @@ import './index.css'
 import App from './App.tsx'
 import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom'
 import TicketFlow from './components/ticket-flow/TicketFlow.tsx'
+import SponsorFlow from './components/sponsor-flow/SponsorFlow.tsx'
 import Login from './components/Login.tsx'
 import Auth from './components/Auth.tsx'
 import Dashboard from './components/Dashboard.tsx'
@@ -22,6 +23,8 @@ const router = createBrowserRouter([
   { path: '/account', element: <Account /> },
   { path: '/tickets', element: <Navigate to="/tickets/1" replace /> },
   { path: '/tickets/:step', element: <TicketFlow /> },
+  { path: '/sponsor', element: <Navigate to="/sponsor/1" replace /> },
+  { path: '/sponsor/:step', element: <SponsorFlow /> },
 ])
 
 createRoot(document.getElementById('root')!).render(

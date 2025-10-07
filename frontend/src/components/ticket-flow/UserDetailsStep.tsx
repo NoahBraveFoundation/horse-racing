@@ -7,9 +7,12 @@ interface UserDetailsStepProps {
   user: User;
   onUserUpdate: (user: User) => void;
   onNext: () => void;
+  createUser?: (vars: { firstName: string; lastName: string; email: string }) => Promise<User>;
+  title?: string;
+  subtitle?: string;
 }
 
-const UserDetailsStep: React.FC<UserDetailsStepProps> = ({ user, onUserUpdate, onNext }) => {
+const UserDetailsStep: React.FC<UserDetailsStepProps> = ({ user, onUserUpdate, onNext, createUser: createUserProp, title = 'Buy Tickets', subtitle = 'Step 1 of 8 — Your details' }) => {
   const [touched, setTouched] = useState<Record<'firstName' | 'lastName' | 'email', boolean>>({ 
     firstName: false, 
     lastName: false, 
@@ -18,7 +21,8 @@ const UserDetailsStep: React.FC<UserDetailsStepProps> = ({ user, onUserUpdate, o
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const createUser = useTicketFlowStore((s) => s.createUser);
+  const storeCreateUser = useTicketFlowStore((s) => s.createUser);
+  const createUser = createUserProp ?? storeCreateUser;
 
   const onChange: React.ChangeEventHandler<HTMLInputElement> = (e) => {
     const { name, value } = e.target;
@@ -63,7 +67,7 @@ const UserDetailsStep: React.FC<UserDetailsStepProps> = ({ user, onUserUpdate, o
     <div className="min-h-screen bg-noahbrave-50 font-body pb-32">
       <div className="checker-top h-3" style={{ backgroundColor: 'var(--brand)' }} />
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <StepHeader title="Buy Tickets" subtitle="Step 1 of 8 — Your details" />
+        <StepHeader title={title} subtitle={subtitle} />
 
         <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-xl border border-noahbrave-200 p-8">
           {errorMessage && (

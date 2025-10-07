@@ -20,11 +20,19 @@ const SummaryQuery = graphql`
   }
 `;
 
-interface Props { onBack: () => void; onNext: () => void }
+interface Props {
+  onBack: () => void;
+  onNext: () => void;
+  subtitle?: string;
+  cartRefreshKey?: number;
+  checkout?: () => Promise<void>;
+}
 
-const SummaryStep: React.FC<Props> = ({ onBack, onNext }) => {
-  const cartRefreshKey = useTicketFlowStore((s) => s.cartRefreshKey);
-  const checkout = useTicketFlowStore((s) => s.checkoutCart);
+const SummaryStep: React.FC<Props> = ({ onBack, onNext, subtitle, cartRefreshKey: cartKeyProp, checkout: checkoutProp }) => {
+  const storeCartKey = useTicketFlowStore((s) => s.cartRefreshKey);
+  const storeCheckout = useTicketFlowStore((s) => s.checkoutCart);
+  const cartRefreshKey = cartKeyProp ?? storeCartKey;
+  const checkout = checkoutProp ?? storeCheckout;
   const [inFlight, setInFlight] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [seatingPreference, setSeatingPreference] = useState('');
@@ -64,7 +72,7 @@ const SummaryStep: React.FC<Props> = ({ onBack, onNext }) => {
     <div className="min-h-screen bg-noahbrave-50 font-body pb-12">
       <div className="checker-top h-3" style={{ backgroundColor: 'var(--brand)' }} />
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <StepHeader title="Review & Checkout" subtitle="Step 7 of 8 — Final summary" />
+        <StepHeader title="Review & Checkout" subtitle={subtitle || 'Step 7 of 8 — Final summary'} />
 
         <div className="bg-white rounded-2xl shadow-xl border border-noahbrave-200 p-8 space-y-6">
           {error && <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-red-800">{error}</div>}
@@ -133,15 +141,17 @@ const SummaryStep: React.FC<Props> = ({ onBack, onNext }) => {
             )}
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Seating preference (optional)</label>
-            <textarea
-              value={seatingPreference}
-              onChange={(e) => setSeatingPreference(e.target.value)}
-              className="w-full rounded-lg border px-3 py-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-noahbrave-600"
-              rows={3}
-            />
-          </div>
+          {cart?.tickets?.length ? (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Seating preference (optional)</label>
+              <textarea
+                value={seatingPreference}
+                onChange={(e) => setSeatingPreference(e.target.value)}
+                className="w-full rounded-lg border px-3 py-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-noahbrave-600"
+                rows={3}
+              />
+            </div>
+          ) : null}
 
           <div className="border-t pt-4 text-right">
             <div className="text-sm text-gray-600">Total</div>
