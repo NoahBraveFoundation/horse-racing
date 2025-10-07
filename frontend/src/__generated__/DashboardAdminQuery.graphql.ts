@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<b20affb2dbf9e1c47118af349f88d801>>
+ * @generated SignedSource<<842d4d0b0a132c266cc4747ebedfd883>>
  * @lightSyntaxTransform
  * @nogrep
  */
@@ -447,16 +447,16 @@ return {
     "selections": (v8/*: any*/)
   },
   "params": {
-    "cacheID": "ab2b9bcda975529b7f9925b73aeeaf37",
+    "cacheID": "22cb3ea2416d829c29f989847f4e8e67",
     "id": null,
     "metadata": {},
     "name": "DashboardAdminQuery",
     "operationKind": "query",
-    "text": "query DashboardAdminQuery {\n  payments {\n    id\n    totalCents\n    paymentReceived\n    user {\n      id\n      firstName\n      lastName\n      email\n    }\n  }\n  users {\n    id\n    email\n    firstName\n    lastName\n    isAdmin\n  }\n  adminStats {\n    ticketCount\n    sponsorCount\n    giftBasketCount\n  }\n  allHorses {\n    id\n    horseName\n    state\n    round {\n      name\n    }\n    lane {\n      number\n    }\n    owner {\n      firstName\n      lastName\n    }\n  }\n  allTickets {\n    id\n    attendeeFirst\n    attendeeLast\n    seatingPreference\n    seatAssignment\n    state\n    owner {\n      firstName\n      lastName\n    }\n  }\n  abandonedCarts {\n    id\n    orderNumber\n    user {\n      id\n      firstName\n      lastName\n      email\n    }\n  }\n  sponsorInterests {\n    id\n    companyName\n    companyLogoBase64\n  }\n  giftBasketInterests {\n    id\n    description\n    user {\n      firstName\n      lastName\n    }\n  }\n}\n"
+    "text": "query DashboardAdminQuery {\n  payments {\n    id\n    totalCents\n    paymentReceived\n    user {\n      id\n      firstName\n      lastName\n      email\n    }\n  }\n  users {\n    id\n    email\n    firstName\n    lastName\n    isAdmin\n  }\n  adminStats {\n    ticketCount\n    sponsorCount\n    giftBasketCount\n  }\n  allHorses {\n    id\n    horseName\n    state\n    round {\n      name\n    }\n    lane {\n      number\n    }\n    owner {\n      firstName\n      lastName\n    }\n  }\n  allTickets {\n    id\n    attendeeFirst\n    attendeeLast\n    seatingPreference\n    seatAssignment\n    state\n    owner {\n      firstName\n      lastName\n    }\n  }\n  abandonedCarts {\n    id\n    orderNumber\n    user {\n      id\n      firstName\n      lastName\n      email\n    }\n  }\n  sponsorInterests {\n    id\n    companyName\n    companyLogoBase64\n    costCents\n    user {\n      id\n      firstName\n      lastName\n      email\n    }\n  }\n  giftBasketInterests {\n    id\n    description\n    user {\n      firstName\n      lastName\n    }\n  }\n}\n"
   }
 };
 })();
 
-(node as any).hash = "25bdc21db7e32955082e6852fb57bd97";
+(node as any).hash = "462330b6856fd4d5df2d9b6c3ca5feb3";
 
 export default node;

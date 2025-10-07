@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<4efad1f4a8b7d9e0a2f629c3dc0329a3>>
+ * @generated SignedSource<<00ecedcd26d4cdd9d4b88c80b8269018>>
  * @lightSyntaxTransform
  * @nogrep
  */
@@ -61,7 +61,7 @@ return {
     "selections": (v1/*: any*/)
   },
   "params": {
-    "cacheID": "8d57ce475fe3c32d07c2e0fc35a4c343",
+    "cacheID": "0b0b60bc48ed769746adad9ab08079bf",
     "id": null,
     "metadata": {},
     "name": "DashboardRemoveSponsorInterestMutation",
@@ -71,6 +71,6 @@ return {
 };
 })();
 
-(node as any).hash = "f8d7df1adf7e4e516823823c68c8b09d";
+(node as any).hash = "27c44174f2196ec0bb24383ecc46788a";
 
 export default node;
