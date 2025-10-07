@@ -9,6 +9,7 @@ import Auth from './components/Auth.tsx'
 import Dashboard from './components/Dashboard.tsx'
 import Account from './components/Account.tsx'
 import AdminUser from './components/admin/AdminUser'
+import SponsorFormPage from './components/SponsorFormPage.tsx'
 import RelayProvider from './relay/RelayProvider.tsx'
 import ErrorBoundary from './components/common/ErrorBoundary'
 import ErrorFallback from './components/common/ErrorFallback'
@@ -20,6 +21,7 @@ const router = createBrowserRouter([
   { path: '/dashboard', element: <Dashboard /> },
   { path: '/dashboard/user/:userId', element: <AdminUser /> },
   { path: '/account', element: <Account /> },
+  { path: '/sponsor', element: <SponsorFormPage /> },
   { path: '/tickets', element: <Navigate to="/tickets/1" replace /> },
   { path: '/tickets/:step', element: <TicketFlow /> },
 ])

@@ -14,6 +14,7 @@ import type { DashboardReleaseHorseMutation } from '../__generated__/DashboardRe
 import type { DashboardReleaseCartMutation } from '../__generated__/DashboardReleaseCartMutation.graphql';
 import type { DashboardSetSeatAssignmentMutation } from '../__generated__/DashboardSetSeatAssignmentMutation.graphql';
 import type { DashboardResetDatabaseMutation } from '../__generated__/DashboardResetDatabaseMutation.graphql';
+import type { DashboardRemoveSponsorInterestMutation } from '../__generated__/DashboardRemoveSponsorInterestMutation.graphql';
 
 const adminQuery = graphql`
   query DashboardAdminQuery {
@@ -23,7 +24,7 @@ const adminQuery = graphql`
     allHorses { id horseName state round { name } lane { number } owner { firstName lastName } }
     allTickets { id attendeeFirst attendeeLast seatingPreference seatAssignment state owner { firstName lastName } }
     abandonedCarts { id orderNumber user { id firstName lastName email } }
-    sponsorInterests { id companyName companyLogoBase64 }
+    sponsorInterests { id companyName companyLogoBase64 costCents user { id firstName lastName email } }
     giftBasketInterests { id description user { firstName lastName } }
   }
 `;
@@ -70,6 +71,12 @@ const resetDatabaseMutation = graphql`
   }
 `;
 
+const removeSponsorInterestMutation = graphql`
+  mutation DashboardRemoveSponsorInterestMutation($sponsorInterestId: UUID!) {
+    adminRemoveSponsorInterest(sponsorInterestId: $sponsorInterestId)
+  }
+`;
+
 interface LocalUser {
   id: string;
   email: string;
@@ -108,6 +115,7 @@ export const Dashboard: React.FC = () => {
   const [commitRunCleanup] = useMutation(runCleanupMutation);
   const [commitResetDatabase] = useMutation<DashboardResetDatabaseMutation>(resetDatabaseMutation);
   const [commitSetSeatAssignment] = useMutation<DashboardSetSeatAssignmentMutation>(setSeatAssignmentMutation);
+  const [commitRemoveSponsorInterest] = useMutation<DashboardRemoveSponsorInterestMutation>(removeSponsorInterestMutation);
 
   const refresh = () => setRefreshKey(k => k + 1);
 
@@ -137,6 +145,12 @@ export const Dashboard: React.FC = () => {
 
   const onSetSeatAssignment = (id: string, seat: string) => {
     commitSetSeatAssignment({ variables: { ticketId: id, seatAssignment: seat || null }, onCompleted: refresh });
+  };
+
+  const onRemoveSponsorInterest = (id: string) => {
+    if (window.confirm('Remove this sponsor interest?')) {
+      commitRemoveSponsorInterest({ variables: { sponsorInterestId: id }, onCompleted: refresh });
+    }
   };
 
   const onRunCleanup = () => {
@@ -196,16 +210,35 @@ export const Dashboard: React.FC = () => {
           {data.sponsorInterests.length > 0 && (
             <div className="mt-6">
               <h3 className="font-semibold mb-2">Sponsors</h3>
-              <div className="flex flex-wrap gap-4">
-                {data.sponsorInterests.map(s => (
-                  <div key={s.id} className="text-center">
-                    {s.companyLogoBase64 && (
-                      <img src={s.companyLogoBase64} alt={s.companyName} className="h-12 mx-auto mb-1" />
-                    )}
-                    <div className="text-sm">{s.companyName}</div>
-                  </div>
-                ))}
-              </div>
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-left border-b">
+                    <th className="py-2">Company</th>
+                    <th>Contact</th>
+                    <th>Amount</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.sponsorInterests.map(s => (
+                    <tr key={s.id} className="border-b">
+                      <td className="py-2">
+                        <div className="flex items-center gap-3">
+                          {s.companyLogoBase64 && (
+                            <img src={s.companyLogoBase64} alt={s.companyName} className="h-10 w-10 object-contain" />
+                          )}
+                          <span>{s.companyName}</span>
+                        </div>
+                      </td>
+                      <td>{s.user.firstName} {s.user.lastName} ({s.user.email})</td>
+                      <td>${(s.costCents / 100).toFixed(2)}</td>
+                      <td className="text-right">
+                        <button className="text-red-600" onClick={() => onRemoveSponsorInterest(s.id)}>Remove</button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
           {data.giftBasketInterests.length > 0 && (

@@ -41,7 +41,17 @@ export const Contact: React.FC = () => {
               <div>
                 <h3 className="font-heading text-2xl text-gray-900 mb-6">Online Ticket Purchase</h3>
                 <p className="text-gray-700 mb-6">Purchase your tickets online for the fastest and most convenient experience.</p>
-                <a href="/tickets" className="inline-block cta px-6 py-3 rounded-lg font-semibold hover:brightness-95 transition-colors duration-200">Buy Tickets</a>
+                <a href="/tickets" className="inline-block cta px-6 py-3 rounded-lg font-semibold hover:brightness-95 transition-colors duration-200">
+                  Buy Tickets
+                </a>
+                <div className="mt-4">
+                  <a
+                    href="/sponsor"
+                    className="inline-block px-6 py-3 rounded-lg font-semibold border-2 border-noahbrave-600 text-noahbrave-600 transition-colors duration-200 hover:bg-noahbrave-50"
+                  >
+                    Become a Sponsor
+                  </a>
+                </div>
               </div>
             </div>
           </div>
