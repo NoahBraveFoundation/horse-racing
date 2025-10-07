@@ -9,6 +9,7 @@ export const Footer: React.FC = () => {
           <div className="mb-8">
             <Logo size="lg" showBackground={true} className="mx-auto" clickable={true} />
           </div>
+          <p className="text-xs text-noahbrave-200">The NoahBRAVE Foundation is a 501(C)(3) tax-exempt nonprofit corporation (EIN 86-2429764).</p>
         </div>
       </div>
     </footer>
@@ -16,5 +17,4 @@ export const Footer: React.FC = () => {
 }
 
 export default Footer
-
 
