@@ -282,7 +282,7 @@ final class HorseResolver: @unchecked Sendable {
                 let newUser = User(email: trimmedEmail, firstName: firstName, lastName: lastName)
                 return newUser.create(on: request.db).map { newUser }
             }
-            .flatMap { user in
+            .flatMap { (user: User) -> EventLoopFuture<SponsorInterest> in
                 do {
                     let userID = try user.requireID()
                     let sponsorInterest = SponsorInterest(
@@ -291,9 +291,13 @@ final class HorseResolver: @unchecked Sendable {
                         amountCents: max(0, amountCents),
                         companyLogoBase64: sanitizedLogo?.isEmpty == false ? sanitizedLogo : nil
                     )
-                    return sponsorInterest.create(on: request.db).map { _ in
+                    return sponsorInterest.create(on: request.db).map { _ -> SponsorInterest in
                         Task {
-                            try? await EmailService.sendSponsorInterestConfirmation(to: user, interest: sponsorInterest, on: request)
+                          do {
+                              try await EmailService.sendSponsorInterestConfirmation(to: user, interest: sponsorInterest, on: request)
+                          } catch {
+                              request.logger.error("Failed to send sponsor interest confirmation email: \(error)")
+                          }
                         }
                         return sponsorInterest
                     }

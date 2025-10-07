@@ -11,7 +11,7 @@ struct EmailService {
     private static let loginMagicLinkTemplateID = "d-30146812f5984bde82cfa312a8539fe7"
     private static let horseRacingCheckoutTemplateID = "d-3ae5734302034b1c9c95329a2889316d"
     private static let horseRacingConfirmedTemplateID = "d-9e37ab3d3fdd4b4098fc296bf76fb975"
-    private static let sponsorInterestTemplateID = "d-00000000000000000000000000000000" // TODO: Update with real template ID
+    private static let sponsorInterestTemplateID = "d-084d37a0692f4450906d65aa5989100d"
     
     // MARK: - SendGrid Client
     private static func getSendGridClient(_ req: Request) -> SendGridClient {
@@ -186,17 +186,13 @@ struct EmailService {
         interest: SponsorInterest,
         on req: Request
     ) async throws {
-        var templateData: [String: String] = [
-            "first_name": user.firstName,
+        let templateData: [String: String] = [
+            "donationDatePretty": DateFormatter.localizedString(from: Date(), dateStyle: .medium, timeStyle: .none),
+            "firstName": user.firstName,
             "email": user.email,
-            "company_name": interest.companyName,
-            "amount_formatted": formatCurrency(interest.amountCents),
-            "amount_cents": String(interest.amountCents)
+            "companyName": interest.companyName,
+            "amountFormatted": formatCurrency(interest.amountCents)
         ]
-
-        if let logo = interest.companyLogoBase64 {
-            templateData["company_logo_base64"] = logo
-        }
 
         let personalization = Personalization(
             to: [EmailAddress(email: user.email, name: user.firstName)],
