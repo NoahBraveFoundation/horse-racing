@@ -1,4 +1,4 @@
-import { type FormEvent, useRef, useState } from 'react'
+import { type FormEvent, useMemo, useRef, useState } from 'react'
 import Header from './Header'
 import Footer from './Footer'
 
@@ -13,6 +13,24 @@ const SponsorFormPage = () => {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [submitting, setSubmitting] = useState(false)
   const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle')
+  const [submittedDetails, setSubmittedDetails] = useState<{
+    name: string
+    companyName: string
+    amountUsd: number
+  } | null>(null)
+
+  const currencyFormatter = useMemo(
+    () =>
+      new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        minimumFractionDigits: 2,
+      }),
+    [],
+  )
+
+  const venmoUser = 'Gina-Evans-34'
+  const venmoLastFour = '1258'
 
   const sponsorMutation = `
     mutation SubmitSponsorInterest($name: String!, $email: String!, $companyName: String!, $amountUsd: Float!, $companyLogoBase64: String) {
@@ -71,9 +89,13 @@ const SponsorFormPage = () => {
     event.preventDefault()
     setSubmitting(true)
     setStatus('idle')
+    setSubmittedDetails(null)
 
+    const trimmedName = name.trim()
+    const trimmedEmail = email.trim()
+    const trimmedCompany = companyName.trim()
     const parsedAmount = Number.parseFloat(amount)
-    const amountUsd = Number.isFinite(parsedAmount) ? parsedAmount : 0
+    const amountUsd = Number.isFinite(parsedAmount) ? Math.max(0, parsedAmount) : 0
 
     try {
       const response = await fetch('/graphql', {
@@ -85,9 +107,9 @@ const SponsorFormPage = () => {
         body: JSON.stringify({
           query: sponsorMutation,
           variables: {
-            name,
-            email,
-            companyName,
+            name: trimmedName || name,
+            email: trimmedEmail,
+            companyName: trimmedCompany || companyName,
             amountUsd,
             companyLogoBase64: logoBase64,
           },
@@ -109,6 +131,11 @@ const SponsorFormPage = () => {
       }
 
       setStatus('success')
+      setSubmittedDetails({
+        name: trimmedName || name,
+        companyName: trimmedCompany || companyName,
+        amountUsd,
+      })
       setName('')
       setEmail('')
       setCompanyName('')
@@ -134,10 +161,11 @@ const SponsorFormPage = () => {
             Share your information below and we&apos;ll follow up with the next steps to confirm your sponsorship.
           </p>
 
-          <form className="space-y-6" onSubmit={handleSubmit}>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="name">
-                Name
+          {status !== 'success' ? (
+            <form className="space-y-6" onSubmit={handleSubmit}>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="name">
+                  Name
               </label>
               <input
                 id="name"
@@ -262,17 +290,26 @@ const SponsorFormPage = () => {
               {uploadError && <p className="mt-2 text-sm text-red-600">{uploadError}</p>}
             </div>
 
-            <button
-              type="submit"
-              className="cta px-6 py-3 rounded-lg font-semibold hover:brightness-95 transition-colors duration-200"
-              disabled={submitting}
-            >
-              {submitting ? 'Submitting...' : 'Submit'}
-            </button>
-          </form>
-
-          {status === 'success' && (
-            <p className="mt-6 text-noahbrave-600">Thank you! We&apos;ll be in touch soon.</p>
+              <button
+                type="submit"
+                className="cta px-6 py-3 rounded-lg font-semibold hover:brightness-95 transition-colors duration-200"
+                disabled={submitting}
+              >
+                {submitting ? 'Submitting...' : 'Submit'}
+              </button>
+            </form>
+          ) : (
+            <VenmoSuccess
+              details={submittedDetails}
+              currencyFormatter={currencyFormatter}
+              venmoUser={venmoUser}
+              venmoLastFour={venmoLastFour}
+              onReset={() => {
+                setStatus('idle')
+                setSubmittedDetails(null)
+                setUploadError(null)
+              }}
+            />
           )}
 
           {status === 'error' && (
@@ -282,6 +319,87 @@ const SponsorFormPage = () => {
       </main>
 
       <Footer />
+    </div>
+  )
+}
+
+type VenmoSuccessProps = {
+  details: {
+    name: string
+    companyName: string
+    amountUsd: number
+  } | null
+  currencyFormatter: Intl.NumberFormat
+  venmoUser: string
+  venmoLastFour: string
+  onReset: () => void
+}
+
+const VenmoSuccess = ({ details, currencyFormatter, venmoUser, venmoLastFour, onReset }: VenmoSuccessProps) => {
+  const sponsorName = details?.name?.trim() || 'Sponsor'
+  const companyName = details?.companyName?.trim() || ''
+  const amount = details?.amountUsd ?? 0
+  const formattedAmount = currencyFormatter.format(amount)
+
+  const venmoLink = (() => {
+    try {
+      const baseUrl = new URL(`https://venmo.com/${venmoUser}`)
+      baseUrl.searchParams.set('txn', 'pay')
+      if (amount > 0) {
+        baseUrl.searchParams.set('amount', amount.toFixed(2))
+      }
+      const noteParts = ['Noah Brave Foundation Sponsor']
+      if (companyName) {
+        noteParts.push(companyName)
+      }
+      baseUrl.searchParams.set('note', noteParts.join(' - '))
+      return baseUrl.toString()
+    } catch (error) {
+      console.error('Failed to build Venmo link', error)
+      return `https://venmo.com/${venmoUser}`
+    }
+  })()
+
+  return (
+    <div className="text-center space-y-6">
+      <h2 className="font-heading text-3xl text-gray-900">Thank you, {sponsorName}!</h2>
+      <p className="text-gray-700">
+        We&apos;re excited to partner with you{companyName ? ` at ${companyName}` : ''}. To lock in your sponsorship, please send your
+        contribution via Venmo below. We&apos;ll reach out shortly with next steps.
+      </p>
+
+      <div className="bg-noahbrave-50 border border-noahbrave-200 rounded-xl p-6 space-y-4">
+        <div>
+          <p className="text-sm uppercase tracking-wide text-noahbrave-500">Amount</p>
+          <p className="text-2xl font-semibold text-gray-900">{formattedAmount}</p>
+        </div>
+        <div className="text-gray-700 space-y-1">
+          <p>
+            Venmo: <span className="font-medium">@{venmoUser}</span>
+          </p>
+          <p>Last 4 digits of phone: {venmoLastFour}</p>
+          {companyName && <p>Memo suggestion: {companyName}</p>}
+        </div>
+        <a
+          href={venmoLink}
+          target="_blank"
+          rel="noreferrer"
+          className="cta inline-block px-6 py-3 rounded-lg font-semibold hover:brightness-95 transition-colors duration-200"
+        >
+          Open Venmo
+        </a>
+        <p className="text-sm text-gray-500">
+          Prefer a different payment method? Reply to our confirmation email and we&apos;ll coordinate the best option for you.
+        </p>
+      </div>
+
+      <button
+        type="button"
+        onClick={onReset}
+        className="px-5 py-2 rounded-lg border text-gray-700 hover:bg-gray-50"
+      >
+        Submit another sponsorship
+      </button>
     </div>
   )
 }
