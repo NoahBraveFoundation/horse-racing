@@ -27,7 +27,7 @@ struct HorseRacingBackend {
         )
         app.middleware.use(CORSMiddleware(configuration: corsConfiguration))
 
-        app.routes.defaultMaxBodySize = "100mb"
+        app.routes.defaultMaxBodySize = "900mb"
         
         // Sessions (cookie-based)
         app.sessions.use(.fluent)
