@@ -351,20 +351,11 @@ final class HorseResolver: @unchecked Sendable {
         // most recently updated cart (regardless of status) so returning users see their latest data.
         return Cart.query(on: request.db)
             .filter(\.$user.$id == userId)
-            .filter(\.$status == .open)
             .sort(\.$updatedAt, .descending)
             .sort(\.$createdAt, .descending)
-            .first()
-            .flatMap { openCart in
-                if let openCart = openCart {
-                    return request.eventLoop.makeSucceededFuture(openCart)
-                }
-
-                return Cart.query(on: request.db)
-                    .filter(\.$user.$id == userId)
-                    .sort(\.$updatedAt, .descending)
-                    .sort(\.$createdAt, .descending)
-                    .first()
+            .all()
+            .map { carts in
+                carts.first(where: { $0.status == .open }) ?? carts.first
             }
     }
 
