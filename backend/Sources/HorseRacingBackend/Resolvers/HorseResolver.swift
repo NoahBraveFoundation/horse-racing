@@ -346,9 +346,26 @@ final class HorseResolver: @unchecked Sendable {
     // myCart: READ-ONLY query that returns existing cart (if any) regardless of status
     func myCart(request: Request, _: NoArguments) throws -> EventLoopFuture<Cart?> {
         guard let user = request.auth.get(User.self), let userId = user.id else { throw Abort(.unauthorized) }
+
+        // Prefer returning the user's open cart when one exists, otherwise fall back to the
+        // most recently updated cart (regardless of status) so returning users see their latest data.
         return Cart.query(on: request.db)
             .filter(\.$user.$id == userId)
+            .filter(\.$status == .open)
+            .sort(\.$updatedAt, .descending)
+            .sort(\.$createdAt, .descending)
             .first()
+            .flatMap { openCart in
+                if let openCart = openCart {
+                    return request.eventLoop.makeSucceededFuture(openCart)
+                }
+
+                return Cart.query(on: request.db)
+                    .filter(\.$user.$id == userId)
+                    .sort(\.$updatedAt, .descending)
+                    .sort(\.$createdAt, .descending)
+                    .first()
+            }
     }
 
     // MARK: - Cart mutations
