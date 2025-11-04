@@ -1,6 +1,7 @@
 import { type FormEvent, useMemo, useRef, useState } from 'react'
 import Header from './Header'
 import Footer from './Footer'
+import { getApiUrl } from '../utils/api'
 
 const SponsorFormPage = () => {
   const [name, setName] = useState('')
@@ -98,7 +99,7 @@ const SponsorFormPage = () => {
     const amountUsd = Number.isFinite(parsedAmount) ? Math.max(0, parsedAmount) : 0
 
     try {
-      const response = await fetch('/graphql', {
+      const response = await fetch(getApiUrl(), {
         method: 'POST',
         credentials: 'include',
         headers: {

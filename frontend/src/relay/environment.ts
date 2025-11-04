@@ -1,11 +1,10 @@
 import { Network, RecordSource, Store } from 'relay-runtime';
 import type { RequestParameters, Variables } from 'relay-runtime';
 import * as RelayRuntime from 'relay-runtime';
-
-const API_URL = import.meta.env.VITE_API_URL || '/graphql';
+import { getApiUrl } from '../utils/api';
 
 function fetchQuery(operation: RequestParameters, variables: Variables) {
-  const url = import.meta.env.DEV ? '/graphql' : API_URL;
+  const url = getApiUrl();
   
   return fetch(url, {
     method: 'POST',
