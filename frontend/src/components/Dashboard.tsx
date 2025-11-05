@@ -116,18 +116,61 @@ export const Dashboard: React.FC = () => {
 
   const data = useLazyLoadQuery<DashboardAdminQuery>(adminQuery, {}, { fetchKey: refreshKey, fetchPolicy: 'network-only' });
 
-  const parseDate = (value: string | null | undefined): number | undefined => {
-    if (!value) {
+  const APPLE_REFERENCE_EPOCH_SECONDS = 978_307_200;
+
+  const normalizeNumericDate = (num: number): number | undefined => {
+    if (!Number.isFinite(num)) {
       return undefined;
     }
-    const timestamp = Date.parse(value);
-    return Number.isNaN(timestamp) ? undefined : timestamp;
+
+    if (num > 1e12) {
+      // Already in milliseconds since Unix epoch.
+      return num;
+    }
+
+    if (num > 1e9) {
+      // Seconds since Unix epoch.
+      return num * 1000;
+    }
+
+    // Seconds since Apple's reference date (Jan 1, 2001).
+    return (num + APPLE_REFERENCE_EPOCH_SECONDS) * 1000;
   };
 
-  const formatDateTime = (value: string | null | undefined): string => {
+  const parseDate = (value: string | number | null | undefined): number | undefined => {
+    if (value === null || value === undefined) {
+      return undefined;
+    }
+
+    if (typeof value === 'number') {
+      return normalizeNumericDate(value);
+    }
+
+    const trimmed = value.trim();
+    if (!trimmed) {
+      return undefined;
+    }
+
+    const parsed = Date.parse(trimmed);
+    if (!Number.isNaN(parsed)) {
+      return parsed;
+    }
+
+    const asNumber = Number(trimmed);
+    if (!Number.isNaN(asNumber)) {
+      return normalizeNumericDate(asNumber);
+    }
+
+    return undefined;
+  };
+
+  const formatDateTime = (value: string | number | null | undefined): string => {
     const timestamp = parseDate(value);
     if (timestamp === undefined) {
-      return value ?? '—';
+      if (value === null || value === undefined || value === '') {
+        return '—';
+      }
+      return String(value);
     }
     return new Date(timestamp).toLocaleString();
   };

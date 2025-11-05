@@ -58,6 +58,7 @@ final class HorseResolver: @unchecked Sendable {
                                 },
                                 on: request.eventLoop
                             )
+                            .transform(to: ())
                         }
                     }
 
@@ -77,6 +78,7 @@ final class HorseResolver: @unchecked Sendable {
                                 },
                                 on: request.eventLoop
                             )
+                            .transform(to: ())
                         }
                     }
 

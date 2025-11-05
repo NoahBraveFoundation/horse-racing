@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<cee2d86256ab7bc62b14fdfd31401a4f>>
+ * @generated SignedSource<<62e72e3d062a5678758ecfd5535f5f02>>
  * @lightSyntaxTransform
  * @nogrep
  */
@@ -45,10 +45,10 @@ export type AdminUserQuery$data = {
         readonly id: any | null | undefined;
         readonly orderNumber: string;
       } | null | undefined;
-      readonly createdAt: string | null | undefined;
+      readonly createdAt: any | null | undefined;
       readonly id: any | null | undefined;
       readonly paymentReceived: boolean;
-      readonly paymentReceivedAt: string | null | undefined;
+      readonly paymentReceivedAt: any | null | undefined;
       readonly totalCents: number;
     }>;
   };
@@ -77,10 +77,17 @@ v2 = {
   "alias": null,
   "args": null,
   "kind": "ScalarField",
+  "name": "orderNumber",
+  "storageKey": null
+},
+v3 = {
+  "alias": null,
+  "args": null,
+  "kind": "ScalarField",
   "name": "totalCents",
   "storageKey": null
 },
-v3 = [
+v4 = [
   {
     "alias": null,
     "args": [
@@ -133,13 +140,7 @@ v3 = [
             "name": "status",
             "storageKey": null
           },
-          {
-            "alias": null,
-            "args": null,
-            "kind": "ScalarField",
-            "name": "orderNumber",
-            "storageKey": null
-          },
+          (v2/*: any*/),
           {
             "alias": null,
             "args": null,
@@ -221,7 +222,7 @@ v3 = [
                 "name": "sponsorCents",
                 "storageKey": null
               },
-              (v2/*: any*/)
+              (v3/*: any*/)
             ],
             "storageKey": null
           }
@@ -237,7 +238,7 @@ v3 = [
         "plural": true,
         "selections": [
           (v1/*: any*/),
-          (v2/*: any*/),
+          (v3/*: any*/),
           {
             "alias": null,
             "args": null,
@@ -268,13 +269,7 @@ v3 = [
             "plural": false,
             "selections": [
               (v1/*: any*/),
-              {
-                "alias": null,
-                "args": null,
-                "kind": "ScalarField",
-                "name": "orderNumber",
-                "storageKey": null
-              }
+              (v2/*: any*/)
             ],
             "storageKey": null
           }
@@ -291,7 +286,7 @@ return {
     "kind": "Fragment",
     "metadata": null,
     "name": "AdminUserQuery",
-    "selections": (v3/*: any*/),
+    "selections": (v4/*: any*/),
     "type": "Query",
     "abstractKey": null
   },
@@ -300,10 +295,10 @@ return {
     "argumentDefinitions": (v0/*: any*/),
     "kind": "Operation",
     "name": "AdminUserQuery",
-    "selections": (v3/*: any*/)
+    "selections": (v4/*: any*/)
   },
   "params": {
-    "cacheID": "ddb5540f794f881ae19fa5628227128b",
+    "cacheID": "fb4a8976f21d340c360fc77d2b7e4fdd",
     "id": null,
     "metadata": {},
     "name": "AdminUserQuery",
@@ -313,6 +308,6 @@ return {
 };
 })();
 
-(node as any).hash = "d6b55a21ae75e8d98c8b7e0368d11a07";
+(node as any).hash = "85c02a095469c42886904df6b69b9cc7";
 
 export default node;

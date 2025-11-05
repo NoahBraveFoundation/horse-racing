@@ -117,12 +117,12 @@ type Mutation {
 }
 
 type Payment {
+  cart: Cart
+  createdAt: Date
   id: UUID
   paymentReceived: Boolean!
   paymentReceivedAt: Date
   totalCents: Int!
-  createdAt: Date
-  cart: Cart
   user: User!
 }
 
