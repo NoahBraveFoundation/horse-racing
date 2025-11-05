@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useTicketFlowStore } from '../../store/ticketFlow';
 import StickySummary from './StickySummary';
 import { graphql, useLazyLoadQuery } from 'react-relay';
@@ -18,15 +18,15 @@ type Touched = { firstName: boolean; lastName: boolean };
 
 const CartTicketsQuery = graphql`
   query TicketSelectionStepCartTicketsQuery {
-    me { id firstName lastName }
+    me { id firstName lastName tickets { id attendeeFirst attendeeLast canRemove state } }
     myCart {
       id
-      tickets { id attendeeFirst attendeeLast canRemove }
+      tickets { id attendeeFirst attendeeLast canRemove state }
     }
   }
 `;
 
-const TicketSelectionStep: React.FC<TicketSelectionStepProps> = ({ onNext, onBack: _onBack }) => {
+const TicketSelectionStep: React.FC<TicketSelectionStepProps> = ({ onNext }) => {
   const [rows, setRows] = useState<Attendee[]>([]);
   const [touched, setTouched] = useState<Touched[]>([]);
   const [submitted, setSubmitted] = useState(false);
@@ -36,7 +36,32 @@ const TicketSelectionStep: React.FC<TicketSelectionStepProps> = ({ onNext, onBac
   const cartRefreshKey = useTicketFlowStore((s) => s.cartRefreshKey);
 
   const cartData = useLazyLoadQuery<TicketSelectionStepCartTicketsQuery>(CartTicketsQuery, {}, { fetchKey: cartRefreshKey, fetchPolicy: 'network-only' });
-  const existingTickets = cartData?.myCart?.tickets ?? [];
+
+  const visibleTickets = useMemo(() => {
+    const accountTickets = cartData?.me?.tickets ?? [];
+    const cartTickets = cartData?.myCart?.tickets ?? [];
+    const ordered: Array<(typeof accountTickets)[number]> = [];
+    const indexById = new Map<string, number>();
+
+    accountTickets.forEach((ticket) => {
+      if (!ticket.id) return;
+      ordered.push(ticket);
+      indexById.set(ticket.id, ordered.length - 1);
+    });
+
+    cartTickets.forEach((ticket) => {
+      if (!ticket.id) return;
+      const existingIndex = indexById.get(ticket.id);
+      if (existingIndex !== undefined) {
+        ordered[existingIndex] = { ...ordered[existingIndex], ...ticket };
+      } else {
+        ordered.push(ticket);
+        indexById.set(ticket.id, ordered.length - 1);
+      }
+    });
+
+    return ordered;
+  }, [cartData]);
 
   const handleAddRow = () => {
     setRows((prev) => [...prev, { firstName: '', lastName: '' }]);
@@ -83,11 +108,11 @@ const TicketSelectionStep: React.FC<TicketSelectionStepProps> = ({ onNext, onBac
         <div className="bg-white rounded-2xl shadow-xl border border-noahbrave-200 p-8">
           <div className="mb-6">
             <h2 className="font-semibold text-gray-900 mb-3">Tickets in your cart</h2>
-            {existingTickets.length === 0 ? (
+            {visibleTickets.length === 0 ? (
               <p className="text-gray-500">No tickets in your cart yet.</p>
             ) : (
               <ul className="divide-y divide-gray-200 rounded-xl border border-noahbrave-200 overflow-hidden">
-                {existingTickets.map((t) => (
+                {visibleTickets.map((t) => (
                   <li key={t.id} className="flex items-center justify-between p-3">
                     <div className="text-gray-800">
                       {t.attendeeFirst} {t.attendeeLast}
