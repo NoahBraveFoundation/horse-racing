@@ -326,19 +326,27 @@ final class HorseResolver: @unchecked Sendable {
             .first()
             .flatMap { existing -> EventLoopFuture<Cart> in
                 if let existing = existing { return req.eventLoop.makeSucceededFuture(existing) }
-                
-                // Create new cart and automatically add a ticket for the user
-                let cart = Cart(userID: userId, status: .open)
-                return cart.create(on: req.db).flatMap { _ in
-                    // Get user info to create the ticket
-                    User.find(userId, on: req.db)
-                        .unwrap(or: Abort(.notFound))
-                        .flatMap { user in
-                            let ticket = Ticket(ownerID: userId, attendeeFirst: user.firstName, attendeeLast: user.lastName, state: .onHold, canRemove: false)
-                            ticket.$cart.id = cart.id
-                            return ticket.create(on: req.db).map { _ in cart }
+
+                return Cart.query(on: req.db)
+                    .filter(\.$user.$id == userId)
+                    .count()
+                    .flatMap { cartCount in
+                        let cart = Cart(userID: userId, status: .open)
+                        return cart.create(on: req.db).flatMap { _ in
+                            guard cartCount == 0 else {
+                                return req.eventLoop.makeSucceededFuture(cart)
+                            }
+
+                            // Only seed a default ticket when this is the user's very first cart
+                            return User.find(userId, on: req.db)
+                                .unwrap(or: Abort(.notFound))
+                                .flatMap { user in
+                                    let ticket = Ticket(ownerID: userId, attendeeFirst: user.firstName, attendeeLast: user.lastName, state: .onHold, canRemove: false)
+                                    ticket.$cart.id = cart.id
+                                    return ticket.create(on: req.db).map { _ in cart }
+                                }
                         }
-                }
+                    }
             }
     }
 
