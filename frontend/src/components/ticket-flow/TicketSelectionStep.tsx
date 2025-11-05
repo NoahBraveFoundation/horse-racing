@@ -16,6 +16,10 @@ type Attendee = { firstName: string; lastName: string };
 
 type Touched = { firstName: boolean; lastName: boolean };
 
+type GraphQLTicket = TicketSelectionStepCartTicketsQuery['response']['me']['tickets'][number];
+
+type DisplayTicket = Omit<GraphQLTicket, 'id'> & { id: string; isPaid: boolean };
+
 const CartTicketsQuery = graphql`
   query TicketSelectionStepCartTicketsQuery {
     me { id firstName lastName tickets { id attendeeFirst attendeeLast canRemove state } }
@@ -37,26 +41,36 @@ const TicketSelectionStep: React.FC<TicketSelectionStepProps> = ({ onNext }) => 
 
   const cartData = useLazyLoadQuery<TicketSelectionStepCartTicketsQuery>(CartTicketsQuery, {}, { fetchKey: cartRefreshKey, fetchPolicy: 'network-only' });
 
-  const visibleTickets = useMemo(() => {
+  const visibleTickets: DisplayTicket[] = useMemo(() => {
     const accountTickets = cartData?.me?.tickets ?? [];
     const cartTickets = cartData?.myCart?.tickets ?? [];
-    const ordered: Array<(typeof accountTickets)[number]> = [];
+    const ordered: DisplayTicket[] = [];
     const indexById = new Map<string, number>();
 
     accountTickets.forEach((ticket) => {
-      if (!ticket.id) return;
-      ordered.push(ticket);
-      indexById.set(ticket.id, ordered.length - 1);
+      if (!ticket.id || ticket.state !== 'confirmed') return;
+      const { id: rawId, ...rest } = ticket;
+      const id = rawId as string;
+      ordered.push({ ...rest, id, isPaid: true });
+      indexById.set(id, ordered.length - 1);
     });
 
     cartTickets.forEach((ticket) => {
       if (!ticket.id) return;
-      const existingIndex = indexById.get(ticket.id);
+      const { id: rawId, ...rest } = ticket;
+      const id = rawId as string;
+      const existingIndex = indexById.get(id);
       if (existingIndex !== undefined) {
-        ordered[existingIndex] = { ...ordered[existingIndex], ...ticket };
+        const existing = ordered[existingIndex];
+        ordered[existingIndex] = {
+          ...existing,
+          ...rest,
+          id,
+          isPaid: existing.isPaid || ticket.state === 'confirmed',
+        };
       } else {
-        ordered.push(ticket);
-        indexById.set(ticket.id, ordered.length - 1);
+        ordered.push({ ...rest, id, isPaid: ticket.state === 'confirmed' });
+        indexById.set(id, ordered.length - 1);
       }
     });
 
@@ -114,10 +128,17 @@ const TicketSelectionStep: React.FC<TicketSelectionStepProps> = ({ onNext }) => 
               <ul className="divide-y divide-gray-200 rounded-xl border border-noahbrave-200 overflow-hidden">
                 {visibleTickets.map((t) => (
                   <li key={t.id} className="flex items-center justify-between p-3">
-                    <div className="text-gray-800">
-                      {t.attendeeFirst} {t.attendeeLast}
+                    <div className="text-gray-800 flex items-center gap-2">
+                      <span>
+                        {t.attendeeFirst} {t.attendeeLast}
+                      </span>
+                      {t.isPaid && (
+                        <span className="text-xs font-semibold uppercase tracking-wide text-green-700 bg-green-100 rounded-full px-2 py-0.5">
+                          Paid
+                        </span>
+                      )}
                     </div>
-                    {t.canRemove && (
+                    {t.canRemove && !t.isPaid && (
                       <button
                         type="button"
                         onClick={() => handleRemoveTicket(t.id)}
