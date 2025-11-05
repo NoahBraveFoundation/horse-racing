@@ -121,6 +121,8 @@ type Payment {
   paymentReceived: Boolean!
   paymentReceivedAt: Date
   totalCents: Int!
+  createdAt: Date
+  cart: Cart
   user: User!
 }
 

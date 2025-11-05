@@ -18,7 +18,15 @@ import type { DashboardRemoveSponsorInterestMutation } from '../__generated__/Da
 
 const adminQuery = graphql`
   query DashboardAdminQuery {
-    payments { id totalCents paymentReceived user { id firstName lastName email } }
+    payments {
+      id
+      totalCents
+      paymentReceived
+      paymentReceivedAt
+      createdAt
+      cart { id orderNumber }
+      user { id firstName lastName email }
+    }
     users { id email firstName lastName isAdmin }
     adminStats { ticketCount sponsorCount giftBasketCount }
     allHorses { id horseName state round { name } lane { number } owner { firstName lastName } }
@@ -107,6 +115,36 @@ export const Dashboard: React.FC = () => {
   }, [navigate]);
 
   const data = useLazyLoadQuery<DashboardAdminQuery>(adminQuery, {}, { fetchKey: refreshKey, fetchPolicy: 'network-only' });
+
+  const parseDate = (value: string | null | undefined): number | undefined => {
+    if (!value) {
+      return undefined;
+    }
+    const timestamp = Date.parse(value);
+    return Number.isNaN(timestamp) ? undefined : timestamp;
+  };
+
+  const formatDateTime = (value: string | null | undefined): string => {
+    const timestamp = parseDate(value);
+    if (timestamp === undefined) {
+      return value ?? '—';
+    }
+    return new Date(timestamp).toLocaleString();
+  };
+
+  const timestampOrZero = (value: number | undefined) => value ?? 0;
+
+  const pendingPayments = data.payments
+    .filter(p => !p.paymentReceived)
+    .sort((a, b) => timestampOrZero(parseDate(b.createdAt)) - timestampOrZero(parseDate(a.createdAt)));
+
+  const paidPayments = data.payments
+    .filter(p => p.paymentReceived)
+    .sort((a, b) => {
+      const bTime = parseDate(b.paymentReceivedAt) ?? parseDate(b.createdAt);
+      const aTime = parseDate(a.paymentReceivedAt) ?? parseDate(a.createdAt);
+      return timestampOrZero(bTime) - timestampOrZero(aTime);
+    });
 
   const [commitSetPaymentReceived] = useMutation<DashboardSetPaymentReceivedMutation>(setPaymentReceivedMutation);
   const [commitSetAdmin] = useMutation<DashboardSetAdminMutation>(setAdminMutation);
@@ -256,30 +294,71 @@ export const Dashboard: React.FC = () => {
         {/* Payment management */}
         <section className="bg-white rounded-xl p-6 shadow">
           <h2 className="text-xl font-semibold mb-4">Payments</h2>
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="text-left border-b"><th className="py-2">User</th><th>Total</th><th>Status</th><th></th></tr>
-            </thead>
-            <tbody>
-              {data.payments.map(p => (
-                <tr key={p.id} className="border-b">
-                  <td className="py-2">{p.user.firstName} {p.user.lastName} ({p.user.email})</td>
-                  <td>${(p.totalCents/100).toFixed(2)}</td>
-                  <td>{p.paymentReceived ? 'Paid' : 'Pending'}</td>
-                  <td>
-                    {p.paymentReceived ? (
-                      <button className="text-blue-600" onClick={() => onSetPaymentReceived(p.id, false)}>Unmark Paid</button>
-                    ) : (
-                      <button className="text-blue-600" onClick={() => onSetPaymentReceived(p.id, true)}>Mark Paid</button>
-                    )}
-                  </td>
-                </tr>
-              ))}
-              {data.payments.length === 0 && (
-                <tr><td colSpan={4} className="py-2 text-center text-gray-500">No payments</td></tr>
+          <div className="space-y-6">
+            <div>
+              <h3 className="font-semibold mb-2">Pending</h3>
+              {pendingPayments.length === 0 ? (
+                <div className="text-sm text-gray-500">No pending payments</div>
+              ) : (
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-left border-b">
+                      <th className="py-2">Order</th>
+                      <th>User</th>
+                      <th>Submitted</th>
+                      <th>Total</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {pendingPayments.map(p => (
+                      <tr key={p.id} className="border-b bg-yellow-50/60">
+                        <td className="py-2 font-medium">{p.cart?.orderNumber ?? '—'}</td>
+                        <td>{p.user.firstName} {p.user.lastName} ({p.user.email})</td>
+                        <td>{formatDateTime(p.createdAt)}</td>
+                        <td>${(p.totalCents / 100).toFixed(2)}</td>
+                        <td className="text-right">
+                          <button className="text-blue-600" onClick={() => onSetPaymentReceived(p.id, true)}>Mark Paid</button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               )}
-            </tbody>
-          </table>
+            </div>
+
+            <div>
+              <h3 className="font-semibold mb-2">History</h3>
+              {paidPayments.length === 0 ? (
+                <div className="text-sm text-gray-500">No recorded payments yet</div>
+              ) : (
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-left border-b">
+                      <th className="py-2">Order</th>
+                      <th>User</th>
+                      <th>Paid At</th>
+                      <th>Total</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {paidPayments.map(p => (
+                      <tr key={p.id} className="border-b">
+                        <td className="py-2 font-medium">{p.cart?.orderNumber ?? '—'}</td>
+                        <td>{p.user.firstName} {p.user.lastName} ({p.user.email})</td>
+                        <td>{formatDateTime(p.paymentReceivedAt ?? p.createdAt)}</td>
+                        <td>${(p.totalCents / 100).toFixed(2)}</td>
+                        <td className="text-right">
+                          <button className="text-blue-600" onClick={() => onSetPaymentReceived(p.id, false)}>Unmark Paid</button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          </div>
         </section>
 
         {/* Tickets (excluding on-hold) */}

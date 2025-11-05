@@ -147,6 +147,7 @@ func configureDatabase(_ app: Application) async throws {
     app.migrations.add(MigrateGiftBasketInterests())
     app.migrations.add(MigrateGiftBasketInterestsAddCart())
     app.migrations.add(MigratePayments())
+    app.migrations.add(AlterPaymentsAddCartReference())
     app.migrations.add(SessionRecord.migration)
     
     // Run migrations

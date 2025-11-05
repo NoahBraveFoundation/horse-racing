@@ -41,8 +41,14 @@ export type AdminUserQuery$data = {
     readonly id: any | null | undefined;
     readonly lastName: string;
     readonly payments: ReadonlyArray<{
+      readonly cart: {
+        readonly id: any | null | undefined;
+        readonly orderNumber: string;
+      } | null | undefined;
+      readonly createdAt: string | null | undefined;
       readonly id: any | null | undefined;
       readonly paymentReceived: boolean;
+      readonly paymentReceivedAt: string | null | undefined;
       readonly totalCents: number;
     }>;
   };
@@ -238,6 +244,39 @@ v3 = [
             "kind": "ScalarField",
             "name": "paymentReceived",
             "storageKey": null
+          },
+          {
+            "alias": null,
+            "args": null,
+            "kind": "ScalarField",
+            "name": "paymentReceivedAt",
+            "storageKey": null
+          },
+          {
+            "alias": null,
+            "args": null,
+            "kind": "ScalarField",
+            "name": "createdAt",
+            "storageKey": null
+          },
+          {
+            "alias": null,
+            "args": null,
+            "concreteType": "Cart",
+            "kind": "LinkedField",
+            "name": "cart",
+            "plural": false,
+            "selections": [
+              (v1/*: any*/),
+              {
+                "alias": null,
+                "args": null,
+                "kind": "ScalarField",
+                "name": "orderNumber",
+                "storageKey": null
+              }
+            ],
+            "storageKey": null
           }
         ],
         "storageKey": null
@@ -269,7 +308,7 @@ return {
     "metadata": {},
     "name": "AdminUserQuery",
     "operationKind": "query",
-    "text": "query AdminUserQuery(\n  $userId: UUID!\n) {\n  user(userId: $userId) {\n    id\n    firstName\n    lastName\n    email\n    carts {\n      id\n      status\n      orderNumber\n      tickets {\n        id\n        attendeeFirst\n        attendeeLast\n      }\n      horses {\n        id\n        horseName\n        ownershipLabel\n      }\n      cost {\n        ticketsCents\n        horseCents\n        sponsorCents\n        totalCents\n      }\n    }\n    payments {\n      id\n      totalCents\n      paymentReceived\n    }\n  }\n}\n"
+    "text": "query AdminUserQuery(\n  $userId: UUID!\n) {\n  user(userId: $userId) {\n    id\n    firstName\n    lastName\n    email\n    carts {\n      id\n      status\n      orderNumber\n      tickets {\n        id\n        attendeeFirst\n        attendeeLast\n      }\n      horses {\n        id\n        horseName\n        ownershipLabel\n      }\n      cost {\n        ticketsCents\n        horseCents\n        sponsorCents\n        totalCents\n      }\n    }\n    payments {\n      id\n      totalCents\n      paymentReceived\n      paymentReceivedAt\n      createdAt\n      cart {\n        id\n        orderNumber\n      }\n    }\n  }\n}\n"
   }
 };
 })();

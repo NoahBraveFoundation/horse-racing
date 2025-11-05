@@ -64,8 +64,14 @@ export type DashboardAdminQuery$data = {
     };
   }>;
   readonly payments: ReadonlyArray<{
+    readonly cart: {
+      readonly id: any | null | undefined;
+      readonly orderNumber: string;
+    } | null | undefined;
+    readonly createdAt: string | null | undefined;
     readonly id: any | null | undefined;
     readonly paymentReceived: boolean;
+    readonly paymentReceivedAt: string | null | undefined;
     readonly totalCents: number;
     readonly user: {
       readonly email: string;
@@ -186,6 +192,39 @@ v8 = [
         "args": null,
         "kind": "ScalarField",
         "name": "paymentReceived",
+        "storageKey": null
+      },
+      {
+        "alias": null,
+        "args": null,
+        "kind": "ScalarField",
+        "name": "paymentReceivedAt",
+        "storageKey": null
+      },
+      {
+        "alias": null,
+        "args": null,
+        "kind": "ScalarField",
+        "name": "createdAt",
+        "storageKey": null
+      },
+      {
+        "alias": null,
+        "args": null,
+        "concreteType": "Cart",
+        "kind": "LinkedField",
+        "name": "cart",
+        "plural": false,
+        "selections": [
+          (v0/*: any*/),
+          {
+            "alias": null,
+            "args": null,
+            "kind": "ScalarField",
+            "name": "orderNumber",
+            "storageKey": null
+          }
+        ],
         "storageKey": null
       },
       (v4/*: any*/)
@@ -452,7 +491,7 @@ return {
     "metadata": {},
     "name": "DashboardAdminQuery",
     "operationKind": "query",
-    "text": "query DashboardAdminQuery {\n  payments {\n    id\n    totalCents\n    paymentReceived\n    user {\n      id\n      firstName\n      lastName\n      email\n    }\n  }\n  users {\n    id\n    email\n    firstName\n    lastName\n    isAdmin\n  }\n  adminStats {\n    ticketCount\n    sponsorCount\n    giftBasketCount\n  }\n  allHorses {\n    id\n    horseName\n    state\n    round {\n      name\n    }\n    lane {\n      number\n    }\n    owner {\n      firstName\n      lastName\n    }\n  }\n  allTickets {\n    id\n    attendeeFirst\n    attendeeLast\n    seatingPreference\n    seatAssignment\n    state\n    owner {\n      firstName\n      lastName\n    }\n  }\n  abandonedCarts {\n    id\n    orderNumber\n    user {\n      id\n      firstName\n      lastName\n      email\n    }\n  }\n  sponsorInterests {\n    id\n    companyName\n    companyLogoBase64\n    costCents\n    user {\n      id\n      firstName\n      lastName\n      email\n    }\n  }\n  giftBasketInterests {\n    id\n    description\n    user {\n      firstName\n      lastName\n    }\n  }\n}\n"
+    "text": "query DashboardAdminQuery {\n  payments {\n    id\n    totalCents\n    paymentReceived\n    paymentReceivedAt\n    createdAt\n    cart {\n      id\n      orderNumber\n    }\n    user {\n      id\n      firstName\n      lastName\n      email\n    }\n  }\n  users {\n    id\n    email\n    firstName\n    lastName\n    isAdmin\n  }\n  adminStats {\n    ticketCount\n    sponsorCount\n    giftBasketCount\n  }\n  allHorses {\n    id\n    horseName\n    state\n    round {\n      name\n    }\n    lane {\n      number\n    }\n    owner {\n      firstName\n      lastName\n    }\n  }\n  allTickets {\n    id\n    attendeeFirst\n    attendeeLast\n    seatingPreference\n    seatAssignment\n    state\n    owner {\n      firstName\n      lastName\n    }\n  }\n  abandonedCarts {\n    id\n    orderNumber\n    user {\n      id\n      firstName\n      lastName\n      email\n    }\n  }\n  sponsorInterests {\n    id\n    companyName\n    companyLogoBase64\n    costCents\n    user {\n      id\n      firstName\n      lastName\n      email\n    }\n  }\n  giftBasketInterests {\n    id\n    description\n    user {\n      firstName\n      lastName\n    }\n  }\n}\n"
   }
 };
 })();

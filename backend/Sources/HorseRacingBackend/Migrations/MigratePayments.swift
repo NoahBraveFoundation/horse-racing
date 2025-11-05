@@ -8,10 +8,9 @@ struct MigratePayments: Migration {
 			.field("user_id", .uuid, .required, .references("users", "id", onDelete: .cascade))
 			.field("total_cents", .int, .required)
 			.field("payment_received", .bool, .required)
-			.field("payment_received_at", .datetime)
-			.field("created_at", .datetime)
-			.field("updated_at", .datetime)
-			.unique(on: "user_id")
+                        .field("payment_received_at", .datetime)
+                        .field("created_at", .datetime)
+                        .field("updated_at", .datetime)
 			.create()
 	}
 
