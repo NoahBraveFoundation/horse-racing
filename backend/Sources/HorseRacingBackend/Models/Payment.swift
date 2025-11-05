@@ -10,14 +10,17 @@ final class Payment: Model, Content, @unchecked Sendable {
 	@Parent(key: "user_id")
 	var user: User
 
-	@Field(key: "total_cents")
-	var totalCents: Int
+        @Field(key: "total_cents")
+        var totalCents: Int
 
-	@Field(key: "payment_received")
-	var paymentReceived: Bool
+        @Field(key: "payment_received")
+        var paymentReceived: Bool
 
-	@Field(key: "payment_received_at")
-	var paymentReceivedAt: Date?
+        @Field(key: "payment_received_at")
+        var paymentReceivedAt: Date?
+
+        @OptionalParent(key: "cart_id")
+        var cart: Cart?
 
 	@Timestamp(key: "created_at", on: .create)
 	var createdAt: Date?
@@ -27,11 +30,12 @@ final class Payment: Model, Content, @unchecked Sendable {
 
 	init() {}
 
-	init(id: UUID? = nil, userID: UUID, totalCents: Int, paymentReceived: Bool = false, paymentReceivedAt: Date? = nil) {
-		self.id = id
-		self.$user.id = userID
-		self.totalCents = totalCents
-		self.paymentReceived = paymentReceived
-		self.paymentReceivedAt = paymentReceivedAt
-	}
+        init(id: UUID? = nil, userID: UUID, cartID: UUID? = nil, totalCents: Int, paymentReceived: Bool = false, paymentReceivedAt: Date? = nil) {
+                self.id = id
+                self.$user.id = userID
+                self.$cart.id = cartID
+                self.totalCents = totalCents
+                self.paymentReceived = paymentReceived
+                self.paymentReceivedAt = paymentReceivedAt
+        }
 }

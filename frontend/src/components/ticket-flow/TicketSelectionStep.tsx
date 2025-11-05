@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useTicketFlowStore } from '../../store/ticketFlow';
 import StickySummary from './StickySummary';
 import { graphql, useLazyLoadQuery } from 'react-relay';
@@ -16,17 +16,21 @@ type Attendee = { firstName: string; lastName: string };
 
 type Touched = { firstName: boolean; lastName: boolean };
 
+type GraphQLTicket = TicketSelectionStepCartTicketsQuery['response']['me']['tickets'][number];
+
+type DisplayTicket = Omit<GraphQLTicket, 'id'> & { id: string; isPaid: boolean };
+
 const CartTicketsQuery = graphql`
   query TicketSelectionStepCartTicketsQuery {
-    me { id firstName lastName }
+    me { id firstName lastName tickets { id attendeeFirst attendeeLast canRemove state } }
     myCart {
       id
-      tickets { id attendeeFirst attendeeLast canRemove }
+      tickets { id attendeeFirst attendeeLast canRemove state }
     }
   }
 `;
 
-const TicketSelectionStep: React.FC<TicketSelectionStepProps> = ({ onNext, onBack: _onBack }) => {
+const TicketSelectionStep: React.FC<TicketSelectionStepProps> = ({ onNext }) => {
   const [rows, setRows] = useState<Attendee[]>([]);
   const [touched, setTouched] = useState<Touched[]>([]);
   const [submitted, setSubmitted] = useState(false);
@@ -36,7 +40,42 @@ const TicketSelectionStep: React.FC<TicketSelectionStepProps> = ({ onNext, onBac
   const cartRefreshKey = useTicketFlowStore((s) => s.cartRefreshKey);
 
   const cartData = useLazyLoadQuery<TicketSelectionStepCartTicketsQuery>(CartTicketsQuery, {}, { fetchKey: cartRefreshKey, fetchPolicy: 'network-only' });
-  const existingTickets = cartData?.myCart?.tickets ?? [];
+
+  const visibleTickets: DisplayTicket[] = useMemo(() => {
+    const accountTickets = cartData?.me?.tickets ?? [];
+    const cartTickets = cartData?.myCart?.tickets ?? [];
+    const ordered: DisplayTicket[] = [];
+    const indexById = new Map<string, number>();
+
+    accountTickets.forEach((ticket) => {
+      if (!ticket.id || ticket.state !== 'confirmed') return;
+      const { id: rawId, ...rest } = ticket;
+      const id = rawId as string;
+      ordered.push({ ...rest, id, isPaid: true });
+      indexById.set(id, ordered.length - 1);
+    });
+
+    cartTickets.forEach((ticket) => {
+      if (!ticket.id) return;
+      const { id: rawId, ...rest } = ticket;
+      const id = rawId as string;
+      const existingIndex = indexById.get(id);
+      if (existingIndex !== undefined) {
+        const existing = ordered[existingIndex];
+        ordered[existingIndex] = {
+          ...existing,
+          ...rest,
+          id,
+          isPaid: existing.isPaid || ticket.state === 'confirmed',
+        };
+      } else {
+        ordered.push({ ...rest, id, isPaid: ticket.state === 'confirmed' });
+        indexById.set(id, ordered.length - 1);
+      }
+    });
+
+    return ordered;
+  }, [cartData]);
 
   const handleAddRow = () => {
     setRows((prev) => [...prev, { firstName: '', lastName: '' }]);
@@ -83,16 +122,23 @@ const TicketSelectionStep: React.FC<TicketSelectionStepProps> = ({ onNext, onBac
         <div className="bg-white rounded-2xl shadow-xl border border-noahbrave-200 p-8">
           <div className="mb-6">
             <h2 className="font-semibold text-gray-900 mb-3">Tickets in your cart</h2>
-            {existingTickets.length === 0 ? (
+            {visibleTickets.length === 0 ? (
               <p className="text-gray-500">No tickets in your cart yet.</p>
             ) : (
               <ul className="divide-y divide-gray-200 rounded-xl border border-noahbrave-200 overflow-hidden">
-                {existingTickets.map((t) => (
+                {visibleTickets.map((t) => (
                   <li key={t.id} className="flex items-center justify-between p-3">
-                    <div className="text-gray-800">
-                      {t.attendeeFirst} {t.attendeeLast}
+                    <div className="text-gray-800 flex items-center gap-2">
+                      <span>
+                        {t.attendeeFirst} {t.attendeeLast}
+                      </span>
+                      {t.isPaid && (
+                        <span className="text-xs font-semibold uppercase tracking-wide text-green-700 bg-green-100 rounded-full px-2 py-0.5">
+                          Paid
+                        </span>
+                      )}
                     </div>
-                    {t.canRemove && (
+                    {t.canRemove && !t.isPaid && (
                       <button
                         type="button"
                         onClick={() => handleRemoveTicket(t.id)}

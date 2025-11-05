@@ -117,7 +117,9 @@ let horseRacingSchema = try! Graphiti.Schema<HorseResolver, Request> {
         Field("totalCents", at: \.totalCents)
         Field("paymentReceived", at: \.paymentReceived)
         Field("paymentReceivedAt", at: \.paymentReceivedAt)
+        Field("createdAt", at: \.createdAt)
         Field("user", with: \.$user)
+        Field("cart", with: \.$cart)
     }
 
     Type(HorseResolver.AdminStats.self) {

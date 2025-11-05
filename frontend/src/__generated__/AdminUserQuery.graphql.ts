@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<cee2d86256ab7bc62b14fdfd31401a4f>>
+ * @generated SignedSource<<62e72e3d062a5678758ecfd5535f5f02>>
  * @lightSyntaxTransform
  * @nogrep
  */
@@ -41,8 +41,14 @@ export type AdminUserQuery$data = {
     readonly id: any | null | undefined;
     readonly lastName: string;
     readonly payments: ReadonlyArray<{
+      readonly cart: {
+        readonly id: any | null | undefined;
+        readonly orderNumber: string;
+      } | null | undefined;
+      readonly createdAt: any | null | undefined;
       readonly id: any | null | undefined;
       readonly paymentReceived: boolean;
+      readonly paymentReceivedAt: any | null | undefined;
       readonly totalCents: number;
     }>;
   };
@@ -71,10 +77,17 @@ v2 = {
   "alias": null,
   "args": null,
   "kind": "ScalarField",
+  "name": "orderNumber",
+  "storageKey": null
+},
+v3 = {
+  "alias": null,
+  "args": null,
+  "kind": "ScalarField",
   "name": "totalCents",
   "storageKey": null
 },
-v3 = [
+v4 = [
   {
     "alias": null,
     "args": [
@@ -127,13 +140,7 @@ v3 = [
             "name": "status",
             "storageKey": null
           },
-          {
-            "alias": null,
-            "args": null,
-            "kind": "ScalarField",
-            "name": "orderNumber",
-            "storageKey": null
-          },
+          (v2/*: any*/),
           {
             "alias": null,
             "args": null,
@@ -215,7 +222,7 @@ v3 = [
                 "name": "sponsorCents",
                 "storageKey": null
               },
-              (v2/*: any*/)
+              (v3/*: any*/)
             ],
             "storageKey": null
           }
@@ -231,12 +238,39 @@ v3 = [
         "plural": true,
         "selections": [
           (v1/*: any*/),
-          (v2/*: any*/),
+          (v3/*: any*/),
           {
             "alias": null,
             "args": null,
             "kind": "ScalarField",
             "name": "paymentReceived",
+            "storageKey": null
+          },
+          {
+            "alias": null,
+            "args": null,
+            "kind": "ScalarField",
+            "name": "paymentReceivedAt",
+            "storageKey": null
+          },
+          {
+            "alias": null,
+            "args": null,
+            "kind": "ScalarField",
+            "name": "createdAt",
+            "storageKey": null
+          },
+          {
+            "alias": null,
+            "args": null,
+            "concreteType": "Cart",
+            "kind": "LinkedField",
+            "name": "cart",
+            "plural": false,
+            "selections": [
+              (v1/*: any*/),
+              (v2/*: any*/)
+            ],
             "storageKey": null
           }
         ],
@@ -252,7 +286,7 @@ return {
     "kind": "Fragment",
     "metadata": null,
     "name": "AdminUserQuery",
-    "selections": (v3/*: any*/),
+    "selections": (v4/*: any*/),
     "type": "Query",
     "abstractKey": null
   },
@@ -261,19 +295,19 @@ return {
     "argumentDefinitions": (v0/*: any*/),
     "kind": "Operation",
     "name": "AdminUserQuery",
-    "selections": (v3/*: any*/)
+    "selections": (v4/*: any*/)
   },
   "params": {
-    "cacheID": "ddb5540f794f881ae19fa5628227128b",
+    "cacheID": "fb4a8976f21d340c360fc77d2b7e4fdd",
     "id": null,
     "metadata": {},
     "name": "AdminUserQuery",
     "operationKind": "query",
-    "text": "query AdminUserQuery(\n  $userId: UUID!\n) {\n  user(userId: $userId) {\n    id\n    firstName\n    lastName\n    email\n    carts {\n      id\n      status\n      orderNumber\n      tickets {\n        id\n        attendeeFirst\n        attendeeLast\n      }\n      horses {\n        id\n        horseName\n        ownershipLabel\n      }\n      cost {\n        ticketsCents\n        horseCents\n        sponsorCents\n        totalCents\n      }\n    }\n    payments {\n      id\n      totalCents\n      paymentReceived\n    }\n  }\n}\n"
+    "text": "query AdminUserQuery(\n  $userId: UUID!\n) {\n  user(userId: $userId) {\n    id\n    firstName\n    lastName\n    email\n    carts {\n      id\n      status\n      orderNumber\n      tickets {\n        id\n        attendeeFirst\n        attendeeLast\n      }\n      horses {\n        id\n        horseName\n        ownershipLabel\n      }\n      cost {\n        ticketsCents\n        horseCents\n        sponsorCents\n        totalCents\n      }\n    }\n    payments {\n      id\n      totalCents\n      paymentReceived\n      paymentReceivedAt\n      createdAt\n      cart {\n        id\n        orderNumber\n      }\n    }\n  }\n}\n"
   }
 };
 })();
 
-(node as any).hash = "d6b55a21ae75e8d98c8b7e0368d11a07";
+(node as any).hash = "85c02a095469c42886904df6b69b9cc7";
 
 export default node;

@@ -22,7 +22,14 @@ const adminUserQuery = graphql`
         horses { id horseName ownershipLabel }
         cost { ticketsCents horseCents sponsorCents totalCents }
       }
-      payments { id totalCents paymentReceived }
+      payments {
+        id
+        totalCents
+        paymentReceived
+        paymentReceivedAt
+        createdAt
+        cart { id orderNumber }
+      }
     }
   }
 `;
@@ -43,6 +50,16 @@ const AdminUser: React.FC = () => {
   const { userId } = useParams();
   const [refreshKey, setRefreshKey] = useState(0);
   const data = useLazyLoadQuery<AdminUserQuery>(adminUserQuery, { userId: userId! }, { fetchKey: refreshKey, fetchPolicy: 'network-only' });
+  const formatDateTime = (value: string | null | undefined) => {
+    if (!value) {
+      return '—';
+    }
+    const timestamp = Date.parse(value);
+    if (Number.isNaN(timestamp)) {
+      return value;
+    }
+    return new Date(timestamp).toLocaleString();
+  };
   const [commitRemoveTicket] = useMutation<AdminUserRemoveTicketMutation>(removeTicketMutation);
   const [commitRemoveHorse] = useMutation<AdminUserRemoveHorseMutation>(removeHorseMutation);
 
@@ -106,12 +123,29 @@ const AdminUser: React.FC = () => {
         </section>
         <section className="bg-white rounded-xl p-6 shadow">
           <h2 className="text-xl font-semibold mb-4">Payments</h2>
-          {u.payments.length === 0 && <div className="text-sm text-gray-500">No payments</div>}
-          <ul className="space-y-2">
-            {u.payments.map(p => (
-              <li key={p.id}>${(p.totalCents / 100).toFixed(2)} - {p.paymentReceived ? 'Paid' : 'Pending'}</li>
-            ))}
-          </ul>
+          {u.payments.length === 0 ? (
+            <div className="text-sm text-gray-500">No payments</div>
+          ) : (
+            <ul className="space-y-3">
+              {u.payments.map(p => (
+                <li key={p.id} className="border rounded-lg px-3 py-2">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                    <div>
+                      <div className="font-medium">Order {p.cart?.orderNumber ?? '—'}</div>
+                      <div className="text-sm text-gray-600">
+                        {p.paymentReceived ? 'Paid' : 'Pending'} • ${(p.totalCents / 100).toFixed(2)}
+                      </div>
+                    </div>
+                    <div className="text-sm text-gray-600">
+                      {p.paymentReceived
+                        ? `Marked paid ${formatDateTime(p.paymentReceivedAt ?? p.createdAt)}`
+                        : `Submitted ${formatDateTime(p.createdAt)}`}
+                    </div>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
         </section>
       </div>
       <Footer />
