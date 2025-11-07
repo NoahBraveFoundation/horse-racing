@@ -23,6 +23,12 @@ struct VenmoLinkService {
             URLQueryItem(name: "note", value: "A Night at the Races - Order #\(orderNumber)")
         ]
 
+        if let encodedQuery = components?.percentEncodedQuery {
+            // Venmo treats literal plus signs in the note as characters rather than spaces,
+            // so ensure spaces are encoded with %20 instead.
+            components?.percentEncodedQuery = encodedQuery.replacingOccurrences(of: "+", with: "%20")
+        }
+
         // Fallback to basic string construction if URL building fails for any reason.
         return components?.url?.absoluteString ?? "\(baseURL)/\(venmoUser)"
     }
