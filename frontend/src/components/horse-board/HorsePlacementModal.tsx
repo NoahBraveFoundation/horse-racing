@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react';
-import { shallow } from 'zustand/shallow';
+import { useShallow } from 'zustand/react/shallow';
 import { HORSE_PRICE, useTicketFlowStore } from '../../store/ticketFlow';
 import { useHorseBoardStore } from '../../store/horseBoard';
 
@@ -21,7 +21,7 @@ const HorsePlacementModal: React.FC<Props> = ({ canPlaceInRound, refreshAfterPla
     error,
     setError,
   } = useHorseBoardStore(
-    (state) => ({
+    useShallow((state) => ({
       modal: state.modal,
       closeModal: state.closeModal,
       horseName: state.horseName,
@@ -32,8 +32,7 @@ const HorsePlacementModal: React.FC<Props> = ({ canPlaceInRound, refreshAfterPla
       setPlacing: state.setPlacing,
       error: state.error,
       setError: state.setError,
-    }),
-    shallow,
+    }))
   );
 
   const addHorseToCart = useTicketFlowStore((s) => s.addHorseToCart);

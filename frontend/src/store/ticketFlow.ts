@@ -79,7 +79,7 @@ type TicketFlowState = {
   grandTotal: () => number;
 };
 
-export const useTicketFlowStore = create<TicketFlowState>((set, get) => ({
+export const useTicketFlowStore = create<TicketFlowState>()((set, get) => ({
   currentStep: 1,
   user: { firstName: '', lastName: '', email: '' },
   attendees: [],

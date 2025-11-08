@@ -21,7 +21,7 @@ type HorseBoardState = {
   setError: (v: string | null) => void;
 };
 
-export const useHorseBoardStore = create<HorseBoardState>((set, get) => ({
+export const useHorseBoardStore = create<HorseBoardState>()((set, get) => ({
   refreshKey: 0,
   setRefreshKey: (fn) => set((s) => ({ refreshKey: fn(s.refreshKey) })),
   startPolling: () => {
