@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { graphql, useLazyLoadQuery } from 'react-relay';
 import RoundBoard from './RoundBoard';
+import HorsePlacementModal from './HorsePlacementModal';
 import { useTicketFlowStore, HORSE_PRICE } from '../../store/ticketFlow';
 import { useHorseBoardStore } from '../../store/horseBoard';
 import type { BoardQuery } from '../../__generated__/BoardQuery.graphql';
@@ -26,7 +27,6 @@ const Board: React.FC = () => {
   const startPolling = useHorseBoardStore((s) => s.startPolling);
 
   const data = useLazyLoadQuery<BoardQuery>(BoardQuery, {}, { fetchKey: refreshKey, fetchPolicy: 'network-only' });
-  const addHorseToCart = useTicketFlowStore((s) => s.addHorseToCart);
   const removeHorseFromCart = useTicketFlowStore((s) => s.removeHorseFromCart);
   const selections = useTicketFlowStore((s) => s.horseSelections);
   const refreshCart = useTicketFlowStore((s) => s.refreshCart);
@@ -35,16 +35,7 @@ const Board: React.FC = () => {
   useEffect(() => startPolling(), [startPolling]);
 
   // Modal state from store
-  const modal = useHorseBoardStore((s) => s.modal);
   const openModalStore = useHorseBoardStore((s) => s.openModal);
-  const closeModal = useHorseBoardStore((s) => s.closeModal);
-  const horseName = useHorseBoardStore((s) => s.horseName);
-  const ownershipLabel = useHorseBoardStore((s) => s.ownershipLabel);
-  const setHorseName = useHorseBoardStore((s) => s.setHorseName);
-  const setOwnershipLabel = useHorseBoardStore((s) => s.setOwnershipLabel);
-  const placing = useHorseBoardStore((s) => s.placing);
-  const setPlacing = useHorseBoardStore((s) => s.setPlacing);
-  const error = useHorseBoardStore((s) => s.error);
   const setError = useHorseBoardStore((s) => s.setError);
 
   const me = data?.me;
@@ -57,39 +48,21 @@ const Board: React.FC = () => {
       setError('You already have a horse in this round.');
       return;
     }
+    const { setHorseName, setOwnershipLabel, setError: resetError } = useHorseBoardStore.getState();
     setHorseName('');
     // Autofill Presented by with user name
     setOwnershipLabel(me ? `${me.firstName} ${me.lastName}` : '');
-    setError(null);
+    resetError(null);
     openModalStore(roundId, laneId);
-  };
-
-  const onPlace = async () => {
-    if (!modal.roundId || !modal.laneId) return;
-    if (!horseName.trim() || !ownershipLabel.trim()) {
-      setError('Please enter horse name and ownership label.');
-      return;
-    }
-    if (!canPlaceInRound(modal.roundId)) {
-      setError('You already have a horse in this round.');
-      return;
-    }
-    setPlacing(true);
-    try {
-      await addHorseToCart({ roundId: modal.roundId, laneId: modal.laneId, horseName: horseName.trim(), ownershipLabel: ownershipLabel.trim() });
-      setPlacing(false);
-      closeModal();
-      // Trigger immediate refresh after placing for both board and summary
-      setRefreshKey((k) => k + 1);
-      refreshCart();
-    } catch (e: any) {
-      setPlacing(false);
-      setError(e?.message || 'Unable to place horse.');
-    }
   };
 
   const onRemoveHorse = async (horseId: string) => {
     await removeHorseFromCart(horseId);
+    setRefreshKey((k) => k + 1);
+    refreshCart();
+  };
+
+  const refreshAfterPlacement = () => {
     setRefreshKey((k) => k + 1);
     refreshCart();
   };
@@ -113,45 +86,7 @@ const Board: React.FC = () => {
         />
       ))}
 
-      {/* Modal */}
-      {modal.open && (
-        <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center">
-          <div className="absolute inset-0 bg-black/40" onClick={closeModal} />
-          <div className="relative w-full sm:w-[500px] bg-white rounded-t-2xl sm:rounded-2xl shadow-xl p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">Place a horse (${HORSE_PRICE})</h3>
-              <button className="text-gray-500 hover:text-gray-700" onClick={closeModal}>✕</button>
-            </div>
-            {error && <div className="mb-3 rounded-lg border border-red-200 bg-red-50 p-3 text-red-800 text-sm">{error}</div>}
-            <div className="grid sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Horse name (get creative!)</label>
-                <input
-                  value={horseName}
-                  onChange={(e) => setHorseName(e.target.value)}
-                  className="w-full rounded-lg border px-3 py-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-noahbrave-600"
-                  placeholder="Thunderbolt"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Presented by</label>
-                <input
-                  value={ownershipLabel}
-                  onChange={(e) => setOwnershipLabel(e.target.value)}
-                  className="w-full rounded-lg border px-3 py-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-noahbrave-600"
-                  placeholder="Your name"
-                />
-              </div>
-            </div>
-            <div className="flex justify-end mt-5">
-              <button onClick={closeModal} className="px-4 py-2 rounded-lg border mr-3">Cancel</button>
-              <button onClick={onPlace} disabled={placing} className="cta px-5 py-2 rounded-lg font-semibold disabled:opacity-50">
-                {placing ? 'Placing…' : 'Place horse'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <HorsePlacementModal canPlaceInRound={canPlaceInRound} refreshAfterPlacement={refreshAfterPlacement} />
     </div>
   );
 };
