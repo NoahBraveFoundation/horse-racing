@@ -3,18 +3,7 @@ query ScanningStats {
     totalScanned
     totalTickets
     recentScans {
-      id
-      scanTimestamp
-      scanLocation
-      ticket {
-        attendeeFirst
-        attendeeLast
-      }
-      scanner {
-        firstName
-        lastName
-      }
+      ...TicketScanFragment
     }
   }
 }
-

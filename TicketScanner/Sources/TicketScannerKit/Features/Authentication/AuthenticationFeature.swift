@@ -65,11 +65,11 @@ public struct AuthenticationFeature {
         state.isLoading = false
         state.errorMessage = error.localizedDescription
         return .none
-        
+
       case .validateToken(let token):
         state.isLoading = true
         state.errorMessage = nil
-        
+
         return .run { send in
           @Dependency(\.apiClient) var apiClient
           @Dependency(\.tokenStorage) var tokenStorage
@@ -83,7 +83,7 @@ public struct AuthenticationFeature {
               }
             ))
         }
-        
+
       case .validateTokenResponse(.success(_)):
         state.isLoading = false
         // Parent will handle navigation

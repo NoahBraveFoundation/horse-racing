@@ -7,7 +7,8 @@ public class ScanTicketMutation: GraphQLMutation {
   public static let operationName: String = "ScanTicket"
   public static let operationDocument: ApolloAPI.OperationDocument = .init(
     definition: .init(
-      #"mutation ScanTicket($ticketId: UUID!, $scanLocation: String, $deviceInfo: String) { scanTicket( ticketId: $ticketId scanLocation: $scanLocation deviceInfo: $deviceInfo ) { __typename success message ticket { __typename id attendeeFirst attendeeLast seatingPreference seatAssignment state scannedAt scanLocation } alreadyScanned previousScan { __typename id scanTimestamp scanLocation scanner { __typename firstName lastName } } } }"#
+      #"mutation ScanTicket($ticketId: UUID!, $scanLocation: String, $deviceInfo: String) { scanTicket( ticketId: $ticketId scanLocation: $scanLocation deviceInfo: $deviceInfo ) { __typename success message ticket { __typename ...TicketFragment } alreadyScanned previousScan { __typename ...TicketScanFragment } } }"#,
+      fragments: [TicketFragment.self, TicketScanFragment.self, UserFragment.self]
     ))
 
   public var ticketId: UUID
@@ -78,14 +79,7 @@ public class ScanTicketMutation: GraphQLMutation {
         public static var __parentType: any ApolloAPI.ParentType { HorseRacingAPI.Objects.Ticket }
         public static var __selections: [ApolloAPI.Selection] { [
           .field("__typename", String.self),
-          .field("id", HorseRacingAPI.UUID?.self),
-          .field("attendeeFirst", String.self),
-          .field("attendeeLast", String.self),
-          .field("seatingPreference", String?.self),
-          .field("seatAssignment", String?.self),
-          .field("state", GraphQLEnum<HorseRacingAPI.TicketState>.self),
-          .field("scannedAt", HorseRacingAPI.Date?.self),
-          .field("scanLocation", String?.self),
+          .fragment(TicketFragment.self),
         ] }
 
         public var id: HorseRacingAPI.UUID? { __data["id"] }
@@ -96,6 +90,13 @@ public class ScanTicketMutation: GraphQLMutation {
         public var state: GraphQLEnum<HorseRacingAPI.TicketState> { __data["state"] }
         public var scannedAt: HorseRacingAPI.Date? { __data["scannedAt"] }
         public var scanLocation: String? { __data["scanLocation"] }
+
+        public struct Fragments: FragmentContainer {
+          public let __data: DataDict
+          public init(_dataDict: DataDict) { __data = _dataDict }
+
+          public var ticketFragment: TicketFragment { _toFragment() }
+        }
       }
 
       /// ScanTicket.PreviousScan
@@ -108,34 +109,25 @@ public class ScanTicketMutation: GraphQLMutation {
         public static var __parentType: any ApolloAPI.ParentType { HorseRacingAPI.Objects.TicketScan }
         public static var __selections: [ApolloAPI.Selection] { [
           .field("__typename", String.self),
-          .field("id", HorseRacingAPI.UUID?.self),
-          .field("scanTimestamp", HorseRacingAPI.Date.self),
-          .field("scanLocation", String?.self),
-          .field("scanner", Scanner.self),
+          .fragment(TicketScanFragment.self),
         ] }
 
         public var id: HorseRacingAPI.UUID? { __data["id"] }
         public var scanTimestamp: HorseRacingAPI.Date { __data["scanTimestamp"] }
         public var scanLocation: String? { __data["scanLocation"] }
+        public var ticket: Ticket { __data["ticket"] }
         public var scanner: Scanner { __data["scanner"] }
 
-        /// ScanTicket.PreviousScan.Scanner
-        ///
-        /// Parent Type: `User`
-        public struct Scanner: HorseRacingAPI.SelectionSet {
+        public struct Fragments: FragmentContainer {
           public let __data: DataDict
           public init(_dataDict: DataDict) { __data = _dataDict }
 
-          public static var __parentType: any ApolloAPI.ParentType { HorseRacingAPI.Objects.User }
-          public static var __selections: [ApolloAPI.Selection] { [
-            .field("__typename", String.self),
-            .field("firstName", String.self),
-            .field("lastName", String.self),
-          ] }
-
-          public var firstName: String { __data["firstName"] }
-          public var lastName: String { __data["lastName"] }
+          public var ticketScanFragment: TicketScanFragment { _toFragment() }
         }
+
+        public typealias Ticket = TicketScanFragment.Ticket
+
+        public typealias Scanner = TicketScanFragment.Scanner
       }
     }
   }

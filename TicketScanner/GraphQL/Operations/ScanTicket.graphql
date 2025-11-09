@@ -3,24 +3,11 @@ mutation ScanTicket($ticketId: UUID!, $scanLocation: String, $deviceInfo: String
     success
     message
     ticket {
-      id
-      attendeeFirst
-      attendeeLast
-      seatingPreference
-      seatAssignment
-      state
-      scannedAt
-      scanLocation
+      ...TicketFragment
     }
     alreadyScanned
     previousScan {
-      id
-      scanTimestamp
-      scanLocation
-      scanner {
-        firstName
-        lastName
-      }
+      ...TicketScanFragment
     }
   }
 }

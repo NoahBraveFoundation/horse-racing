@@ -67,62 +67,59 @@ extension APIClient: DependencyKey {
         throw APIClientError.invalidBarcode
       }
 
-      // Mock response for now - replace with actual Apollo call
+      let mutation = ScanTicketMutation(
+        ticketId: ticketIdString,
+        scanLocation: location.map { .some($0) } ?? .null,
+        deviceInfo: deviceInfo.map { .some($0) } ?? .null
+      )
+
+      let result = try await ApolloClientService.shared.perform(mutation: mutation)
+
+      guard result.scanTicket.success else {
+        throw APIClientError.graphQLError(result.scanTicket.message)
+      }
+
+      // Convert GraphQL response to our local models
+      let ticket = result.scanTicket.ticket?.toLocal()
+      let previousScan = result.scanTicket.previousScan?.toLocal()
+
       return ScanTicketResponse(
-        success: true,
-        message: "Ticket scanned successfully",
-        ticket: Ticket(
-          id: ticketId,
-          attendeeFirst: "John",
-          attendeeLast: "Doe",
-          seatingPreference: nil,
-          seatAssignment: "Table 5, Seat 3",
-          state: .confirmed,
-          scannedAt: Date(),
-          scannedByUserID: UUID(),
-          scanLocation: location
-        ),
-        alreadyScanned: false,
-        previousScan: nil
+        success: result.scanTicket.success,
+        message: result.scanTicket.message,
+        ticket: ticket,
+        alreadyScanned: result.scanTicket.alreadyScanned,
+        previousScan: previousScan
       )
     },
 
     getScanningStats: {
-      // Mock response for now - replace with actual Apollo call
+      let query = ScanningStatsQuery()
+
+      let result = try await ApolloClientService.shared.fetch(query: query)
+
+      let recentScans = result.scanningStats.recentScans.compactMap { $0.toLocal() }
+
       return ScanningStats(
-        totalScanned: 45,
-        totalTickets: 100,
-        recentScans: []
+        totalScanned: result.scanningStats.totalScanned,
+        totalTickets: result.scanningStats.totalTickets,
+        recentScans: recentScans
       )
     },
 
     getRecentScans: { limit in
-      // Mock response for now - replace with actual Apollo call
-      return []
+      let query = RecentScansQuery(limit: limit)
+
+      let result = try await ApolloClientService.shared.fetch(query: query)
+
+      return result.recentScans.compactMap { $0.toLocal() }
     },
 
     getTicketByBarcode: { barcode in
-      // Parse barcode to get ticket ID
-      guard barcode.hasPrefix("NBT:") else {
-        return nil
-      }
-      let ticketIdString = String(barcode.dropFirst(4))
-      guard let ticketId = UUID(uuidString: ticketIdString) else {
-        return nil
-      }
+      let query = TicketByBarcodeQuery(barcode: barcode)
 
-      // Mock response for now - replace with actual Apollo call
-      return Ticket(
-        id: ticketId,
-        attendeeFirst: "Jane",
-        attendeeLast: "Smith",
-        seatingPreference: nil,
-        seatAssignment: "Table 3, Seat 1",
-        state: .confirmed,
-        scannedAt: nil,
-        scannedByUserID: nil,
-        scanLocation: nil
-      )
+      let result = try await ApolloClientService.shared.fetch(query: query)
+
+      return result.ticketByBarcode?.toLocal()
     }
   )
 }
@@ -153,5 +150,106 @@ enum APIClientError: Error, LocalizedError {
     case .invalidBarcode:
       return "Invalid barcode format"
     }
+  }
+}
+
+// MARK: - GraphQL Fragment Conversions
+
+extension TicketFragment {
+  func toLocal() -> Ticket? {
+    guard let idStr = id, let uuid = UUID(uuidString: idStr) else {
+      return nil
+    }
+    
+    let ticketState: TicketState
+    switch state.value {
+    case .onHold:
+      ticketState = .onHold
+    case .pendingPayment:
+      ticketState = .pendingPayment
+    case .confirmed:
+      ticketState = .confirmed
+    case .none:
+      ticketState = .pendingPayment
+    @unknown default:
+      ticketState = .confirmed
+    }
+    
+    return Ticket(
+      id: uuid,
+      attendeeFirst: attendeeFirst,
+      attendeeLast: attendeeLast,
+      seatingPreference: seatingPreference,
+      seatAssignment: seatAssignment,
+      state: ticketState,
+      scannedAt: scannedAt.map { Date(timeIntervalSince1970: Double($0) ?? 0) },
+      scannedByUserID: nil,
+      scanLocation: scanLocation
+    )
+  }
+}
+
+extension UserFragment {
+  func toLocal() -> User? {
+    guard let idStr = id, let uuid = UUID(uuidString: idStr) else {
+      return nil
+    }
+    return User(
+      id: uuid,
+      email: email,
+      firstName: firstName,
+      lastName: lastName,
+      isAdmin: isAdmin
+    )
+  }
+}
+
+extension TicketScanFragment {
+  func toLocal() -> TicketScan? {
+    guard let scanIdStr = id, let scanUUID = UUID(uuidString: scanIdStr),
+          let ticket = ticket.fragments.ticketFragment.toLocal(),
+          let scanner = scanner.fragments.userFragment.toLocal() else {
+      return nil
+    }
+    
+    return TicketScan(
+      id: scanUUID,
+      ticket: ticket,
+      scanner: scanner,
+      scanTimestamp: Date(timeIntervalSince1970: Double(scanTimestamp) ?? 0),
+      scanLocation: scanLocation
+    )
+  }
+}
+
+// MARK: - Query/Mutation Result Conversions
+
+extension ScanTicketMutation.Data.ScanTicket.Ticket {
+  func toLocal() -> Ticket? {
+    fragments.ticketFragment.toLocal()
+  }
+}
+
+extension ScanTicketMutation.Data.ScanTicket.PreviousScan {
+  func toLocal() -> TicketScan? {
+    fragments.ticketScanFragment.toLocal()
+  }
+}
+
+extension ScanningStatsQuery.Data.ScanningStats.RecentScan {
+  func toLocal() -> TicketScan? {
+    fragments.ticketScanFragment.toLocal()
+  }
+}
+
+extension RecentScansQuery.Data.RecentScan {
+  func toLocal() -> TicketScan? {
+    fragments.ticketScanFragment.toLocal()
+  }
+}
+
+extension TicketByBarcodeQuery.Data.TicketByBarcode {
+  func toLocal() -> Ticket? {
+    fragments.ticketFragment.toLocal()
   }
 }

@@ -7,7 +7,8 @@ public class ValidateTokenMutation: GraphQLMutation {
   public static let operationName: String = "ValidateToken"
   public static let operationDocument: ApolloAPI.OperationDocument = .init(
     definition: .init(
-      #"mutation ValidateToken($token: String!) { validateToken(token: $token) { __typename success message user { __typename id email firstName lastName isAdmin } } }"#
+      #"mutation ValidateToken($token: String!) { validateToken(token: $token) { __typename success message user { __typename ...UserFragment } } }"#,
+      fragments: [UserFragment.self]
     ))
 
   public var token: String
@@ -58,11 +59,7 @@ public class ValidateTokenMutation: GraphQLMutation {
         public static var __parentType: any ApolloAPI.ParentType { HorseRacingAPI.Objects.User }
         public static var __selections: [ApolloAPI.Selection] { [
           .field("__typename", String.self),
-          .field("id", HorseRacingAPI.UUID?.self),
-          .field("email", String.self),
-          .field("firstName", String.self),
-          .field("lastName", String.self),
-          .field("isAdmin", Bool.self),
+          .fragment(UserFragment.self),
         ] }
 
         public var id: HorseRacingAPI.UUID? { __data["id"] }
@@ -70,6 +67,13 @@ public class ValidateTokenMutation: GraphQLMutation {
         public var firstName: String { __data["firstName"] }
         public var lastName: String { __data["lastName"] }
         public var isAdmin: Bool { __data["isAdmin"] }
+
+        public struct Fragments: FragmentContainer {
+          public let __data: DataDict
+          public init(_dataDict: DataDict) { __data = _dataDict }
+
+          public var userFragment: UserFragment { _toFragment() }
+        }
       }
     }
   }

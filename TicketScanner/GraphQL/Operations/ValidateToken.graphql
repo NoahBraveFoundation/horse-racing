@@ -3,11 +3,7 @@ mutation ValidateToken($token: String!) {
     success
     message
     user {
-      id
-      email
-      firstName
-      lastName
-      isAdmin
+      ...UserFragment
     }
   }
 }

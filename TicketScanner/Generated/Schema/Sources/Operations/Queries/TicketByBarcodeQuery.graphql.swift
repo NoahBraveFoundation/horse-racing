@@ -7,7 +7,8 @@ public class TicketByBarcodeQuery: GraphQLQuery {
   public static let operationName: String = "TicketByBarcode"
   public static let operationDocument: ApolloAPI.OperationDocument = .init(
     definition: .init(
-      #"query TicketByBarcode($barcode: String!) { ticketByBarcode(barcode: $barcode) { __typename id attendeeFirst attendeeLast seatingPreference seatAssignment state scannedAt scanLocation } }"#
+      #"query TicketByBarcode($barcode: String!) { ticketByBarcode(barcode: $barcode) { __typename ...TicketFragment } }"#,
+      fragments: [TicketFragment.self]
     ))
 
   public var barcode: String
@@ -39,14 +40,7 @@ public class TicketByBarcodeQuery: GraphQLQuery {
       public static var __parentType: any ApolloAPI.ParentType { HorseRacingAPI.Objects.Ticket }
       public static var __selections: [ApolloAPI.Selection] { [
         .field("__typename", String.self),
-        .field("id", HorseRacingAPI.UUID?.self),
-        .field("attendeeFirst", String.self),
-        .field("attendeeLast", String.self),
-        .field("seatingPreference", String?.self),
-        .field("seatAssignment", String?.self),
-        .field("state", GraphQLEnum<HorseRacingAPI.TicketState>.self),
-        .field("scannedAt", HorseRacingAPI.Date?.self),
-        .field("scanLocation", String?.self),
+        .fragment(TicketFragment.self),
       ] }
 
       public var id: HorseRacingAPI.UUID? { __data["id"] }
@@ -57,6 +51,13 @@ public class TicketByBarcodeQuery: GraphQLQuery {
       public var state: GraphQLEnum<HorseRacingAPI.TicketState> { __data["state"] }
       public var scannedAt: HorseRacingAPI.Date? { __data["scannedAt"] }
       public var scanLocation: String? { __data["scanLocation"] }
+
+      public struct Fragments: FragmentContainer {
+        public let __data: DataDict
+        public init(_dataDict: DataDict) { __data = _dataDict }
+
+        public var ticketFragment: TicketFragment { _toFragment() }
+      }
     }
   }
 }

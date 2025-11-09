@@ -1,0 +1,11 @@
+fragment TicketScanFragment on TicketScan {
+  id
+  scanTimestamp
+  scanLocation
+  ticket {
+    ...TicketFragment
+  }
+  scanner {
+    ...UserFragment
+  }
+}

@@ -7,7 +7,8 @@ public class ScanningStatsQuery: GraphQLQuery {
   public static let operationName: String = "ScanningStats"
   public static let operationDocument: ApolloAPI.OperationDocument = .init(
     definition: .init(
-      #"query ScanningStats { scanningStats { __typename totalScanned totalTickets recentScans { __typename id scanTimestamp scanLocation ticket { __typename attendeeFirst attendeeLast } scanner { __typename firstName lastName } } } }"#
+      #"query ScanningStats { scanningStats { __typename totalScanned totalTickets recentScans { __typename ...TicketScanFragment } } }"#,
+      fragments: [TicketFragment.self, TicketScanFragment.self, UserFragment.self]
     ))
 
   public init() {}
@@ -52,11 +53,7 @@ public class ScanningStatsQuery: GraphQLQuery {
         public static var __parentType: any ApolloAPI.ParentType { HorseRacingAPI.Objects.TicketScan }
         public static var __selections: [ApolloAPI.Selection] { [
           .field("__typename", String.self),
-          .field("id", HorseRacingAPI.UUID?.self),
-          .field("scanTimestamp", HorseRacingAPI.Date.self),
-          .field("scanLocation", String?.self),
-          .field("ticket", Ticket.self),
-          .field("scanner", Scanner.self),
+          .fragment(TicketScanFragment.self),
         ] }
 
         public var id: HorseRacingAPI.UUID? { __data["id"] }
@@ -65,41 +62,16 @@ public class ScanningStatsQuery: GraphQLQuery {
         public var ticket: Ticket { __data["ticket"] }
         public var scanner: Scanner { __data["scanner"] }
 
-        /// ScanningStats.RecentScan.Ticket
-        ///
-        /// Parent Type: `Ticket`
-        public struct Ticket: HorseRacingAPI.SelectionSet {
+        public struct Fragments: FragmentContainer {
           public let __data: DataDict
           public init(_dataDict: DataDict) { __data = _dataDict }
 
-          public static var __parentType: any ApolloAPI.ParentType { HorseRacingAPI.Objects.Ticket }
-          public static var __selections: [ApolloAPI.Selection] { [
-            .field("__typename", String.self),
-            .field("attendeeFirst", String.self),
-            .field("attendeeLast", String.self),
-          ] }
-
-          public var attendeeFirst: String { __data["attendeeFirst"] }
-          public var attendeeLast: String { __data["attendeeLast"] }
+          public var ticketScanFragment: TicketScanFragment { _toFragment() }
         }
 
-        /// ScanningStats.RecentScan.Scanner
-        ///
-        /// Parent Type: `User`
-        public struct Scanner: HorseRacingAPI.SelectionSet {
-          public let __data: DataDict
-          public init(_dataDict: DataDict) { __data = _dataDict }
+        public typealias Ticket = TicketScanFragment.Ticket
 
-          public static var __parentType: any ApolloAPI.ParentType { HorseRacingAPI.Objects.User }
-          public static var __selections: [ApolloAPI.Selection] { [
-            .field("__typename", String.self),
-            .field("firstName", String.self),
-            .field("lastName", String.self),
-          ] }
-
-          public var firstName: String { __data["firstName"] }
-          public var lastName: String { __data["lastName"] }
-        }
+        public typealias Scanner = TicketScanFragment.Scanner
       }
     }
   }

@@ -1,18 +1,6 @@
 query RecentScans($limit: Int!) {
   recentScans(limit: $limit) {
-    id
-    scanTimestamp
-    scanLocation
-    ticket {
-      id
-      attendeeFirst
-      attendeeLast
-      seatAssignment
-    }
-    scanner {
-      firstName
-      lastName
-    }
+    ...TicketScanFragment
   }
 }
 
