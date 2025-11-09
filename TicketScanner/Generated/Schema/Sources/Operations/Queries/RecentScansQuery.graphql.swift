@@ -39,14 +39,14 @@ public class RecentScansQuery: GraphQLQuery {
       public static var __parentType: any ApolloAPI.ParentType { HorseRacingAPI.Objects.TicketScan }
       public static var __selections: [ApolloAPI.Selection] { [
         .field("__typename", String.self),
-        .field("id", HorseRacingAPI.UUID.self),
+        .field("id", HorseRacingAPI.UUID?.self),
         .field("scanTimestamp", HorseRacingAPI.Date.self),
         .field("scanLocation", String?.self),
         .field("ticket", Ticket.self),
         .field("scanner", Scanner.self),
       ] }
 
-      public var id: HorseRacingAPI.UUID { __data["id"] }
+      public var id: HorseRacingAPI.UUID? { __data["id"] }
       public var scanTimestamp: HorseRacingAPI.Date { __data["scanTimestamp"] }
       public var scanLocation: String? { __data["scanLocation"] }
       public var ticket: Ticket { __data["ticket"] }
@@ -62,13 +62,13 @@ public class RecentScansQuery: GraphQLQuery {
         public static var __parentType: any ApolloAPI.ParentType { HorseRacingAPI.Objects.Ticket }
         public static var __selections: [ApolloAPI.Selection] { [
           .field("__typename", String.self),
-          .field("id", HorseRacingAPI.UUID.self),
+          .field("id", HorseRacingAPI.UUID?.self),
           .field("attendeeFirst", String.self),
           .field("attendeeLast", String.self),
           .field("seatAssignment", String?.self),
         ] }
 
-        public var id: HorseRacingAPI.UUID { __data["id"] }
+        public var id: HorseRacingAPI.UUID? { __data["id"] }
         public var attendeeFirst: String { __data["attendeeFirst"] }
         public var attendeeLast: String { __data["attendeeLast"] }
         public var seatAssignment: String? { __data["seatAssignment"] }

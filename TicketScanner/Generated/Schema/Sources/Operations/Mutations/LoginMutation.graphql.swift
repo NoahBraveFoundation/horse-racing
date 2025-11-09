@@ -52,12 +52,12 @@ public class LoginMutation: GraphQLMutation {
         .field("__typename", String.self),
         .field("success", Bool.self),
         .field("message", String.self),
-        .field("tokenId", String?.self),
+        .field("tokenId", String.self),
       ] }
 
       public var success: Bool { __data["success"] }
       public var message: String { __data["message"] }
-      public var tokenId: String? { __data["tokenId"] }
+      public var tokenId: String { __data["tokenId"] }
     }
   }
 }

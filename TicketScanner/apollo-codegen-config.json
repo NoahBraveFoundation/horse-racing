@@ -1,12 +1,8 @@
 {
   "schemaName": "HorseRacingAPI",
   "input": {
-    "operationSearchPaths": [
-      "GraphQL/Operations/**/*.graphql"
-    ],
-    "schemaSearchPaths": [
-      "schema.graphqls"
-    ]
+    "operationSearchPaths": ["GraphQL/Operations/**/*.graphql"],
+    "schemaSearchPaths": ["schema.graphqls"]
   },
   "output": {
     "testMocks": {

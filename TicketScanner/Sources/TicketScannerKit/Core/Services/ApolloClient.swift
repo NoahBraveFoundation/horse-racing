@@ -9,14 +9,14 @@ final class ApolloClientService: @unchecked Sendable {
   private var authToken: String?
 
   private init() {
-    let url = URL(string: "https://horses.noahbrave.org/graphql")!
+    let url = URL(string: Constants.API.baseURL + "/graphql")!
 
     let store = ApolloStore()
-    
+
     // Create custom interceptor provider that adds auth headers
     // Note: We pass self after initialization, the weak reference in the provider handles this safely
     let interceptorProvider = AuthInterceptorProvider(store: store, client: nil)
-    
+
     let networkTransport = RequestChainNetworkTransport(
       interceptorProvider: interceptorProvider,
       endpointURL: url
@@ -26,15 +26,15 @@ final class ApolloClientService: @unchecked Sendable {
       networkTransport: networkTransport,
       store: store
     )
-    
+
     // Now set self on the interceptor provider after initialization
     interceptorProvider.client = self
   }
-  
+
   func setAuthToken(_ token: String?) {
     authToken = token
   }
-  
+
   func getAuthToken() -> String? {
     return authToken
   }
@@ -103,13 +103,15 @@ enum ApolloError: Error, LocalizedError {
 
 class AuthInterceptorProvider: DefaultInterceptorProvider {
   weak var client: ApolloClientService?
-  
+
   init(store: ApolloStore, client: ApolloClientService?) {
     self.client = client
     super.init(store: store)
   }
-  
-  override func interceptors<Operation: GraphQLOperation>(for operation: Operation) -> [ApolloInterceptor] {
+
+  override func interceptors<Operation: GraphQLOperation>(for operation: Operation)
+    -> [ApolloInterceptor]
+  {
     var interceptors = super.interceptors(for: operation)
     interceptors.insert(AuthInterceptor(client: client), at: 0)
     return interceptors
@@ -120,15 +122,15 @@ class AuthInterceptorProvider: DefaultInterceptorProvider {
 
 class AuthInterceptor: ApolloInterceptor {
   private weak var client: ApolloClientService?
-  
+
   init(client: ApolloClientService?) {
     self.client = client
   }
-  
+
   public var id: String {
     return "AuthInterceptor"
   }
-  
+
   func interceptAsync<Operation: GraphQLOperation>(
     chain: any RequestChain,
     request: HTTPRequest<Operation>,
@@ -139,7 +141,7 @@ class AuthInterceptor: ApolloInterceptor {
     if let token = client?.getAuthToken() {
       request.addHeader(name: "Authorization", value: "Bearer \(token)")
     }
-    
+
     chain.proceedAsync(
       request: request,
       response: response,

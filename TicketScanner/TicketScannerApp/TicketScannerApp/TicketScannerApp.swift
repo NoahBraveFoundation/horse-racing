@@ -59,7 +59,7 @@ struct AppFeature {
       case .checkAuthentication:
         // Check for stored authentication token on app launch
         return .send(.loadStoredToken)
-      
+
       case .loadStoredToken:
         return .run { send in
           @Dependency(\.tokenStorage) var tokenStorage
@@ -71,7 +71,7 @@ struct AppFeature {
 
       case .handleDeepLink(let url):
         // Check if this is an auth callback URL
-        if url.host == "auth-callback" || url.path.contains("auth-callback") {
+        if url.host == "auth-callback" || url.path.contains("auth") {
           // Extract the token from the URL
           let components = URLComponents(url: url, resolvingAgainstBaseURL: true)
           if let token = components?.queryItems?.first(where: { $0.name == "token" })?.value {

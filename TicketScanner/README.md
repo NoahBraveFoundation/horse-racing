@@ -223,8 +223,7 @@ This will:
 
 **Schema management:**
 ```bash
-make fetch-schema       # Download latest schema from backend
-make update-schema      # Same as fetch-schema
+make update-schema      # Download latest schema from backend (auto-updates schema.graphqls)
 ```
 
 **Full setup from scratch:**
@@ -237,13 +236,12 @@ The project includes a focused Makefile for ticket scanner development:
 
 ```bash
 # Setup and status
-make setup              # Complete setup: check deps, fetch schema, generate code
+make setup              # Complete setup: fetch schema and generate code
 make status             # Check project status and dependencies
 make check-deps         # Check if required tools are installed
 
 # Schema management
-make fetch-schema       # Fetch GraphQL schema from localhost backend
-make update-schema      # Fetch schema from backend
+make update-schema      # Fetch schema from backend (auto-updates schema.graphqls)
 make watch-schema       # Watch for schema changes (polls every 30s)
 
 # Code generation

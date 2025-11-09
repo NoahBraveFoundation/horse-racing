@@ -20,9 +20,9 @@ extension APIClient: DependencyKey {
         email: email,
         redirectTo: .some("ticketscanner://auth-callback")
       )
-      
+
       let result = try await ApolloClientService.shared.perform(mutation: mutation)
-      
+
       guard result.login.success else {
         throw APIClientError.graphQLError(result.login.message)
       }
@@ -30,22 +30,26 @@ extension APIClient: DependencyKey {
 
     validateToken: { token in
       let mutation = ValidateTokenMutation(token: token)
-      
+
       let result = try await ApolloClientService.shared.perform(mutation: mutation)
-      
+
       guard result.validateToken.success else {
         throw APIClientError.graphQLError(result.validateToken.message)
       }
-      
+
       guard let userNode = result.validateToken.user else {
         throw APIClientError.authenticationFailed
       }
-      
+
+      guard let idString = userNode.id, let id = UUID(uuidString: idString) else {
+        throw APIClientError.invalidResponse
+      }
+
       // Save the token for future requests
       ApolloClientService.shared.setAuthToken(token)
-      
+
       return User(
-        id: UUID(uuidString: userNode.id) ?? UUID(),
+        id: id,
         email: userNode.email,
         firstName: userNode.firstName,
         lastName: userNode.lastName,
@@ -88,13 +92,6 @@ extension APIClient: DependencyKey {
       return ScanningStats(
         totalScanned: 45,
         totalTickets: 100,
-        scansByHour: [
-          "14:00": 5,
-          "15:00": 8,
-          "16:00": 12,
-          "17:00": 15,
-          "18:00": 5,
-        ],
         recentScans: []
       )
     },

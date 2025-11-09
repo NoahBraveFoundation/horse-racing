@@ -39,7 +39,7 @@ public class TicketByBarcodeQuery: GraphQLQuery {
       public static var __parentType: any ApolloAPI.ParentType { HorseRacingAPI.Objects.Ticket }
       public static var __selections: [ApolloAPI.Selection] { [
         .field("__typename", String.self),
-        .field("id", HorseRacingAPI.UUID.self),
+        .field("id", HorseRacingAPI.UUID?.self),
         .field("attendeeFirst", String.self),
         .field("attendeeLast", String.self),
         .field("seatingPreference", String?.self),
@@ -49,7 +49,7 @@ public class TicketByBarcodeQuery: GraphQLQuery {
         .field("scanLocation", String?.self),
       ] }
 
-      public var id: HorseRacingAPI.UUID { __data["id"] }
+      public var id: HorseRacingAPI.UUID? { __data["id"] }
       public var attendeeFirst: String { __data["attendeeFirst"] }
       public var attendeeLast: String { __data["attendeeLast"] }
       public var seatingPreference: String? { __data["seatingPreference"] }

@@ -21,44 +21,38 @@ check-deps: ## Check if required tools are installed
 	@echo "All dependencies are available."
 
 # Schema management
-.PHONY: fetch-schema
-fetch-schema: check-deps ## Fetch GraphQL schema from localhost backend
+.PHONY: update-schema
+update-schema: ## Fetch schema from backend and update schema.graphqls
 	@echo "Fetching GraphQL schema from $(BACKEND_URL)/graphql..."
-	@curl -s -X POST \
-		-H "Content-Type: application/json" \
-		-d $(INTROSPECTION_QUERY) \
-		$(BACKEND_URL)/graphql \
-		| jq '.data.__schema' > schema.json
+	@if [ ! -f apollo-ios-cli ]; then \
+		echo "Installing Apollo iOS CLI..."; \
+		swift package --allow-writing-to-package-directory apollo-cli-install; \
+	fi
+	@./apollo-ios-cli fetch-schema --path apollo-codegen-config.json
 	@if [ $$? -eq 0 ]; then \
-		echo "Schema fetched and saved to schema.json"; \
+		echo "✓ Schema downloaded and saved to $(SCHEMA_FILE)"; \
 	else \
-		echo "Error: Failed to fetch schema. Is the backend running?"; \
+		echo "Error: Failed to fetch schema. Is the backend running at $(BACKEND_URL)?"; \
 		exit 1; \
 	fi
-
-.PHONY: update-schema
-update-schema: fetch-schema ## Fetch schema from backend
-	@echo "Schema updated! Remember to manually update $(SCHEMA_FILE) if needed."
 
 # Code generation
 .PHONY: generate-apollo
 generate-apollo: ## Generate Apollo Swift code from GraphQL operations
 	@echo "Generating Apollo code..."
-	@if [ ! -f $(SCHEMA_FILE) ]; then \
-		echo "Error: $(SCHEMA_FILE) not found. Please create it manually or run 'make update-schema'"; \
-		exit 1; \
-	fi
 	@if [ ! -f apollo-ios-cli ]; then \
 		echo "Installing Apollo iOS CLI..."; \
 		swift package --allow-writing-to-package-directory apollo-cli-install; \
 	fi
+	@if [ ! -f $(SCHEMA_FILE) ]; then \
+		echo "Schema file not found, fetching from backend..."; \
+		./apollo-ios-cli fetch-schema --path apollo-codegen-config.json || { \
+			echo "Error: Could not fetch schema. Is the backend running at $(BACKEND_URL)?"; \
+			exit 1; \
+		}; \
+	fi
 	@./apollo-ios-cli generate --ignore-version-mismatch
-	@echo "Apollo code generated successfully in Generated/"
-
-.PHONY: generate-apollo-manual
-generate-apollo-manual: ## Manually generate Apollo code (requires Apollo CLI)
-	@echo "This command is deprecated. Use 'make generate-apollo' instead."
-	@make generate-apollo
+	@echo "✓ Apollo code generated successfully in Generated/"
 
 .PHONY: clean-generated
 clean-generated: ## Clean generated Apollo code
@@ -85,8 +79,8 @@ clean-ios: ## Clean iOS build artifacts
 
 # Development workflow
 .PHONY: setup
-setup: check-deps update-schema generate-apollo ## Complete setup: check deps, fetch schema, generate code
-	@echo "Setup complete!"
+setup: update-schema generate-apollo ## Complete setup: fetch schema and generate code
+	@echo "✓ Setup complete!"
 	@echo "Next steps:"
 	@echo "1. Open TicketScannerApp/TicketScannerApp.xcodeproj in Xcode"
 	@echo "2. Build and run the app"
@@ -94,16 +88,6 @@ setup: check-deps update-schema generate-apollo ## Complete setup: check deps, f
 .PHONY: dev
 dev: update-schema generate-apollo ## Development workflow: update schema and regenerate code
 	@echo "Development update complete!"
-
-# Watch mode for development
-.PHONY: watch-schema
-watch-schema: ## Watch for schema changes
-	@echo "Watching for schema changes..."
-	@while true; do \
-		make update-schema; \
-		echo "Waiting for changes..."; \
-		sleep 30; \
-	done
 
 # Validation
 .PHONY: validate-schema

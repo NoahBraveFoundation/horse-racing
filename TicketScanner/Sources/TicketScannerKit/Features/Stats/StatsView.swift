@@ -39,26 +39,6 @@ public struct StatsView: View {
                   color: .orange
                 )
               }
-
-              // Scans by Hour Chart
-              if !stats.scansByHour.isEmpty {
-                VStack(alignment: .leading, spacing: 8) {
-                  Text("Scans by Hour (Last 24h)")
-                    .font(.headline)
-
-                  Chart(stats.scansByHour.sorted(by: { $0.key < $1.key }), id: \.key) { item in
-                    BarMark(
-                      x: .value("Hour", item.key),
-                      y: .value("Scans", item.value)
-                    )
-                    .foregroundStyle(.blue)
-                  }
-                  .frame(height: 200)
-                  .padding()
-                  .background(Color(.systemGray6))
-                  .cornerRadius(12)
-                }
-              }
             }
             .padding()
             .background(Color(.systemBackground))

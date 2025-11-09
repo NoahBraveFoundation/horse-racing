@@ -29,6 +29,5 @@ public struct ScanTicketResponse: Codable, Sendable, Equatable {
 public struct ScanningStats: Codable, Sendable, Equatable {
   public let totalScanned: Int
   public let totalTickets: Int
-  public let scansByHour: [String: Int]
   public let recentScans: [TicketScan]
 }
