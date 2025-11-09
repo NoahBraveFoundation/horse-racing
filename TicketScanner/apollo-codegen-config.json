@@ -30,11 +30,11 @@
           "POST": {}
         },
         "includeDeprecatedInputValues": false,
-        "includeIsRepeatable": false
+        "outputFormat": "SDL"
       }
     },
     "downloadTimeout": 60,
     "headers": [],
-    "introspectionFormat": "SDL"
+    "outputPath": "./schema.graphqls"
   }
 }

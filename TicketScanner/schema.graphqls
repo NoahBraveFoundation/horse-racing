@@ -20,11 +20,6 @@ type User {
   lastName: String!
   isAdmin: Boolean!
   tickets: [Ticket!]!
-  horses: [Horse!]!
-  sponsorInterests: [SponsorInterest!]!
-  giftBasketInterests: [GiftBasketInterest!]!
-  payments: [Payment!]!
-  carts: [Cart!]!
   ticketScans: [TicketScan!]!
   scannedTickets: [Ticket!]!
 }
@@ -58,7 +53,6 @@ type TicketScan {
 type ScanningStats {
   totalScanned: Int!
   totalTickets: Int!
-  scansByHour: [String: Int!]!
   recentScans: [TicketScan!]!
 }
 
@@ -76,6 +70,12 @@ type LoginPayload {
   tokenId: String
 }
 
+type ValidateTokenPayload {
+  success: Boolean!
+  message: String!
+  user: User
+}
+
 type Query {
   me: User!
   scanningStats: ScanningStats!
@@ -85,6 +85,7 @@ type Query {
 
 type Mutation {
   login(email: String!, redirectTo: String): LoginPayload!
+  validateToken(token: String!): ValidateTokenPayload!
   scanTicket(ticketId: UUID!, scanLocation: String, deviceInfo: String): ScanTicketPayload!
   undoScan(scanId: UUID!): ScanTicketPayload!
 }

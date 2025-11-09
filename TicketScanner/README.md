@@ -36,12 +36,27 @@ TicketScanner/
 
 ## Features
 
-- **Admin Authentication**: Secure login for admin users
+- **Magic Link Authentication**: Passwordless email-based authentication with deep link support
+- **Secure Token Management**: JWT tokens stored locally and automatically included in API requests
 - **Barcode Scanning**: Real-time ticket scanning with camera integration
 - **Duplicate Prevention**: Prevents scanning the same ticket multiple times
 - **Location Tracking**: Records where tickets are scanned
 - **Statistics Dashboard**: Real-time scanning statistics and analytics
 - **Offline Support**: Handles network failures gracefully
+
+### Authentication Flow
+
+The app uses a magic link authentication system:
+1. User enters email address
+2. Backend sends email with magic link (containing token)
+3. User taps link → app opens via deep link (`ticketscanner://auth-callback?token=...`)
+4. App validates token with backend and receives user profile
+5. Token is stored locally and automatically included in all API requests
+6. User stays logged in across app launches
+
+**Deep Link Support:**
+- URL Scheme: `ticketscanner://`
+- Universal Links: `https://horses.noahbrave.org/auth-callback`
 
 ## Architecture
 
@@ -190,12 +205,31 @@ mutation ScanTicket($ticketId: UUID!, $scanLocation: String, $deviceInfo: String
 1. Create new TCA features in `Sources/TicketScannerKit/Features/`
 2. Add corresponding GraphQL operations in `GraphQL/Operations/`
 3. Update the app UI in `TicketScannerApp/TicketScannerApp/`
-4. Regenerate Apollo code as needed
+4. Regenerate Apollo code: `make generate-apollo`
 
 ### GraphQL Code Generation
-Configure Apollo codegen in `apollo-codegen-config.json` and run generation script:
+
+The project uses Apollo iOS for type-safe GraphQL code generation. Generated code is checked into source control in `Generated/Schema/`.
+
+**Regenerate code after schema or operation changes:**
 ```bash
-./generate-apollo.sh
+make generate-apollo
+```
+
+This will:
+1. Install Apollo iOS CLI if needed (using Swift Package Manager)
+2. Generate Swift types from your GraphQL operations
+3. Create type-safe query and mutation classes in `Generated/Schema/`
+
+**Schema management:**
+```bash
+make fetch-schema       # Download latest schema from backend
+make update-schema      # Same as fetch-schema
+```
+
+**Full setup from scratch:**
+```bash
+make setup              # Fetch schema + generate code
 ```
 
 ### Makefile Commands
@@ -203,23 +237,23 @@ The project includes a focused Makefile for ticket scanner development:
 
 ```bash
 # Setup and status
-make setup              # Complete setup: check deps, fetch schema
+make setup              # Complete setup: check deps, fetch schema, generate code
 make status             # Check project status and dependencies
 make check-deps         # Check if required tools are installed
 
 # Schema management
 make fetch-schema       # Fetch GraphQL schema from localhost backend
 make update-schema      # Fetch schema from backend
-make watch-schema       # Watch for schema changes
+make watch-schema       # Watch for schema changes (polls every 30s)
+
+# Code generation
+make generate-apollo    # Generate Apollo Swift code from GraphQL operations
+make clean-generated    # Clean generated Apollo code
 
 # iOS project management
 make build-ios          # Build iOS project (requires Xcode)
 make test-ios           # Run iOS tests
 make clean-ios          # Clean iOS build artifacts
-
-# Code generation (manual)
-make generate-apollo    # Show instructions for Apollo code generation
-make generate-apollo-manual # Generate Apollo code (requires Apollo CLI)
 
 # Validation
 make validate-schema    # Validate GraphQL schema file exists
@@ -228,14 +262,18 @@ make validate-operations # Validate GraphQL operations exist
 # Documentation
 make docs               # Generate basic documentation
 
+# Development workflow
+make dev                # Update schema and regenerate code
+
 # Cleanup
 make clean              # Clean all generated files
-make clean-generated    # Clean generated Apollo code
 make clean-all          # Clean everything
 
 # Help
 make help               # Show all available commands
 ```
+
+**Note:** Generated Apollo code in `Generated/` is checked into source control. This ensures the project builds without requiring the backend to be running.
 
 ### Adding New Features
 1. Create new TCA features in `Features/` directory

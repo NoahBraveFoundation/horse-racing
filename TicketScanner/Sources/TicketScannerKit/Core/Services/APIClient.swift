@@ -2,6 +2,7 @@ import Apollo
 import ApolloAPI
 import Dependencies
 import Foundation
+import HorseRacingAPI
 
 struct APIClient {
   var sendMagicLink: @Sendable (String) async throws -> Void
@@ -15,22 +16,40 @@ struct APIClient {
 extension APIClient: DependencyKey {
   static let liveValue = APIClient(
     sendMagicLink: { email in
-      // TODO: Implement actual Apollo mutation to send magic link
-      // For now, just simulate a delay
-      try await Task.sleep(for: .seconds(1))
-      print("Magic link sent to \(email)")
+      let mutation = LoginMutation(
+        email: email,
+        redirectTo: .some("ticketscanner://auth-callback")
+      )
+      
+      let result = try await ApolloClientService.shared.perform(mutation: mutation)
+      
+      guard result.login.success else {
+        throw APIClientError.graphQLError(result.login.message)
+      }
     },
-    
+
     validateToken: { token in
-      // TODO: Implement actual Apollo mutation to validate token
-      // For now, return a mock user
-      try await Task.sleep(for: .seconds(1))
+      let mutation = ValidateTokenMutation(token: token)
+      
+      let result = try await ApolloClientService.shared.perform(mutation: mutation)
+      
+      guard result.validateToken.success else {
+        throw APIClientError.graphQLError(result.validateToken.message)
+      }
+      
+      guard let userNode = result.validateToken.user else {
+        throw APIClientError.authenticationFailed
+      }
+      
+      // Save the token for future requests
+      ApolloClientService.shared.setAuthToken(token)
+      
       return User(
-        id: UUID(),
-        email: "admin@noahbrave.org",
-        firstName: "Admin",
-        lastName: "User",
-        isAdmin: true
+        id: UUID(uuidString: userNode.id) ?? UUID(),
+        email: userNode.email,
+        firstName: userNode.firstName,
+        lastName: userNode.lastName,
+        isAdmin: userNode.isAdmin
       )
     },
 

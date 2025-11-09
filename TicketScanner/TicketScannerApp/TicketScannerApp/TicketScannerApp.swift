@@ -30,7 +30,10 @@ struct AppFeature {
     case scanning(ScanningFeature.Action)
     case checkAuthentication
     case handleDeepLink(URL)
+    case loadStoredToken
   }
+
+  @Dependency(\.tokenStorage) var tokenStorage
 
   var body: some ReducerOf<Self> {
     Scope(state: \.authentication, action: \.authentication) {
@@ -54,9 +57,18 @@ struct AppFeature {
         return .none
 
       case .checkAuthentication:
-        // In a real app, you'd check for stored authentication
-        return .none
-        
+        // Check for stored authentication token on app launch
+        return .send(.loadStoredToken)
+      
+      case .loadStoredToken:
+        return .run { send in
+          @Dependency(\.tokenStorage) var tokenStorage
+          if let token = await tokenStorage.getToken() {
+            // Validate the stored token
+            await send(.authentication(.validateToken(token)))
+          }
+        }
+
       case .handleDeepLink(let url):
         // Check if this is an auth callback URL
         if url.host == "auth-callback" || url.path.contains("auth-callback") {

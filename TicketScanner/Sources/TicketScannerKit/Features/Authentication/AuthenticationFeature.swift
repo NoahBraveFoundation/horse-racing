@@ -24,6 +24,7 @@ public struct AuthenticationFeature {
   }
 
   @Dependency(\.apiClient) var apiClient
+  @Dependency(\.tokenStorage) var tokenStorage
 
   public init() {}
 
@@ -71,10 +72,14 @@ public struct AuthenticationFeature {
         
         return .run { send in
           @Dependency(\.apiClient) var apiClient
+          @Dependency(\.tokenStorage) var tokenStorage
           await send(
             .validateTokenResponse(
               await TaskResult {
-                try await apiClient.validateToken(token)
+                let user = try await apiClient.validateToken(token)
+                // Save token after successful validation
+                await tokenStorage.saveToken(token)
+                return user
               }
             ))
         }
@@ -91,7 +96,12 @@ public struct AuthenticationFeature {
 
       case .logout:
         state = State()
-        return .none
+        return .run { _ in
+          @Dependency(\.tokenStorage) var tokenStorage
+          await tokenStorage.clearToken()
+          // Also clear token from Apollo client
+          ApolloClientService.shared.setAuthToken(nil)
+        }
       }
     }
   }

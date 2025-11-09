@@ -24,9 +24,11 @@ TicketScannerApp/*.xcodeproj/*
 !TicketScannerApp/*.xcodeproj/project.xcworkspace
 !TicketScannerApp/*.xcodeproj/xcshareddata
 
-# Generated Apollo code
-Generated/
+# Apollo schema introspection cache
 schema.json
+
+# Apollo iOS CLI (auto-installed via Swift Package Manager)
+apollo-ios-cli
 
 # Environment variables
 .env

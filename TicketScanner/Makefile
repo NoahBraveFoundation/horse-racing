@@ -42,32 +42,29 @@ update-schema: fetch-schema ## Fetch schema from backend
 
 # Code generation
 .PHONY: generate-apollo
-generate-apollo: ## Generate Apollo code from GraphQL operations
+generate-apollo: ## Generate Apollo Swift code from GraphQL operations
 	@echo "Generating Apollo code..."
 	@if [ ! -f $(SCHEMA_FILE) ]; then \
 		echo "Error: $(SCHEMA_FILE) not found. Please create it manually or run 'make update-schema'"; \
 		exit 1; \
 	fi
-	@mkdir -p $(GENERATED_DIR)
-	@echo "Apollo code generation requires manual setup:"
-	@echo "1. Install Apollo CLI: npm install -g @apollo/rover"
-	@echo "2. Run: apollo codegen generate --config apollo-codegen-config.json --output $(GENERATED_DIR)/"
-	@echo "Generated directory structure created at $(GENERATED_DIR)/"
+	@if [ ! -f apollo-ios-cli ]; then \
+		echo "Installing Apollo iOS CLI..."; \
+		swift package --allow-writing-to-package-directory apollo-cli-install; \
+	fi
+	@./apollo-ios-cli generate --ignore-version-mismatch
+	@echo "Apollo code generated successfully in Generated/"
 
 .PHONY: generate-apollo-manual
 generate-apollo-manual: ## Manually generate Apollo code (requires Apollo CLI)
-	@echo "Manually generating Apollo code..."
-	@command -v apollo >/dev/null 2>&1 || { echo "Error: Apollo CLI not found. Install with: npm install -g @apollo/rover"; exit 1; }
-	@apollo codegen generate \
-		--config apollo-codegen-config.json \
-		--output $(GENERATED_DIR)/
-	@echo "Apollo code generated in $(GENERATED_DIR)/"
+	@echo "This command is deprecated. Use 'make generate-apollo' instead."
+	@make generate-apollo
 
 .PHONY: clean-generated
 clean-generated: ## Clean generated Apollo code
 	@echo "Cleaning generated code..."
 	@rm -rf $(GENERATED_DIR)/
-	@echo "Generated code cleaned"
+	@echo "Generated code cleaned. Run 'make generate-apollo' to regenerate."
 
 # iOS project management
 .PHONY: build-ios
@@ -88,14 +85,14 @@ clean-ios: ## Clean iOS build artifacts
 
 # Development workflow
 .PHONY: setup
-setup: check-deps update-schema ## Complete setup: check deps, fetch schema
-	@echo "Setup complete! Next steps:"
-	@echo "1. Manually update $(SCHEMA_FILE) if needed"
-	@echo "2. Install Apollo CLI: npm install -g @apollo/rover"
-	@echo "3. Run: make generate-apollo-manual"
+setup: check-deps update-schema generate-apollo ## Complete setup: check deps, fetch schema, generate code
+	@echo "Setup complete!"
+	@echo "Next steps:"
+	@echo "1. Open TicketScannerApp/TicketScannerApp.xcodeproj in Xcode"
+	@echo "2. Build and run the app"
 
 .PHONY: dev
-dev: update-schema ## Development workflow: update schema
+dev: update-schema generate-apollo ## Development workflow: update schema and regenerate code
 	@echo "Development update complete!"
 
 # Watch mode for development

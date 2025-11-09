@@ -28,24 +28,24 @@ public struct LoginView: View {
         .padding(.top, 40)
 
         Spacer()
-        
+
         if store.isLinkSent {
           // Success state
           VStack(spacing: 16) {
             Image(systemName: "envelope.badge.fill")
               .font(.system(size: 60))
               .foregroundColor(.brandGreen)
-            
+
             Text("Check Your Email")
               .font(.title2)
               .fontWeight(.bold)
-            
+
             Text("We've sent a login link to")
               .foregroundColor(.secondary)
-            
+
             Text(store.email)
               .fontWeight(.semibold)
-            
+
             Text("Please check your email and tap the link to complete your login.")
               .multilineTextAlignment(.center)
               .foregroundColor(.secondary)

@@ -19,6 +19,7 @@ let package = Package(
     .package(url: "https://github.com/apple/swift-http-types", from: "1.0.0"),
     .package(url: "https://github.com/apple/swift-crypto", from: "3.0.0"),
     .package(url: "https://github.com/apple/swift-log", from: "1.0.0"),
+    .package(path: "Generated/Schema"),
   ],
   targets: [
     .target(
@@ -28,6 +29,7 @@ let package = Package(
         .product(name: "Dependencies", package: "swift-dependencies"),
         .product(name: "Apollo", package: "apollo-ios"),
         .product(name: "ApolloAPI", package: "apollo-ios"),
+        .product(name: "HorseRacingAPI", package: "Schema"),
         .product(name: "HTTPTypes", package: "swift-http-types"),
         .product(name: "Crypto", package: "swift-crypto"),
         .product(name: "Logging", package: "swift-log"),

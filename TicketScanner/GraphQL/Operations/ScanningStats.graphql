@@ -2,7 +2,6 @@ query ScanningStats {
   scanningStats {
     totalScanned
     totalTickets
-    scansByHour
     recentScans {
       id
       scanTimestamp
