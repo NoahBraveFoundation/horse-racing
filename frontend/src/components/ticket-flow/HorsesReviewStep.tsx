@@ -25,11 +25,31 @@ const HorsesReviewStep: React.FC = () => {
   const cartRefreshKey = useTicketFlowStore((s) => s.cartRefreshKey);
   const removeHorseFromCart = useTicketFlowStore((s) => s.removeHorseFromCart);
   const data = useLazyLoadQuery<HorsesReviewStepQuery>(HorsesQuery, {}, { fetchKey: cartRefreshKey, fetchPolicy: 'network-only' });
-  const horses = data?.myCart?.horses ?? [];
+  const horses = React.useMemo(() => data?.myCart?.horses ?? [], [data?.myCart?.horses]);
+
+  const [removingIds, setRemovingIds] = React.useState<string[]>([]);
+  const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    // Clear out any optimistic removals once the cart data reflects the change.
+    setRemovingIds((prev) => prev.filter((id) => horses.some((h) => h.id === id)));
+  }, [horses]);
 
   const handleRemove = async (id: string) => {
-    await removeHorseFromCart(id);
+    if (!removingIds.includes(id)) {
+      setRemovingIds((prev) => [...prev, id]);
+    }
+    setErrorMessage(null);
+    try {
+      await removeHorseFromCart(id);
+    } catch (err) {
+      setRemovingIds((prev) => prev.filter((horseId) => horseId !== id));
+      const message = err instanceof Error && err.message ? err.message : 'Unable to remove horse. Please try again.';
+      setErrorMessage(message);
+    }
   };
+
+  const visibleHorses = horses.filter((h) => !removingIds.includes(h.id));
 
   return (
     <div className="min-h-screen bg-noahbrave-50 font-body pb-32">
@@ -38,35 +58,42 @@ const HorsesReviewStep: React.FC = () => {
         <StepHeader title="Review Horses" subtitle="Step 4 of 8 — Confirm your horses" />
 
         <div className="bg-white rounded-2xl shadow-xl border border-noahbrave-200 p-8">
-          {horses.length === 0 ? (
+          {errorMessage && (
+            <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">{errorMessage}</div>
+          )}
+          {visibleHorses.length === 0 ? (
             <p className="text-gray-500">No horses in your cart yet.</p>
           ) : (
             <ul className="divide-y divide-gray-200 rounded-xl border border-noahbrave-200 overflow-hidden">
-              {horses.map((h) => (
-                <li key={h.id} className="flex items-start justify-between p-4">
-                  <div className="text-gray-800 flex-1 min-w-0">
-                    <div className="text-lg font-semibold text-gray-900">{h.horseName}</div>
-                    <div className="text-sm text-gray-700 mt-1">{h.ownershipLabel}</div>
-                    {h.lane?.round && (
-                      <div className="mt-2 text-sm text-gray-600">
-                        <div className="font-medium">{h.lane.round.name}</div>
-                        <div className="mt-1 text-gray-500">
-                          <span>Lane {h.lane.number}</span>
-                          <span className="mx-2 text-gray-300">•</span>
-                          <span className="whitespace-nowrap">{formatTimeRange(h.lane.round.startAt, h.lane.round.endAt)}</span>
+              {visibleHorses.map((h) => {
+                const isRemoving = removingIds.includes(h.id);
+                return (
+                  <li key={h.id} className="flex items-start justify-between p-4">
+                    <div className="text-gray-800 flex-1 min-w-0">
+                      <div className="text-lg font-semibold text-gray-900">{h.horseName}</div>
+                      <div className="text-sm text-gray-700 mt-1">{h.ownershipLabel}</div>
+                      {h.lane?.round && (
+                        <div className="mt-2 text-sm text-gray-600">
+                          <div className="font-medium">{h.lane.round.name}</div>
+                          <div className="mt-1 text-gray-500">
+                            <span>Lane {h.lane.number}</span>
+                            <span className="mx-2 text-gray-300">•</span>
+                            <span className="whitespace-nowrap">{formatTimeRange(h.lane.round.startAt, h.lane.round.endAt)}</span>
+                          </div>
                         </div>
-                      </div>
-                    )}
-                  </div>
-                  <button 
-                    type="button" 
-                    onClick={() => handleRemove(h.id)} 
-                    className="text-sm text-gray-600 hover:text-gray-800 ml-4 flex-shrink-0 px-3 py-1 rounded border border-gray-300 hover:bg-gray-50"
-                  >
-                    Remove
-                  </button>
-                </li>
-              ))}
+                      )}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleRemove(h.id)}
+                      disabled={isRemoving}
+                      className="text-sm text-gray-600 hover:text-gray-800 disabled:text-gray-400 disabled:cursor-not-allowed ml-4 flex-shrink-0 px-3 py-1 rounded border border-gray-300 hover:bg-gray-50 disabled:hover:bg-transparent"
+                    >
+                      {isRemoving ? 'Removing…' : 'Remove'}
+                    </button>
+                  </li>
+                );
+              })}
             </ul>
           )}
         </div>
