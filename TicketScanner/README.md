@@ -1,6 +1,38 @@
-# Ticket Scanner App
+# Ticket Scanner
 
 A modern iOS app built with SwiftUI and The Composable Architecture (TCA) for scanning tickets at the NoahBRAVE Foundation horse racing fundraiser event.
+
+## Project Structure
+
+This project is organized as:
+- **Swift Package** (`Package.swift`): Library containing core business logic (TicketScannerKit)
+- **iOS App** (`TicketScannerApp/`): Xcode project for the user-facing application
+
+```
+TicketScanner/
+├── Package.swift                      # Swift Package for library code
+├── Sources/
+│   └── TicketScannerKit/             # Core library module
+│       ├── Core/                      # Core functionality
+│       │   ├── Models/               # Data models
+│       │   ├── Services/             # API client, Apollo, scanning services
+│       │   └── Utils/                # Utilities and extensions
+│       └── Features/                  # TCA Features
+│           ├── Authentication/        # Login flow
+│           ├── Scanning/             # Ticket scanning
+│           ├── Settings/             # App settings
+│           └── Stats/                # Statistics dashboard
+├── GraphQL/
+│   └── Operations/                    # GraphQL query/mutation files
+├── TicketScannerApp/                 # iOS Application
+│   ├── project.yml                   # XcodeGen project definition
+│   ├── TicketScannerApp.xcodeproj/  # Generated Xcode project
+│   └── TicketScannerApp/            # App target
+│       ├── TicketScannerApp.swift   # App entry point
+│       ├── Assets.xcassets/         # Images and resources
+│       └── Resources/               # Info.plist, etc.
+└── apollo-codegen-config.json        # Apollo code generation config
+```
 
 ## Features
 
@@ -13,100 +45,81 @@ A modern iOS app built with SwiftUI and The Composable Architecture (TCA) for sc
 
 ## Architecture
 
-### Backend (Swift/Vapor)
-- **GraphQL API**: Modern API with type-safe queries and mutations
-- **PostgreSQL Database**: Reliable data storage with proper relationships
-- **Admin Authentication**: Simplified to allow any admin user to scan tickets
-- **Real-time Updates**: Live statistics and scan tracking
-
-### iOS App (SwiftUI/TCA)
-- **The Composable Architecture**: Modern TCA 1.0+ with @ObservableState
+### TicketScannerKit (Swift Package)
+- **TCA Features**: Modular features using The Composable Architecture 1.0+
 - **Apollo GraphQL**: Type-safe GraphQL client with code generation
+- **Core Services**: API client, barcode scanning, location services
+- **Models**: Data models shared across features
+
+### iOS App
 - **SwiftUI**: Modern, declarative UI framework
-- **AVFoundation**: Camera integration for barcode scanning
-- **Core Location**: Location services for scan tracking
-
-## Project Structure
-
-```
-TicketScanner/
-├── TicketScanner.xcodeproj/
-├── GraphQL/
-│   └── Operations/
-│       ├── Login.graphql
-│       ├── ScanTicket.graphql
-│       ├── ScanningStats.graphql
-│       ├── TicketByBarcode.graphql
-│       └── RecentScans.graphql
-├── Generated/
-│   └── Schema/ (Apollo generated code)
-├── TicketScanner/
-│   ├── App/
-│   │   └── TicketScannerApp.swift
-│   ├── Core/
-│   │   ├── Models/
-│   │   │   ├── Ticket.swift
-│   │   │   ├── TicketScan.swift
-│   │   │   └── ScanResult.swift
-│   │   ├── Services/
-│   │   │   ├── APIClient.swift
-│   │   │   ├── ApolloClient.swift
-│   │   │   ├── BarcodeScanner.swift
-│   │   │   └── LocationService.swift
-│   │   └── Utils/
-│   │       ├── Constants.swift
-│   │       └── Extensions.swift
-│   ├── Features/
-│   │   ├── Authentication/
-│   │   │   ├── AuthenticationFeature.swift
-│   │   │   └── LoginView.swift
-│   │   ├── Scanning/
-│   │   │   ├── ScanningFeature.swift
-│   │   │   ├── ScanningView.swift
-│   │   │   └── ScanResultView.swift
-│   │   └── Stats/
-│   │       └── StatsView.swift
-│   └── Resources/
-│       └── Info.plist
-├── schema.graphqls
-├── apollo-codegen-config.json
-├── generate-apollo.sh
-└── Package.swift
-```
-
-## Backend Changes
-
-### New Database Tables
-- `ticket_scans`: Records all ticket scanning activities
-- Updated `tickets` table with scanning fields
-- Updated `users` table (simplified - no separate scanner permissions)
-
-### New GraphQL Operations
-- `scanTicket`: Scan a ticket by ID
-- `undoScan`: Undo a previous scan
-- `scanningStats`: Get scanning statistics
-- `ticketByBarcode`: Find ticket by barcode
-- `recentScans`: Get recent scanning activity
+- **Dependencies**: Depends on TicketScannerKit package
+- **Resources**: Assets, Info.plist, and app-specific configuration
 
 ## Installation
 
-### Backend Setup
-1. Navigate to the backend directory
-2. Run migrations: `swift run HorseRacingBackend migrate`
-3. Start the server: `swift run HorseRacingBackend serve`
+### Prerequisites
+- Xcode 15.0+
+- Swift 6.0+
+- [XcodeGen](https://github.com/yonaskolb/XcodeGen) (for project generation)
 
 ### iOS App Setup
-1. Open `TicketScanner.xcodeproj` in Xcode
-2. Check dependencies: `make check-deps`
-3. Complete setup: `make setup` (checks deps, fetches schema)
-4. Build and run on device or simulator
+1. **Open the Xcode project:**
+   ```bash
+   cd TicketScannerApp
+   open TicketScannerApp.xcodeproj
+   ```
 
-### Development Workflow
-- **Check project status**: `make status`
-- **Update schema from backend**: `make dev`
-- **Fetch schema from backend**: `make fetch-schema`
-- **Build iOS project**: `make build-ios`
-- **Run iOS tests**: `make test-ios`
+2. **Set your development team** in Xcode project settings
+
+3. **Build and run** (⌘R)
+
+### Regenerating the Xcode Project
+If you modify `TicketScannerApp/project.yml`:
+```bash
+cd TicketScannerApp
+xcodegen generate
+```
+
+## Installation
+
+### Prerequisites
+- Xcode 15.0+
+- Swift 6.0+
+- [XcodeGen](https://github.com/yonaskolb/XcodeGen) (for project generation)
+
+### iOS App Setup
+1. **Open the Xcode project:**
+   ```bash
+   cd TicketScannerApp
+   open TicketScannerApp.xcodeproj
+   ```
+
+2. **Set your development team** in Xcode project settings
+
+3. **Build and run** (⌘R)
+
+### Regenerating the Xcode Project
+If you modify `TicketScannerApp/project.yml`:
+```bash
+cd TicketScannerApp
+xcodegen generate
+```
+
+## Development
+
+### Working with the Swift Package
+The `TicketScannerKit` package contains all business logic and can be developed independently:
+```bash
+# Build the package
+swift build
+
+# Run tests
+swift test
+
+# Open in Xcode
+open Package.swift
+```
 
 ## Usage
 
@@ -172,6 +185,18 @@ mutation ScanTicket($ticketId: UUID!, $scanLocation: String, $deviceInfo: String
 ```
 
 ## Development
+
+### Adding New Features
+1. Create new TCA features in `Sources/TicketScannerKit/Features/`
+2. Add corresponding GraphQL operations in `GraphQL/Operations/`
+3. Update the app UI in `TicketScannerApp/TicketScannerApp/`
+4. Regenerate Apollo code as needed
+
+### GraphQL Code Generation
+Configure Apollo codegen in `apollo-codegen-config.json` and run generation script:
+```bash
+./generate-apollo.sh
+```
 
 ### Makefile Commands
 The project includes a focused Makefile for ticket scanner development:

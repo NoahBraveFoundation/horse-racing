@@ -73,17 +73,17 @@ clean-generated: ## Clean generated Apollo code
 .PHONY: build-ios
 build-ios: ## Build iOS project (requires Xcode)
 	@echo "Building iOS project..."
-	@xcodebuild -project TicketScanner.xcodeproj -scheme TicketScanner -destination 'platform=iOS Simulator,name=iPhone 15' build
+	@xcodebuild -project TicketScannerApp/TicketScannerApp.xcodeproj -scheme TicketScannerApp -destination 'platform=iOS Simulator,name=iPhone 16' -skipMacroValidation build | xcbeautify
 
 .PHONY: test-ios
 test-ios: ## Run iOS tests
 	@echo "Running iOS tests..."
-	@xcodebuild -project TicketScanner.xcodeproj -scheme TicketScanner -destination 'platform=iOS Simulator,name=iPhone 15' test
+	@xcodebuild -project TicketScannerApp/TicketScannerApp.xcodeproj -scheme TicketScannerApp -destination 'platform=iOS Simulator,name=iPhone 16' -skipMacroValidation test | xcbeautify
 
 .PHONY: clean-ios
 clean-ios: ## Clean iOS build artifacts
 	@echo "Cleaning iOS build artifacts..."
-	@xcodebuild -project TicketScanner.xcodeproj -scheme TicketScanner clean
+	@xcodebuild -project TicketScannerApp/TicketScannerApp.xcodeproj -scheme TicketScannerApp clean | xcbeautify
 	@echo "iOS build artifacts cleaned"
 
 # Development workflow

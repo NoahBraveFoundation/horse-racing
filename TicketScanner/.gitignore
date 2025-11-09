@@ -13,6 +13,16 @@ xcuserdata/
 *.moved-aside
 *.xccheckout
 *.xcscmblueprint
+DerivedData/
+
+# Swift Package Manager
+.build/
+.swiftpm/
+
+# Generated Xcode project (regenerate with xcodegen)
+TicketScannerApp/*.xcodeproj/*
+!TicketScannerApp/*.xcodeproj/project.xcworkspace
+!TicketScannerApp/*.xcodeproj/xcshareddata
 
 # Generated Apollo code
 Generated/
