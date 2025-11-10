@@ -2,7 +2,7 @@ name: Build and Deploy App
 
 on:
   push:
-    branches: [main]
+    # branches: [main]
     paths:
       - "app/**"
       - ".github/workflows/release-ticket-scanner.yml"
