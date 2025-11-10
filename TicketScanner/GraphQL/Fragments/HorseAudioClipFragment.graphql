@@ -1,4 +1,4 @@
-fragment HorseAudioClipFragment on HorseAudioClip {
+fragment HorseAudioClipFragment on HorseAudioClipPayload {
   ownerName
   ownerEmail
   ticketAttendeeName

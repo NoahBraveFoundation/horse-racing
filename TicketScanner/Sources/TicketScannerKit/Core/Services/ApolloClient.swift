@@ -1,6 +1,7 @@
 import Apollo
 import ApolloAPI
 import Foundation
+import Logging
 
 final class ApolloClientService: @unchecked Sendable {
   static let shared = ApolloClientService()
@@ -114,6 +115,7 @@ class AuthInterceptorProvider: DefaultInterceptorProvider {
   {
     var interceptors = super.interceptors(for: operation)
     interceptors.insert(AuthInterceptor(client: client), at: 0)
+    interceptors.insert(LoggingInterceptor(), at: 1)
     return interceptors
   }
 }
@@ -151,5 +153,65 @@ class AuthInterceptor: ApolloInterceptor {
       interceptor: self,
       completion: completion
     )
+  }
+}
+
+// MARK: - Logging Interceptor
+
+class LoggingInterceptor: ApolloInterceptor {
+  private let logger: Logger
+
+  init(logger: Logger = Logger(label: "org.noahbrave.ticket-scanner.apollo")) {
+    self.logger = logger
+  }
+
+  var id: String {
+    "LoggingInterceptor"
+  }
+
+  func interceptAsync<Operation: GraphQLOperation>(
+    chain: any RequestChain,
+    request: HTTPRequest<Operation>,
+    response: HTTPResponse<Operation>?,
+    completion: @escaping (Result<GraphQLResult<Operation.Data>, any Error>) -> Void
+  ) {
+    let operationName = Operation.operationName
+    let operationType = "\(Operation.operationType)".uppercased()
+    let headersDescription = request.additionalHeaders
+      .map { "\($0.key): \($0.value)" }
+      .joined(separator: ", ")
+    let headerSuffix = headersDescription.isEmpty ? "" : " | headers: [\(headersDescription)]"
+
+    logger.debug("→ \(operationType) \(operationName)\(headerSuffix)")
+
+    chain.proceedAsync(
+      request: request,
+      response: response,
+      interceptor: self
+    ) { [logger] result in
+      switch result {
+      case .success(let graphQLResult):
+        if let httpResponse = response?.httpResponse {
+          logger.debug("← \(operationName) status: \(httpResponse.statusCode)")
+        } else {
+          logger.debug("← \(operationName) response received")
+        }
+
+        if let errors = graphQLResult.errors, !errors.isEmpty {
+          let messages = errors.map { $0.localizedDescription }.joined(separator: "; ")
+          logger.warning("GraphQL errors: \(messages)")
+        }
+      case .failure(let error):
+        if let httpResponse = response?.httpResponse {
+          logger.error(
+            "← \(operationName) status: \(httpResponse.statusCode) | error: \(error.localizedDescription)"
+          )
+        } else {
+          logger.error("← \(operationName) error: \(error.localizedDescription)")
+        }
+      }
+
+      completion(result)
+    }
   }
 }

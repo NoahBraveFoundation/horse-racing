@@ -1,7 +1,7 @@
 name: TicketScannerApp
 
 options:
-  bundleIdPrefix: com.noahbravefoundation
+  bundleIdPrefix: org.noahbrave
   deploymentTarget:
     iOS: "17.0"
   generateEmptyDirectories: true
@@ -47,6 +47,7 @@ targets:
         UILaunchScreen: {}
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
           - UIInterfaceOrientationLandscapeLeft
           - UIInterfaceOrientationLandscapeRight
         UIRequiredDeviceCapabilities:

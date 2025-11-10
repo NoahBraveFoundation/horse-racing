@@ -4,8 +4,8 @@
 import ApolloAPI
 
 public extension Objects {
-  static let HorseAudioClip = ApolloAPI.Object(
-    typename: "HorseAudioClip",
+  static let HorseAudioClipPayload = ApolloAPI.Object(
+    typename: "HorseAudioClipPayload",
     implementedInterfaces: [],
     keyFields: nil
   )

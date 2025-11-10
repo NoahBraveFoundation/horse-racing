@@ -70,11 +70,12 @@ struct HorseAudioService {
 
     let client = OpenAI(apiToken: apiKey)
     let query = AudioSpeechQuery(
-      model: .tts_1,
+      model: .gpt_4o_mini_tts,
       input: prompt,
-      voice: .alloy,
+      voice: AudioSpeechQuery.AudioSpeechVoice.allCases.randomElement() ?? .alloy,
+      instructions: "Sound like an arena announcer with upbeat energy",
       responseFormat: .mp3,
-      speed: 1.0
+      speed: 1.5
     )
 
     logger.info("Requesting horse audio from OpenAI")
@@ -109,17 +110,17 @@ private struct HorseAudioContext {
   ) -> String {
     if horseNames.isEmpty {
       return """
-      Record a high-energy 12 second announcement celebrating guest \(attendeeName).
-      Congratulate them on supporting the NoahBRAVE Foundation and cheer on their night at the races.
-      Keep the tone fun, exciting, and stadium-ready.
-      """
+        Record a high-energy 12 second announcement celebrating guest \(attendeeName).
+        Congratulate them on supporting the NoahBRAVE Foundation and cheer on their night at the races.
+        Keep the tone fun, exciting, and stadium-ready.
+        """
     }
 
     let horseList = horseNames.joined(separator: ", ")
     return """
-    Create a lively 15 second audio hype message for \(ownerName) and guest \(attendeeName).
-    Spotlight the horses: \(horseList).
-    Mention the NoahBRAVE Foundation and make it sound like an arena announcer with upbeat energy.
-    """
+      Create a lively 15 second audio hype message for \(ownerName) and guest \(attendeeName).
+      Spotlight the horses: \(horseList).
+      Mention the NoahBRAVE Foundation and make it sound like an arena announcer with upbeat energy.
+      """
   }
 }

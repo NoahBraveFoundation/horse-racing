@@ -1,6 +1,6 @@
 import Foundation
 
-public struct TicketDirectoryEntry: Equatable, Identifiable, Sendable {
+public struct TicketDirectoryEntry: Codable, Equatable, Identifiable, Sendable {
   public let ticket: Ticket
   public let ownerName: String
   public let ownerEmail: String

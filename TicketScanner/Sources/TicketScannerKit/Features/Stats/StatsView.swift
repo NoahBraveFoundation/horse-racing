@@ -3,9 +3,9 @@ import ComposableArchitecture
 import SwiftUI
 
 public struct StatsView: View {
-  let store: StoreOf<ScanningFeature>
+  @Bindable var store: StoreOf<StatsFeature>
 
-  public init(store: StoreOf<ScanningFeature>) {
+  public init(store: StoreOf<StatsFeature>) {
     self.store = store
   }
 
@@ -68,8 +68,41 @@ public struct StatsView: View {
       }
       .padding()
     }
+    .refreshable {
+      await store.send(.refresh(.userInitiated))
+    }
     .navigationTitle("Statistics")
     .navigationBarTitleDisplayMode(.inline)
+    .toolbar {
+      ToolbarItem(placement: .navigationBarTrailing) {
+        if store.isLoading {
+          ProgressView()
+        } else {
+          Button {
+            store.send(.refresh(.userInitiated))
+          } label: {
+            Image(systemName: "arrow.clockwise")
+          }
+          .accessibilityLabel("Refresh statistics")
+        }
+      }
+    }
+    .alert("Error", isPresented: .constant(store.errorMessage != nil)) {
+      Button("OK") {
+        store.send(.clearError)
+      }
+    } message: {
+      Text(store.errorMessage ?? "")
+    }
+    .overlay(alignment: .top) {
+      if store.isLoading && store.scanningStats == nil {
+        ProgressView()
+          .padding()
+      }
+    }
+    .onAppear {
+      store.send(.onAppear)
+    }
   }
 }
 
@@ -137,8 +170,8 @@ struct RecentScanRow: View {
 
 #Preview {
   StatsView(
-    store: Store(initialState: ScanningFeature.State()) {
-      ScanningFeature()
+    store: Store(initialState: StatsFeature.State()) {
+      StatsFeature()
     }
   )
 }

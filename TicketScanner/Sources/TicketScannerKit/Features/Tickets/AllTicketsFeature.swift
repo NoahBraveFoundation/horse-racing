@@ -1,10 +1,12 @@
 import ComposableArchitecture
 import Foundation
+import Sharing
 
 @Reducer
 public struct AllTicketsFeature {
   @ObservableState
   public struct State: Equatable {
+    @Shared(.appStorage(SharedStorageKey.tickets))
     public var tickets: [TicketDirectoryEntry] = []
     public var searchText = ""
     public var isLoading = false
@@ -59,7 +61,7 @@ public struct AllTicketsFeature {
 
       case .ticketsResponse(.success(let tickets)):
         state.isLoading = false
-        state.tickets = tickets
+        state.$tickets.withLock { $0 = tickets }
         return .none
 
       case .ticketsResponse(.failure(let error)):

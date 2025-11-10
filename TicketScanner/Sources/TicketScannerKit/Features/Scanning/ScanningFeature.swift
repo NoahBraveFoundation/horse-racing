@@ -1,6 +1,7 @@
 import ComposableArchitecture
 import Dependencies
 import Foundation
+import Sharing
 import UIKit
 
 @Reducer
@@ -12,8 +13,9 @@ public struct ScanningFeature {
     public var errorMessage: String?
     public var isShowingResult = false
     public var currentScanner: User?
-    public var scanningStats: ScanningStats?
-    public var recentScans: [TicketScan] = []
+    public var stats = StatsFeature.State()
+    @Shared(.appStorage(SharedStorageKey.tickets))
+    var cachedTickets: [TicketDirectoryEntry] = []
     public var horseAudio = HorseAudioState()
 
     public init() {}
@@ -27,10 +29,9 @@ public struct ScanningFeature {
     case dismissResult
     case clearError
     case setCurrentScanner(User)
-    case loadStats
-    case statsResponse(TaskResult<ScanningStats>)
-    case loadRecentScans
-    case recentScansResponse(TaskResult<[TicketScan]>)
+    case stats(StatsFeature.Action)
+    case loadAllTickets
+    case allTicketsResponse(TaskResult<[TicketDirectoryEntry]>)
     case checkCameraPermissions
     case cameraPermissionDenied
     case requestHorseAudio(UUID)
@@ -38,7 +39,6 @@ public struct ScanningFeature {
     case playHorseAudio
     case replayHorseAudio
     case audioPlaybackFinished
-    case hideAudioToast
     case horseAudioPlaybackFailed(String)
   }
 
@@ -50,6 +50,9 @@ public struct ScanningFeature {
   public init() {}
 
   public var body: some ReducerOf<Self> {
+    Scope(state: \.stats, action: \.stats) {
+      StatsFeature()
+    }
     Reduce { state, action in
       switch action {
       case .checkCameraPermissions:
@@ -89,6 +92,8 @@ public struct ScanningFeature {
           await barcodeScanner.startScanning { barcode in
             await send(.barcodeScanned(barcode))
           }
+          // Keep effect alive until scanning stops to avoid completed-effect warning
+          await barcodeScanner.waitUntilStopped()
         }
 
       case .stopScanning:
@@ -124,27 +129,53 @@ public struct ScanningFeature {
         )
         state.isShowingResult = true
 
+        let isSuccessful = response.success
+        let feedbackEffect: Effect<Action> = .run { _ in
+          @Dependency(\.scanFeedbackClient) var scanFeedbackClient
+          if isSuccessful {
+            await scanFeedbackClient.playSuccess()
+          } else {
+            await scanFeedbackClient.playFailure()
+          }
+        }
+
         // Reload stats and recent scans after successful scan
-        return .concatenate(
+        let reloadEffects: Effect<Action> = .concatenate(
           .run { _ in
             @Dependency(\.barcodeScanner) var barcodeScanner
             await barcodeScanner.stopScanning()
           },
-          .send(.loadStats),
-          .send(.loadRecentScans),
+          .send(.stats(.refresh(.scanUpdate))),
+          .send(.loadAllTickets),
           response.ticket.map { .send(.requestHorseAudio($0.id)) } ?? .none
         )
 
+        return .merge(feedbackEffect, reloadEffects)
+
       case .scanTicketResponse(.failure(let error)):
-        state.errorMessage = error.localizedDescription
-        return .run { _ in
+        state.errorMessage = nil
+        state.lastScanResult = ScanResult(
+          success: false,
+          message: error.localizedDescription,
+          ticket: nil,
+          alreadyScanned: false,
+          previousScan: nil
+        )
+        state.isShowingResult = true
+        let feedbackEffect: Effect<Action> = .run { _ in
+          @Dependency(\.scanFeedbackClient) var scanFeedbackClient
+          await scanFeedbackClient.playFailure()
+        }
+        let stopEffect: Effect<Action> = .run { _ in
           @Dependency(\.barcodeScanner) var barcodeScanner
           await barcodeScanner.stopScanning()
         }
+        return .merge(feedbackEffect, stopEffect)
 
       case .dismissResult:
         state.isShowingResult = false
         state.lastScanResult = nil
+        state.errorMessage = nil
         return .none
 
       case .clearError:
@@ -155,42 +186,7 @@ public struct ScanningFeature {
         state.currentScanner = scanner
         return .none
 
-      case .loadStats:
-        return .run { send in
-          @Dependency(\.apiClient) var apiClient
-          await send(
-            .statsResponse(
-              await TaskResult {
-                try await apiClient.getScanningStats()
-              }
-            ))
-        }
-
-      case .statsResponse(.success(let stats)):
-        state.scanningStats = stats
-        return .none
-
-      case .statsResponse(.failure(let error)):
-        state.errorMessage = error.localizedDescription
-        return .none
-
-      case .loadRecentScans:
-        return .run { send in
-          @Dependency(\.apiClient) var apiClient
-          await send(
-            .recentScansResponse(
-              await TaskResult {
-                try await apiClient.getRecentScans(10)
-              }
-            ))
-        }
-
-      case .recentScansResponse(.success(let scans)):
-        state.recentScans = scans
-        return .none
-
-      case .recentScansResponse(.failure(let error)):
-        state.errorMessage = error.localizedDescription
+      case .stats:
         return .none
 
       case .requestHorseAudio(let ticketId):
@@ -229,7 +225,6 @@ public struct ScanningFeature {
         state.horseAudio.canReplay = false
         return .concatenate(
           .cancel(id: HorseAudioPlaybackID.playback),
-          .cancel(id: HorseAudioToastTimerID.toast),
           .run { send in
             @Dependency(\.audioPlaybackClient) var audioPlaybackClient
             do {
@@ -255,21 +250,30 @@ public struct ScanningFeature {
       case .audioPlaybackFinished:
         state.horseAudio.isAudioPlaying = false
         state.horseAudio.canReplay = true
-        return .run { send in
-          @Dependency(\.continuousClock) var clock
-          try await clock.sleep(for: .seconds(15))
-          await send(.hideAudioToast)
-        }
-        .cancellable(id: HorseAudioToastTimerID.toast, cancelInFlight: true)
-
-      case .hideAudioToast:
-        state.horseAudio.isToastVisible = false
-        state.horseAudio.canReplay = false
         return .none
 
       case .horseAudioPlaybackFailed(let message):
         state.horseAudio.isAudioPlaying = false
         state.errorMessage = message
+        return .none
+
+      case .loadAllTickets:
+        return .run { send in
+          @Dependency(\.apiClient) var apiClient
+          await send(
+            .allTicketsResponse(
+              await TaskResult {
+                try await apiClient.getAllTickets()
+              }
+            ))
+        }
+
+      case .allTicketsResponse(.success(let tickets)):
+        state.$cachedTickets.withLock { $0 = tickets }
+        return .none
+
+      case .allTicketsResponse(.failure(let error)):
+        state.errorMessage = error.localizedDescription
         return .none
       }
     }
@@ -284,10 +288,6 @@ private func getDeviceInfo() async -> String {
 
 private enum HorseAudioPlaybackID: Hashable {
   case playback
-}
-
-private enum HorseAudioToastTimerID: Hashable {
-  case toast
 }
 
 extension ScanningFeature {

@@ -5,13 +5,13 @@
 
 public struct HorseAudioClipFragment: HorseRacingAPI.SelectionSet, Fragment {
   public static var fragmentDefinition: StaticString {
-    #"fragment HorseAudioClipFragment on HorseAudioClip { __typename ownerName ownerEmail ticketAttendeeName horseNames audioBase64 prompt }"#
+    #"fragment HorseAudioClipFragment on HorseAudioClipPayload { __typename ownerName ownerEmail ticketAttendeeName horseNames audioBase64 prompt }"#
   }
 
   public let __data: DataDict
   public init(_dataDict: DataDict) { __data = _dataDict }
 
-  public static var __parentType: any ApolloAPI.ParentType { HorseRacingAPI.Objects.HorseAudioClip }
+  public static var __parentType: any ApolloAPI.ParentType { HorseRacingAPI.Objects.HorseAudioClipPayload }
   public static var __selections: [ApolloAPI.Selection] { [
     .field("__typename", String.self),
     .field("ownerName", String.self),

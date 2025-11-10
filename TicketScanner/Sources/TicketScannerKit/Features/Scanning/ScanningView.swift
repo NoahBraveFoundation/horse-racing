@@ -41,8 +41,7 @@ public struct ScanningView: View {
       }
       .onAppear {
         store.send(.checkCameraPermissions)
-        store.send(.loadStats)
-        store.send(.loadRecentScans)
+        store.send(.stats(.onAppear))
       }
   }
 
@@ -81,7 +80,7 @@ public struct ScanningView: View {
       .controlSize(.large)
 
       // Stats Summary
-      if let stats = store.scanningStats {
+      if let stats = store.stats.scanningStats {
         let percentage =
           stats.totalTickets > 0
           ? Int(Double(stats.totalScanned) / Double(stats.totalTickets) * 100) : 0
@@ -176,7 +175,7 @@ private struct HorseAudioToastView: View {
     if isPlaying {
       return "Playing now..."
     } else if canReplay {
-      return "Replay available for 15 seconds"
+      return "Replay available"
     } else {
       return "Preparing audio..."
     }

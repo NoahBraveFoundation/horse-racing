@@ -15,6 +15,7 @@ let package = Package(
   dependencies: [
     .package(url: "https://github.com/pointfreeco/swift-composable-architecture", from: "1.19.0"),
     .package(url: "https://github.com/pointfreeco/swift-dependencies", from: "1.0.0"),
+    .package(url: "https://github.com/pointfreeco/swift-sharing", from: "2.7.0"),
     .package(url: "https://github.com/apollographql/apollo-ios", from: "1.0.0"),
     .package(url: "https://github.com/apple/swift-http-types", from: "1.0.0"),
     .package(url: "https://github.com/apple/swift-crypto", from: "3.0.0"),
@@ -27,6 +28,7 @@ let package = Package(
       dependencies: [
         .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
         .product(name: "Dependencies", package: "swift-dependencies"),
+        .product(name: "Sharing", package: "swift-sharing"),
         .product(name: "Apollo", package: "apollo-ios"),
         .product(name: "ApolloAPI", package: "apollo-ios"),
         .product(name: "HorseRacingAPI", package: "Schema"),

@@ -32,12 +32,12 @@ public class RequestHorseAudioMutation: GraphQLMutation {
 
     /// RequestHorseAudio
     ///
-    /// Parent Type: `HorseAudioClip`
+    /// Parent Type: `HorseAudioClipPayload`
     public struct RequestHorseAudio: HorseRacingAPI.SelectionSet {
       public let __data: DataDict
       public init(_dataDict: DataDict) { __data = _dataDict }
 
-      public static var __parentType: any ApolloAPI.ParentType { HorseRacingAPI.Objects.HorseAudioClip }
+      public static var __parentType: any ApolloAPI.ParentType { HorseRacingAPI.Objects.HorseAudioClipPayload }
       public static var __selections: [ApolloAPI.Selection] { [
         .field("__typename", String.self),
         .fragment(HorseAudioClipFragment.self),

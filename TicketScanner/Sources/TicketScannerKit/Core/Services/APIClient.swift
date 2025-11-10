@@ -94,9 +94,14 @@ extension APIClient: DependencyKey {
     getScanningStats: {
       let query = ScanningStatsQuery()
 
-      let result = try await ApolloClientService.shared.fetch(query: query)
+      let result = try await ApolloClientService.shared.fetch(
+        query: query,
+        cachePolicy: .fetchIgnoringCacheData
+      )
 
-      let recentScans = result.scanningStats.recentScans.compactMap { $0.toLocal() }
+      let recentScans = result.scanningStats.recentScans
+        .compactMap { $0.toLocal() }
+        .sorted { $0.scanTimestamp > $1.scanTimestamp }
 
       return ScanningStats(
         totalScanned: result.scanningStats.totalScanned,
@@ -108,9 +113,14 @@ extension APIClient: DependencyKey {
     getRecentScans: { limit in
       let query = RecentScansQuery(limit: limit)
 
-      let result = try await ApolloClientService.shared.fetch(query: query)
+      let result = try await ApolloClientService.shared.fetch(
+        query: query,
+        cachePolicy: .fetchIgnoringCacheData
+      )
 
-      return result.recentScans.compactMap { $0.toLocal() }
+      return result.recentScans
+        .compactMap { $0.toLocal() }
+        .sorted { $0.scanTimestamp > $1.scanTimestamp }
     },
 
     getTicketByBarcode: { barcode in
@@ -170,6 +180,57 @@ enum APIClientError: Error, LocalizedError {
   }
 }
 
+// MARK: - Date Parsing
+
+private enum APIDateParser {
+  private static let appleReferenceEpochOffset: Double = 978_307_200
+
+  static func parse(_ rawValue: String?) -> Foundation.Date? {
+    guard let rawValue, !rawValue.isEmpty else { return nil }
+
+    if let numeric = Double(rawValue) {
+      return parse(numeric: numeric)
+    }
+
+    if let date = makeISOFormatter(fractionalSeconds: true).date(from: rawValue) {
+      return date
+    }
+
+    if let date = makeISOFormatter(fractionalSeconds: false).date(from: rawValue) {
+      return date
+    }
+
+    return nil
+  }
+
+  static func parse(secondsSinceEpoch rawValue: Double?) -> Foundation.Date? {
+    guard let rawValue else { return nil }
+    return parse(numeric: rawValue)
+  }
+
+  private static func parse(numeric: Double) -> Foundation.Date {
+    if numeric > 1_000_000_000_000 {
+      // Milliseconds since 1970.
+      return Foundation.Date(timeIntervalSince1970: numeric / 1_000)
+    } else if numeric >= appleReferenceEpochOffset {
+      // Seconds since 1970.
+      return Foundation.Date(timeIntervalSince1970: numeric)
+    } else {
+      // Seconds since Apple's reference date (Jan 1, 2001).
+      return Foundation.Date(timeIntervalSince1970: numeric + appleReferenceEpochOffset)
+    }
+  }
+
+  private static func makeISOFormatter(fractionalSeconds: Bool) -> ISO8601DateFormatter {
+    let formatter = ISO8601DateFormatter()
+    formatter.formatOptions =
+      fractionalSeconds
+      ? [.withInternetDateTime, .withFractionalSeconds]
+      : [.withInternetDateTime]
+    return formatter
+  }
+}
+
 // MARK: - GraphQL Fragment Conversions
 
 extension TicketFragment {
@@ -199,7 +260,7 @@ extension TicketFragment {
       seatingPreference: seatingPreference,
       seatAssignment: seatAssignment,
       state: ticketState,
-      scannedAt: scannedAt.map { Date(timeIntervalSince1970: Double($0) ?? 0) },
+      scannedAt: APIDateParser.parse(scannedAt),
       scannedByUserID: nil,
       scanLocation: scanLocation
     )
@@ -234,7 +295,7 @@ extension TicketScanFragment {
       id: scanUUID,
       ticket: ticket,
       scanner: scanner,
-      scanTimestamp: Date(timeIntervalSince1970: Double(scanTimestamp) ?? 0),
+      scanTimestamp: APIDateParser.parse(scanTimestamp) ?? Foundation.Date(),
       scanLocation: scanLocation
     )
   }

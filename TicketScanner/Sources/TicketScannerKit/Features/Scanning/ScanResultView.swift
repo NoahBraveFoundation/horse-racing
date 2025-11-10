@@ -20,6 +20,7 @@ public struct ScanResultView: View {
         // Message
         Text(result.message)
           .font(.headline)
+          .foregroundColor(result.success ? .primary : .red)
           .multilineTextAlignment(.center)
           .padding(.horizontal)
 
