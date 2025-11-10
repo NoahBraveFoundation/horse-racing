@@ -1,0 +1,64 @@
+# Xcode
+.DS_Store
+*/build/*
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+!default.mode1v3
+*.mode2v3
+!default.mode2v3
+*.perspectivev3
+!default.perspectivev3
+xcuserdata/
+*.moved-aside
+*.xccheckout
+*.xcscmblueprint
+DerivedData/
+
+# Swift Package Manager
+.build/
+.swiftpm/
+
+# Generated Xcode project (regenerate with xcodegen)
+TicketScannerApp/*.xcodeproj/*
+!TicketScannerApp/*.xcodeproj/project.xcworkspace
+!TicketScannerApp/*.xcodeproj/xcshareddata
+
+# Apollo schema introspection cache
+schema.json
+
+# Apollo iOS CLI (auto-installed via Swift Package Manager)
+apollo-ios-cli
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Logs
+logs
+*.log
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Temporary folders
+tmp/
+temp/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+Thumbs.db
+
+# Signing
+Signing/

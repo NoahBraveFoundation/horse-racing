@@ -1,0 +1,5 @@
+query RecentScans($limit: Int!) {
+  recentScans(limit: $limit) {
+    ...TicketScanFragment
+  }
+}

@@ -8,8 +8,10 @@ A full-stack application for managing horse racing fundraisers with a modern Rea
 horse-racing-fundraiser/
 ├── frontend/          # React + TypeScript + Vite + Tailwind
 ├── backend/           # Swift Vapor + GraphQL
+├── scanner-app/       # iOS Ticket Scanning App
 └── README.md          # This file
 ```
+
 
 ## Quick Start
 

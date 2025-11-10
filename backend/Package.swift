@@ -18,6 +18,7 @@ let package = Package(
 
         .package(url: "https://github.com/JohnSundell/Plot.git", from: "0.14.0"),
         .package(url: "https://github.com/vapor-community/wallet.git", from: "0.7.0"),
+        .package(url: "https://github.com/MacPaw/OpenAI.git", from: "0.4.7"),
     ],
     targets: [
         .executableTarget(
@@ -32,6 +33,7 @@ let package = Package(
 
                 .product(name: "Plot", package: "Plot"),
                 .product(name: "VaporWalletPasses", package: "wallet"),
+                .product(name: "OpenAI", package: "OpenAI"),
             ],
             resources: [
                 .process("Resources")

@@ -1,0 +1,5 @@
+query TicketByBarcode($barcode: String!) {
+  ticketByBarcode(barcode: $barcode) {
+    ...TicketFragment
+  }
+}

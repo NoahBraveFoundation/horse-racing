@@ -1,0 +1,18 @@
+# Xcode
+*.xcodeproj/*
+!*.xcodeproj/project.xcworkspace
+!*.xcodeproj/xcshareddata
+*.xcworkspace/*
+!*.xcworkspace/contents.xcworkspacedata
+!*.xcworkspace/xcshareddata
+
+# User settings
+xcuserdata/
+
+# Build products
+DerivedData/
+build/
+
+# Scheme settings
+*.xcodeproj/xcuserdata/
+*.xcodeproj/project.xcworkspace/xcuserdata/

@@ -1,0 +1,10 @@
+fragment TicketFragment on Ticket {
+  id
+  attendeeFirst
+  attendeeLast
+  seatingPreference
+  seatAssignment
+  state
+  scannedAt
+  scanLocation
+}

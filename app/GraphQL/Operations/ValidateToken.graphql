@@ -1,0 +1,9 @@
+mutation ValidateToken($token: String!) {
+  validateToken(token: $token) {
+    success
+    message
+    user {
+      ...UserFragment
+    }
+  }
+}

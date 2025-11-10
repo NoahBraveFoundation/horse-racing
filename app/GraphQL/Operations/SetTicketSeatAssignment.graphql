@@ -1,0 +1,8 @@
+mutation SetTicketSeatAssignment($ticketId: UUID!, $seatAssignment: String) {
+  setTicketSeatAssignment(
+    ticketId: $ticketId
+    seatAssignment: $seatAssignment
+  ) {
+    ...TicketFragment
+  }
+}
