@@ -57,6 +57,7 @@ public struct HorseBoardHorse: Equatable, Identifiable, Sendable {
   public let ownerFirstName: String
   public let ownerLastName: String
   public let ownerEmail: String
+  public let ownerHasScannedIn: Bool
 
   public init(
     id: UUID,
@@ -65,7 +66,8 @@ public struct HorseBoardHorse: Equatable, Identifiable, Sendable {
     state: HorseEntryState,
     ownerFirstName: String,
     ownerLastName: String,
-    ownerEmail: String
+    ownerEmail: String,
+    ownerHasScannedIn: Bool
   ) {
     self.id = id
     self.horseName = horseName
@@ -74,6 +76,7 @@ public struct HorseBoardHorse: Equatable, Identifiable, Sendable {
     self.ownerFirstName = ownerFirstName
     self.ownerLastName = ownerLastName
     self.ownerEmail = ownerEmail
+    self.ownerHasScannedIn = ownerHasScannedIn
   }
 
   public var ownerFullName: String {

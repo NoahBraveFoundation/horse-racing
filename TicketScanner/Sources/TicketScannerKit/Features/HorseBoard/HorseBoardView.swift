@@ -21,6 +21,16 @@ public struct HorseBoardView: View {
     .background(Color(.systemGroupedBackground))
     .navigationTitle("Horse Board")
     .navigationBarTitleDisplayMode(.inline)
+    .toolbar {
+      ToolbarItem(placement: .navigationBarTrailing) {
+        Button {
+          store.send(.infoButtonTapped)
+        } label: {
+          Image(systemName: "info.circle")
+        }
+        .accessibilityLabel("Horse board info")
+      }
+    }
     .refreshable {
       await store.send(.refresh).finish()
     }
@@ -29,6 +39,13 @@ public struct HorseBoardView: View {
     }
     .overlay {
       overlayView
+    }
+    .alert("Horse Board Info", isPresented: .constant(store.isInfoAlertPresented)) {
+      Button("OK") {
+        store.send(.infoAlertDismissed)
+      }
+    } message: {
+      Text(infoMessage)
     }
     .alert("Error", isPresented: .constant(store.errorMessage != nil)) {
       Button("OK") {
@@ -53,6 +70,12 @@ public struct HorseBoardView: View {
         Text("The horse board will appear once the schedule is published.")
       }
     }
+  }
+}
+
+extension HorseBoardView {
+  private var infoMessage: String {
+    "The 🎟️ badge shows that a horse's owner has already checked in at the event."
   }
 }
 
@@ -120,7 +143,12 @@ private struct LaneCard: View {
             .font(.caption)
             .foregroundColor(.secondary)
         }
-        StateBadge(state: horse.state)
+        HStack(spacing: 6) {
+          StateBadge(state: horse.state)
+          if horse.ownerHasScannedIn {
+            OwnerCheckInBadge()
+          }
+        }
       } else {
         Spacer(minLength: 0)
         Text("Available")
@@ -175,6 +203,19 @@ private struct StateBadge: View {
     case .onHold:
       return .red
     }
+  }
+}
+
+private struct OwnerCheckInBadge: View {
+  var body: some View {
+    Text("🎟️")
+      .font(.caption2)
+      .padding(.horizontal, 8)
+      .padding(.vertical, 4)
+      .foregroundColor(Color.orange)
+      .background(Color.blue.opacity(0.15))
+      .clipShape(Capsule())
+      .accessibilityLabel("Owner checked in")
   }
 }
 

@@ -5,4 +5,5 @@ enum SharedStorageKey {
   static let hapticsEnabled = "ticket-scanner:settings:haptics-enabled:v1"
   static let audioFeedbackEnabled = "ticket-scanner:settings:audio-feedback-enabled:v1"
   static let horseGreetingsEnabled = "ticket-scanner:settings:horse-greetings-enabled:v1"
+  static let preferredLocationName = "ticket-scanner:settings:preferred-location-name:v1"
 }

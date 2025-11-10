@@ -35,4 +35,5 @@
 
 ## Phase 4
 - [ ] Publish to TestFlight on push to main branch if touches ticket sources with github actions.
+- [ ] Run `make build-ios` on CI if app source code is changed with gh actions.
 - [ ] Add another state badge on horse board with ticket emoji if the owner of the horse has been scanned in. Add note about that behavior in (i) info button alert in top right nav bar.

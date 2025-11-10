@@ -15,6 +15,9 @@ public struct SettingsFeature {
     @Shared(.appStorage(SharedStorageKey.horseGreetingsEnabled))
     public var horseGreetingsEnabled: Bool = true
 
+    @Shared(.appStorage(SharedStorageKey.preferredLocationName))
+    public var preferredLocationName: String = LocationService.defaultLocationName
+
     public init() {}
   }
 
@@ -22,6 +25,7 @@ public struct SettingsFeature {
     case setHapticsEnabled(Bool)
     case setAudioFeedbackEnabled(Bool)
     case setHorseGreetingsEnabled(Bool)
+    case setPreferredLocationName(String)
     case logoutTapped
   }
 
@@ -40,6 +44,10 @@ public struct SettingsFeature {
 
       case .setHorseGreetingsEnabled(let isEnabled):
         state.$horseGreetingsEnabled.withLock { $0 = isEnabled }
+        return .none
+
+      case .setPreferredLocationName(let name):
+        state.$preferredLocationName.withLock { $0 = name }
         return .none
 
       case .logoutTapped:

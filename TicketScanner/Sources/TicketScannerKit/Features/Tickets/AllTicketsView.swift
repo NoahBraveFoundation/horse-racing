@@ -44,7 +44,7 @@ public struct AllTicketsView: View {
         }
         .pickerStyle(.segmented)
       }
-      .listRowInsets(EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0))
+      .listRowInsets(EdgeInsets(top: 2, leading: 0, bottom: 0, trailing: 0))
       .listRowBackground(Color.clear)
 
       ForEach(store.filteredTickets) { entry in
@@ -131,26 +131,18 @@ public struct AllTicketsView: View {
 
       if let seat = entry.ticket.seatAssignment, !seat.isEmpty {
         Label("Seat \(seat)", systemImage: "chair")
-          .font(.subheadline)
+          .font(.caption2)
           .foregroundColor(.secondary)
       } else if let pref = entry.ticket.seatingPreference, !pref.isEmpty {
         Label(pref, systemImage: "note.text")
-          .font(.subheadline)
+          .font(.caption2)
           .foregroundColor(.secondary)
       }
-
-      HStack(spacing: 8) {
-        Label(entry.ownerName, systemImage: "person.crop.circle")
-          .font(.caption)
-        Label(entry.ownerEmail, systemImage: "envelope")
-          .font(.caption)
-      }
-      .foregroundStyle(.secondary)
 
       if entry.ticket.isScanned {
         Label(
           entry.ticket.scannedAt?.formatted(date: .abbreviated, time: .shortened) ?? "Scanned",
-          systemImage: "checkmark.seal.fill"
+          systemImage: "checkmark.seal"
         )
         .font(.caption2)
         .foregroundColor(.green)

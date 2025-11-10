@@ -8,6 +8,7 @@ public struct HorseBoardFeature {
     public var rounds: [HorseBoardRound] = []
     public var isLoading = false
     public var errorMessage: String?
+    public var isInfoAlertPresented = false
 
     public init() {}
   }
@@ -17,6 +18,8 @@ public struct HorseBoardFeature {
     case refresh
     case refreshResponse(TaskResult<[HorseBoardRound]>)
     case dismissError
+    case infoButtonTapped
+    case infoAlertDismissed
   }
 
   @Dependency(\.apiClient) var apiClient
@@ -67,6 +70,14 @@ public struct HorseBoardFeature {
 
       case .dismissError:
         state.errorMessage = nil
+        return .none
+
+      case .infoButtonTapped:
+        state.isInfoAlertPresented = true
+        return .none
+
+      case .infoAlertDismissed:
+        state.isInfoAlertPresented = false
         return .none
       }
     }

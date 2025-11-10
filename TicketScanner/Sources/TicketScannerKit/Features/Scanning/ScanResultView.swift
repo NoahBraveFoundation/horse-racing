@@ -9,114 +9,119 @@ public struct ScanResultView: View {
   }
 
   public var body: some View {
-    NavigationView {
-      VStack(spacing: 20) {
-        if store.isLoading {
-          ProgressView()
-            .progressViewStyle(.circular)
-            .scaleEffect(1.4)
+    NavigationStack {
+      List {
+        Section {
+          VStack(spacing: 12) {
+            if store.isLoading {
+              ProgressView()
+                .progressViewStyle(.circular)
+                .scaleEffect(1.2)
 
-          Text(store.result.message)
-            .font(.headline)
-            .multilineTextAlignment(.center)
-            .padding(.horizontal)
-        } else {
-          // Status Icon
-          Image(systemName: store.result.success ? "checkmark.circle.fill" : "xmark.circle.fill")
-            .font(.system(size: 60))
-            .foregroundColor(store.result.success ? .green : .red)
+              Text(store.result.message)
+                .font(.headline)
+                .multilineTextAlignment(.center)
+                .frame(maxWidth: .infinity)
+            } else {
+              Image(
+                systemName: store.result.success ? "checkmark.circle.fill" : "xmark.circle.fill"
+              )
+              .font(.system(size: 56))
+              .foregroundColor(store.result.success ? .green : .red)
 
-          // Message
-          Text(store.result.message)
-            .font(.headline)
-            .foregroundColor(store.result.success ? .primary : .red)
-            .multilineTextAlignment(.center)
-            .padding(.horizontal)
-        }
-
-        // Ticket Info
-        if !store.isLoading, let ticket = store.result.ticket {
-          VStack(alignment: .leading, spacing: 8) {
-            Text("Ticket Details")
-              .font(.headline)
-
-            HStack {
-              Text("Name:")
-              Spacer()
-              Text(ticket.attendeeName)
-                .fontWeight(.medium)
-            }
-
-            if let seat = ticket.seatAssignment {
-              HStack {
-                Text("Seat:")
-                Spacer()
-                Text(seat)
-                  .fontWeight(.medium)
-              }
-            }
-
-            HStack {
-              Text("Status:")
-              Spacer()
-              Text(ticket.state.displayName)
-                .fontWeight(.medium)
-            }
-
-            if let scannedAt = ticket.scannedAt {
-              HStack {
-                Text("Scanned:")
-                Spacer()
-                Text(scannedAt.formatted(date: .abbreviated, time: .shortened))
-                  .fontWeight(.medium)
-              }
+              Text(store.result.message)
+                .font(.headline)
+                .foregroundColor(store.result.success ? .primary : .red)
+                .multilineTextAlignment(.center)
+                .frame(maxWidth: .infinity)
             }
           }
-          .padding()
-          .background(Color(.systemGray6))
-          .cornerRadius(8)
+          .frame(maxWidth: .infinity)
+          .padding(.vertical, 12)
         }
 
-        // Previous Scan Info
+        if !store.isLoading, let ticket = store.result.ticket {
+          Section("Ticket") {
+            LabeledContent("Attendee", value: ticket.attendeeName)
+
+            LabeledContent("Ticket Number", value: "#\(ticket.shortCode)")
+
+            LabeledContent("Status") {
+              HStack(spacing: 8) {
+                Text(ticket.state.displayName)
+                if ticket.isScanned {
+                  Image(systemName: "checkmark.seal.fill")
+                    .foregroundColor(.green)
+                }
+              }
+            }
+
+            LabeledContent("Seat Assignment") {
+              Text(seatAssignmentValue(for: ticket))
+                .foregroundColor(seatAssignmentColor(for: ticket))
+            }
+
+            if ticket.seatAssignment?.isEmpty ?? true,
+              let preference = ticket.seatingPreference,
+              !preference.isEmpty
+            {
+              LabeledContent("Preference", value: preference)
+            }
+          }
+        }
+
+        if !store.isLoading, !store.horses.isEmpty {
+          Section("Horses") {
+            ForEach(store.horses) { horse in
+              VStack(alignment: .leading, spacing: 6) {
+                HStack {
+                  Text(horse.horseName)
+                    .font(.headline)
+                  Spacer()
+                  HorseStateBadge(state: horse.state)
+                }
+
+                Text(horse.ownershipLabel)
+                  .font(.subheadline)
+                  .foregroundColor(.secondary)
+
+                Label("Lane \(horse.laneNumber)", systemImage: "flag.checkered")
+                  .font(.caption)
+                  .foregroundColor(.secondary)
+
+                Label(horse.roundName, systemImage: "clock")
+                  .font(.caption)
+                  .foregroundColor(.secondary)
+
+                if let range = formatRoundRange(for: horse) {
+                  Text(range)
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+                }
+              }
+              .padding(.vertical, 4)
+            }
+          }
+        }
+
         if !store.isLoading, store.result.alreadyScanned,
           let previousScan = store.result.previousScan
         {
-          VStack(alignment: .leading, spacing: 8) {
-            Text("Previously Scanned")
-              .font(.headline)
-              .foregroundColor(.orange)
-
-            HStack {
-              Text("Scanned by:")
-              Spacer()
-              Text(previousScan.scanner.fullName)
-                .fontWeight(.medium)
-            }
-
-            HStack {
-              Text("Time:")
-              Spacer()
+          Section("Previous Scan") {
+            LabeledContent("Scanned by", value: previousScan.scanner.fullName)
+            LabeledContent("Time") {
               Text(previousScan.scanTimestamp.formatted(date: .abbreviated, time: .shortened))
-                .fontWeight(.medium)
             }
 
-            if let location = previousScan.scanLocation {
-              HStack {
-                Text("Location:")
-                Spacer()
+            if let location = previousScan.scanLocation, !location.isEmpty {
+              LabeledContent("Location") {
                 Text(location)
-                  .fontWeight(.medium)
               }
             }
           }
-          .padding()
-          .background(Color.orange.opacity(0.1))
-          .cornerRadius(8)
         }
-
-        Spacer()
       }
-      .padding()
+      .listStyle(.insetGrouped)
       .navigationTitle("Scan Result")
       .navigationBarTitleDisplayMode(.inline)
       .toolbar {
@@ -128,6 +133,69 @@ public struct ScanResultView: View {
           }
         }
       }
+    }
+  }
+
+  private func seatAssignmentValue(for ticket: Ticket) -> String {
+    let trimmed = ticket.seatAssignment?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+    return trimmed.isEmpty ? "Not assigned" : trimmed
+  }
+
+  private func seatAssignmentColor(for ticket: Ticket) -> Color {
+    let trimmed = ticket.seatAssignment?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+    return trimmed.isEmpty ? .secondary : .primary
+  }
+
+  private func formatRoundRange(for horse: TicketDirectoryEntry.Horse) -> String? {
+    guard let start = horse.roundStartAt, let end = horse.roundEndAt else {
+      return nil
+    }
+
+    return Self.timeFormatter.string(from: start)
+      .appending(" — ")
+      .appending(Self.timeFormatter.string(from: end))
+  }
+
+  private static let timeFormatter: DateFormatter = {
+    let formatter = DateFormatter()
+    formatter.dateStyle = .none
+    formatter.timeStyle = .short
+    return formatter
+  }()
+}
+
+private struct HorseStateBadge: View {
+  let state: HorseEntryState
+
+  var body: some View {
+    Text(state.displayName)
+      .font(.caption2)
+      .padding(.horizontal, 8)
+      .padding(.vertical, 4)
+      .foregroundColor(foregroundColor)
+      .background(backgroundColor)
+      .clipShape(Capsule())
+  }
+
+  private var backgroundColor: Color {
+    switch state {
+    case .confirmed:
+      return Color.green.opacity(0.15)
+    case .pendingPayment:
+      return Color.orange.opacity(0.15)
+    case .onHold:
+      return Color.red.opacity(0.15)
+    }
+  }
+
+  private var foregroundColor: Color {
+    switch state {
+    case .confirmed:
+      return .green
+    case .pendingPayment:
+      return .orange
+    case .onHold:
+      return .red
     }
   }
 }
@@ -143,16 +211,49 @@ public struct ScanResultView: View {
             id: UUID(),
             attendeeFirst: "John",
             attendeeLast: "Doe",
-            seatingPreference: nil,
+            seatingPreference: "Near stage",
             seatAssignment: "Table 5, Seat 3",
             state: .confirmed,
             scannedAt: Date(),
             scannedByUserID: UUID(),
             scanLocation: "Main Entrance"
           ),
-          alreadyScanned: false,
-          previousScan: nil
-        )
+          alreadyScanned: true,
+          previousScan: TicketScan(
+            id: UUID(),
+            ticket: Ticket(
+              id: UUID(),
+              attendeeFirst: "John",
+              attendeeLast: "Doe",
+              state: .confirmed
+            ),
+            scanner: User(
+              id: UUID(),
+              email: "scanner@example.com",
+              firstName: "Sam",
+              lastName: "Scanner",
+              isAdmin: true
+            ),
+            scanTimestamp: Date().addingTimeInterval(-3600),
+            scanLocation: "VIP Entrance",
+            deviceInfo: "iPhone"
+          )
+        ),
+        horses: [
+          TicketDirectoryEntry.Horse(
+            id: UUID(),
+            horseName: "Thunderbolt",
+            ownershipLabel: "Sponsored by Doe Family",
+            state: .confirmed,
+            ownerEmail: "john.doe@example.com",
+            ownerName: "John Doe",
+            laneNumber: 3,
+            roundId: UUID(),
+            roundName: "Round 1",
+            roundStartAt: Date(),
+            roundEndAt: Date().addingTimeInterval(1800)
+          )
+        ]
       )
     ) {
       ScanResultFeature()

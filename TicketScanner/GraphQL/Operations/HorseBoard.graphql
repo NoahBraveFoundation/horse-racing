@@ -17,6 +17,10 @@ query HorseBoard {
           firstName
           lastName
           email
+          tickets {
+            id
+            scannedAt
+          }
         }
       }
     }

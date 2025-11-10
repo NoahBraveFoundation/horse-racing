@@ -40,20 +40,24 @@ public struct TicketDetailView: View {
             }
           }
 
-          NavigationLink(isActive: $store.isSeatEditorActive) {
-            if let editorStore = store.scope(
-              state: \.seatAssignmentEditor, action: \.seatAssignmentEditor)
-            {
-              SeatAssignmentEditorView(store: editorStore)
-            } else {
-              EmptyView()
-            }
+          Button {
+            store.isSeatEditorActive = true
           } label: {
-            LabeledContent("Seat Assignment") {
+            HStack(spacing: 8) {
+              Text("Seat Assignment")
+                .foregroundColor(.primary)
+              Spacer()
               Text(seatAssignmentValue(for: entry))
                 .foregroundColor(seatAssignmentColor(for: entry))
+              Image(systemName: "chevron.forward")
+                .font(.caption.weight(.semibold))
+                .foregroundColor(Color(.tertiaryLabel))
             }
+            .contentShape(Rectangle())
           }
+          .buttonStyle(.plain)
+          .accessibilityAddTraits(.isButton)
+          .accessibilityHint("Edit seat assignment")
 
           if entry.ticket.seatAssignment?.isEmpty ?? true,
             let preference = entry.ticket.seatingPreference,
@@ -183,6 +187,13 @@ public struct TicketDetailView: View {
     }
     .navigationTitle(store.entry?.attendeeName ?? "Ticket")
     .navigationBarTitleDisplayMode(.inline)
+    .navigationDestination(isPresented: $store.isSeatEditorActive) {
+      if let editorStore = store.scope(
+        state: \.seatAssignmentEditor, action: \.seatAssignmentEditor)
+      {
+        SeatAssignmentEditorView(store: editorStore)
+      }
+    }
     .toolbar {
       ToolbarItem(placement: .navigationBarTrailing) {
         if store.isManualScanInFlight || store.isUnscanInFlight {

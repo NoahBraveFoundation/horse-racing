@@ -501,7 +501,8 @@ extension HorseBoardQuery.Data.Round.Lane.Horse {
       state: entryState,
       ownerFirstName: owner.firstName,
       ownerLastName: owner.lastName,
-      ownerEmail: owner.email
+      ownerEmail: owner.email,
+      ownerHasScannedIn: owner.tickets.contains { $0.scannedAt != nil }
     )
   }
 }

@@ -4,7 +4,7 @@ import SwiftUI
 
 public struct ScanningView: View {
   @Bindable var store: StoreOf<ScanningFeature>
-  
+
   public init(store: StoreOf<ScanningFeature>) {
     self.store = store
   }

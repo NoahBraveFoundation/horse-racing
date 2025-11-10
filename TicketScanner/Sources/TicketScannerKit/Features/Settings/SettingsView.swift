@@ -10,6 +10,18 @@ public struct SettingsView: View {
 
   public var body: some View {
     Form {
+      Section("Scan Metadata") {
+        TextField(
+          "Scan location",
+          text: Binding(
+            get: { store.preferredLocationName },
+            set: { store.send(.setPreferredLocationName($0)) }
+          )
+        )
+        .textInputAutocapitalization(.words)
+        .disableAutocorrection(true)
+      }
+
       Section("Feedback") {
         Toggle(
           "Haptic feedback",

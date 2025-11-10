@@ -110,7 +110,8 @@ public struct ScanningFeature {
             alreadyScanned: false,
             previousScan: nil
           ),
-          isLoading: true
+          isLoading: true,
+          horses: []
         )
         return .run { send in
           @Dependency(\.locationService) var locationService
@@ -127,6 +128,15 @@ public struct ScanningFeature {
         }
 
       case .scanTicketResponse(.success(let response)):
+        let horses: [TicketDirectoryEntry.Horse]
+        if let ticket = response.ticket,
+          let entry = state.cachedTickets.first(where: { $0.id == ticket.id })
+        {
+          horses = entry.horses
+        } else {
+          horses = []
+        }
+
         state.result = ScanResultFeature.State(
           result: ScanResult(
             success: response.success,
@@ -134,7 +144,9 @@ public struct ScanningFeature {
             ticket: response.ticket,
             alreadyScanned: response.alreadyScanned,
             previousScan: response.previousScan
-          ))
+          ),
+          horses: horses
+        )
 
         let isSuccessful = response.success
         let feedbackEffect: Effect<Action> = .run { _ in
@@ -183,7 +195,9 @@ public struct ScanningFeature {
             ticket: nil,
             alreadyScanned: false,
             previousScan: nil
-          ))
+          ),
+          horses: []
+        )
         let feedbackEffect: Effect<Action> = .run { _ in
           @Dependency(\.scanFeedbackClient) var scanFeedbackClient
           await scanFeedbackClient.playFailure()

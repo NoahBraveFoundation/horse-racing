@@ -8,11 +8,18 @@ public struct ScanResultFeature {
     public let id: UUID
     public var result: ScanResult
     public var isLoading: Bool
+    public var horses: [TicketDirectoryEntry.Horse]
 
-    public init(id: UUID = UUID(), result: ScanResult, isLoading: Bool = false) {
+    public init(
+      id: UUID = UUID(),
+      result: ScanResult,
+      isLoading: Bool = false,
+      horses: [TicketDirectoryEntry.Horse] = []
+    ) {
       self.id = id
       self.result = result
       self.isLoading = isLoading
+      self.horses = horses
     }
   }
 

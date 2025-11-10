@@ -29,7 +29,6 @@ public struct AppFeature {
     case checkAuthentication
     case handleDeepLink(URL)
     case loadStoredToken
-    case warmLocation
   }
 
   @Dependency(\.tokenStorage) var tokenStorage
@@ -102,14 +101,6 @@ public struct AppFeature {
       case .stats:
         return .none
 
-      case .warmLocation:
-        return .run { _ in
-          Task {
-            @Dependency(\.locationService) var locationService
-            await locationService.preWarm()
-          }
-        }
-
       case .scanning(.scanTicketResponse):
         return .send(.stats(.refresh(.scanUpdate)))
 
@@ -143,7 +134,6 @@ public struct AppView: View {
     }
     .onAppear {
       store.send(.checkAuthentication)
-      store.send(.warmLocation)
     }
     .onOpenURL { url in
       store.send(.handleDeepLink(url))

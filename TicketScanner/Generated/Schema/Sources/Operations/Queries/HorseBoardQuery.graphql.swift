@@ -7,7 +7,7 @@ public class HorseBoardQuery: GraphQLQuery {
   public static let operationName: String = "HorseBoard"
   public static let operationDocument: ApolloAPI.OperationDocument = .init(
     definition: .init(
-      #"query HorseBoard { rounds { __typename id name startAt endAt lanes { __typename id number horse { __typename id horseName ownershipLabel state owner { __typename id firstName lastName email } } } } }"#
+      #"query HorseBoard { rounds { __typename id name startAt endAt lanes { __typename id number horse { __typename id horseName ownershipLabel state owner { __typename id firstName lastName email tickets { __typename id scannedAt } } } } } }"#
     ))
 
   public init() {}
@@ -102,12 +102,32 @@ public class HorseBoardQuery: GraphQLQuery {
               .field("firstName", String.self),
               .field("lastName", String.self),
               .field("email", String.self),
+              .field("tickets", [Ticket].self),
             ] }
 
             public var id: HorseRacingAPI.UUID? { __data["id"] }
             public var firstName: String { __data["firstName"] }
             public var lastName: String { __data["lastName"] }
             public var email: String { __data["email"] }
+            public var tickets: [Ticket] { __data["tickets"] }
+
+            /// Round.Lane.Horse.Owner.Ticket
+            ///
+            /// Parent Type: `Ticket`
+            public struct Ticket: HorseRacingAPI.SelectionSet {
+              public let __data: DataDict
+              public init(_dataDict: DataDict) { __data = _dataDict }
+
+              public static var __parentType: any ApolloAPI.ParentType { HorseRacingAPI.Objects.Ticket }
+              public static var __selections: [ApolloAPI.Selection] { [
+                .field("__typename", String.self),
+                .field("id", HorseRacingAPI.UUID?.self),
+                .field("scannedAt", HorseRacingAPI.Date?.self),
+              ] }
+
+              public var id: HorseRacingAPI.UUID? { __data["id"] }
+              public var scannedAt: HorseRacingAPI.Date? { __data["scannedAt"] }
+            }
           }
         }
       }
