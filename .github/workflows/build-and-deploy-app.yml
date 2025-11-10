@@ -112,11 +112,9 @@ jobs:
             -archivePath "$ARCHIVE_PATH" \
             -destination 'generic/platform=iOS' \
             -skipMacroValidation \
-            CODE_SIGN_STYLE=Manual \
+            -xcconfig app/TicketScannerApp/ci-signing.xcconfig \
             "DEVELOPMENT_TEAM=$APPLE_TEAM_ID" \
-            "PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]=$PROFILE_UUID" \
-            "CODE_SIGN_IDENTITY[sdk=iphoneos*]=Apple Distribution" \
-            OTHER_CODE_SIGN_FLAGS="--keychain $KEYCHAIN_PATH" \
+            "PROFILE_UUID=$PROFILE_UUID" \
             archive
           echo "ARCHIVE_PATH=$ARCHIVE_PATH" >> "$GITHUB_ENV"
 
