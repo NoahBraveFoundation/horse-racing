@@ -55,7 +55,7 @@ jobs:
           IOS_DISTRIBUTION_CERT_BASE64: ${{ secrets.IOS_DISTRIBUTION_CERT_BASE64 }}
           IOS_DISTRIBUTION_CERT_PASSWORD: ${{ secrets.IOS_DISTRIBUTION_CERT_PASSWORD }}
           IOS_PROVISIONING_PROFILE_BASE64: ${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}
-          APPLE_TEAM_ID: ${{ env.APPLE_TEAM_ID }}
+          APPLE_TEAM_ID: ${{ vars.APPLE_TEAM_ID }}
 
       - name: Increment build number
         working-directory: app/TicketScannerApp
