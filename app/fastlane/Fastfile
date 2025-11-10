@@ -1,0 +1,46 @@
+require "base64"
+
+default_platform(:ios)
+
+platform :ios do
+  desc "Build TicketScannerApp and upload to TestFlight"
+  lane :testflight do
+    team_id = ENV.fetch("APPLE_TEAM_ID")
+    project_path = File.expand_path(ENV.fetch("APP_PROJECT_PATH"), File.expand_path("..", __dir__))
+    scheme = ENV.fetch("APP_SCHEME")
+    release_notes = ENV.fetch("RELEASE_NOTES", "")
+
+    update_code_signing_settings(
+      use_automatic_signing: true,
+      path: project_path,
+      team_id: team_id
+    )
+
+    gym(
+      project: project_path,
+      scheme: scheme,
+      configuration: "Release",
+      clean: true,
+      destination: "generic/platform=iOS",
+      export_method: "app-store",
+      xcargs: "-allowProvisioningUpdates",
+      buildlog_path: "fastlane/logs",
+      output_directory: "fastlane/build"
+    )
+
+    ipa_path = Actions.lane_context[SharedValues::IPA_OUTPUT_PATH]
+    UI.user_error!("Failed to locate produced IPA") unless ipa_path && File.exist?(ipa_path)
+
+    api_key = app_store_connect_api_key(
+      key_id: ENV.fetch("APP_STORE_CONNECT_API_KEY_ID"),
+      issuer_id: ENV.fetch("APP_STORE_CONNECT_API_ISSUER_ID"),
+      key_content: Base64.decode64(ENV.fetch("APP_STORE_CONNECT_API_KEY_BASE64"))
+    )
+
+    pilot(
+      ipa: ipa_path,
+      api_key: api_key,
+      changelog: release_notes.empty? ? nil : release_notes
+    )
+  end
+end

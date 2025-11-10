@@ -18,7 +18,7 @@ permissions:
 
 env:
   APP_SCHEME: TicketScannerApp
-  APP_PROJECT_PATH: app/TicketScannerApp/TicketScannerApp.xcodeproj
+  APP_PROJECT_PATH: TicketScannerApp/TicketScannerApp.xcodeproj
   APP_BUNDLE_ID: org.noahbrave.app.ticketscanner
 
 jobs:
@@ -43,11 +43,10 @@ jobs:
           APP_STORE_CONNECT_API_KEY_BASE64: ${{ secrets.APP_STORE_CONNECT_API_KEY_BASE64 }}
           IOS_DISTRIBUTION_CERT_BASE64: ${{ secrets.IOS_DISTRIBUTION_CERT_BASE64 }}
           IOS_DISTRIBUTION_CERT_PASSWORD: ${{ secrets.IOS_DISTRIBUTION_CERT_PASSWORD }}
-          IOS_PROVISIONING_PROFILE_BASE64: ${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}
           APPLE_TEAM_ID: ${{ vars.APPLE_TEAM_ID }}
         run: |
           missing=0
-          for var in APP_STORE_CONNECT_API_KEY_ID APP_STORE_CONNECT_API_ISSUER_ID APP_STORE_CONNECT_API_KEY_BASE64 IOS_DISTRIBUTION_CERT_BASE64 IOS_DISTRIBUTION_CERT_PASSWORD IOS_PROVISIONING_PROFILE_BASE64 APPLE_TEAM_ID; do
+          for var in APP_STORE_CONNECT_API_KEY_ID APP_STORE_CONNECT_API_ISSUER_ID APP_STORE_CONNECT_API_KEY_BASE64 IOS_DISTRIBUTION_CERT_BASE64 IOS_DISTRIBUTION_CERT_PASSWORD APPLE_TEAM_ID; do
             if [ -z "${!var}" ]; then
               echo "::error::Secret or variable $var is not configured."
               missing=1
@@ -75,111 +74,28 @@ jobs:
           p12-file-base64: ${{ secrets.IOS_DISTRIBUTION_CERT_BASE64 }}
           p12-password: ${{ secrets.IOS_DISTRIBUTION_CERT_PASSWORD }}
 
-      - name: Install provisioning profile
-        id: install_profile
-        env:
-          IOS_PROVISIONING_PROFILE_BASE64: ${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}
-        run: |
-          PROFILE_PATH="$RUNNER_TEMP/profile.mobileprovision"
-          echo "$IOS_PROVISIONING_PROFILE_BASE64" | base64 --decode > "$PROFILE_PATH"
-          security cms -D -i "$PROFILE_PATH" > "$RUNNER_TEMP/profile.plist"
-          PROFILE_UUID=$(/usr/libexec/PlistBuddy -c 'Print UUID' "$RUNNER_TEMP/profile.plist")
-          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
-          cp "$PROFILE_PATH" "$HOME/Library/MobileDevice/Provisioning Profiles/$PROFILE_UUID.mobileprovision"
-          echo "uuid=$PROFILE_UUID" >> "$GITHUB_OUTPUT"
+      - name: Install fastlane
+        run: sudo gem install fastlane --no-document
 
-      - name: Prepare App Store Connect API key
+      - name: Build and upload with fastlane
+        working-directory: app
         env:
+          APPLE_TEAM_ID: ${{ vars.APPLE_TEAM_ID }}
+          APP_SCHEME: ${{ env.APP_SCHEME }}
+          APP_PROJECT_PATH: ${{ env.APP_PROJECT_PATH }}
+          APP_BUNDLE_ID: ${{ env.APP_BUNDLE_ID }}
           APP_STORE_CONNECT_API_KEY_BASE64: ${{ secrets.APP_STORE_CONNECT_API_KEY_BASE64 }}
-          APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
-        run: |
-          mkdir -p ~/private_keys
-          echo "$APP_STORE_CONNECT_API_KEY_BASE64" | base64 --decode > ~/private_keys/AuthKey_${APP_STORE_CONNECT_API_KEY_ID}.p8
-          chmod 600 ~/private_keys/AuthKey_${APP_STORE_CONNECT_API_KEY_ID}.p8
-
-      - name: Archive app
-        env:
-          KEYCHAIN_PATH: ${{ steps.import_certificate.outputs.keychain-path }}
-          PROFILE_UUID: ${{ steps.install_profile.outputs.uuid }}
-          APPLE_TEAM_ID: ${{ vars.APPLE_TEAM_ID }}
-        run: |
-          set -eo pipefail
-          ARCHIVE_PATH="$RUNNER_TEMP/TicketScannerApp.xcarchive"
-          xcodebuild \
-            -project "$APP_PROJECT_PATH" \
-            -scheme "$APP_SCHEME" \
-            -configuration Release \
-            -archivePath "$ARCHIVE_PATH" \
-            -destination 'generic/platform=iOS' \
-            -skipMacroValidation \
-            -xcconfig app/TicketScannerApp/ci-signing.xcconfig \
-            "DEVELOPMENT_TEAM=$APPLE_TEAM_ID" \
-            "PROFILE_UUID=$PROFILE_UUID" \
-            archive
-          echo "ARCHIVE_PATH=$ARCHIVE_PATH" >> "$GITHUB_ENV"
-
-      - name: Export IPA
-        env:
-          APPLE_TEAM_ID: ${{ vars.APPLE_TEAM_ID }}
-          PROFILE_UUID: ${{ steps.install_profile.outputs.uuid }}
-        run: |
-          set -eo pipefail
-          EXPORT_OPTIONS="$RUNNER_TEMP/ExportOptions.plist"
-          EXPORT_PATH="$RUNNER_TEMP/export"
-          cat <<EOF > "$EXPORT_OPTIONS"
-          <?xml version="1.0" encoding="UTF-8"?>
-          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-          <plist version="1.0">
-          <dict>
-            <key>method</key>
-            <string>app-store</string>
-            <key>teamID</key>
-            <string>${APPLE_TEAM_ID}</string>
-            <key>signingStyle</key>
-            <string>manual</string>
-            <key>provisioningProfiles</key>
-            <dict>
-              <key>${APP_BUNDLE_ID}</key>
-              <string>${PROFILE_UUID}</string>
-            </dict>
-            <key>stripSwiftSymbols</key>
-            <true/>
-            <key>uploadSymbols</key>
-            <true/>
-            <key>compileBitcode</key>
-            <false/>
-          </dict>
-          </plist>
-          EOF
-          mkdir -p "$EXPORT_PATH"
-          xcodebuild -exportArchive \
-            -archivePath "$ARCHIVE_PATH" \
-            -exportPath "$EXPORT_PATH" \
-            -exportOptionsPlist "$EXPORT_OPTIONS"
-          IPA_FILE=$(ls "$EXPORT_PATH"/*.ipa)
-          echo "IPA_PATH=$IPA_FILE" >> "$GITHUB_ENV"
-
-      - name: Upload to TestFlight
-        env:
+          RELEASE_NOTES: ${{ github.event.inputs.release_notes || '' }}
           APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
           APP_STORE_CONNECT_API_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_ISSUER_ID }}
-          RELEASE_NOTES: ${{ github.event.inputs.release_notes }}
         run: |
           set -eo pipefail
-          if [ -n "$RELEASE_NOTES" ]; then
-            echo "Release notes provided; store them with the uploaded build in App Store Connect."
-          fi
-          xcrun altool \
-            --upload-app \
-            --type ios \
-            --file "$IPA_PATH" \
-            --apiKey "$APP_STORE_CONNECT_API_KEY_ID" \
-            --apiIssuer "$APP_STORE_CONNECT_API_ISSUER_ID"
+          fastlane ios testflight
 
       - name: Clean up keychain
         if: always()
         env:
-          KEYCHAIN_PATH: ${{ steps.import_certificate.outputs.keychain-path }}
+          KEYCHAIN_PATH: ${{ steps.import_certificate.outputs['keychain-path'] }}
         run: |
           if [ -n "$KEYCHAIN_PATH" ] && [ -f "$KEYCHAIN_PATH" ]; then
             security delete-keychain "$KEYCHAIN_PATH" || true

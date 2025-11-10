@@ -1,4 +1,0 @@
-CODE_SIGN_STYLE = Manual
-CODE_SIGN_IDENTITY[sdk=iphoneos*] = Apple Distribution
-PROVISIONING_PROFILE[sdk=iphoneos*] = $(PROFILE_UUID)
-PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*] = $(PROFILE_UUID)
