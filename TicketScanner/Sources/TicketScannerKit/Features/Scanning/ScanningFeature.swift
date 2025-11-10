@@ -9,14 +9,14 @@ public struct ScanningFeature {
   @ObservableState
   public struct State: Equatable {
     public var isScanning = false
-    public var lastScanResult: ScanResult?
     public var errorMessage: String?
-    public var isShowingResult = false
     public var currentScanner: User?
     public var stats = StatsFeature.State()
+    @Presents public var result: ScanResultFeature.State?
     @Shared(.appStorage(SharedStorageKey.tickets))
     var cachedTickets: [TicketDirectoryEntry] = []
     public var horseAudio = HorseAudioState()
+    public var requestedOrderNumbers: Set<String> = []
 
     public init() {}
   }
@@ -26,7 +26,6 @@ public struct ScanningFeature {
     case stopScanning
     case barcodeScanned(String)
     case scanTicketResponse(TaskResult<ScanTicketResponse>)
-    case dismissResult
     case clearError
     case setCurrentScanner(User)
     case stats(StatsFeature.Action)
@@ -40,6 +39,7 @@ public struct ScanningFeature {
     case replayHorseAudio
     case audioPlaybackFinished
     case horseAudioPlaybackFailed(String)
+    case result(PresentationAction<ScanResultFeature.Action>)
   }
 
   @Dependency(\.barcodeScanner) var barcodeScanner
@@ -52,6 +52,9 @@ public struct ScanningFeature {
   public var body: some ReducerOf<Self> {
     Scope(state: \.stats, action: \.stats) {
       StatsFeature()
+    }
+    .ifLet(\.$result, action: \.result) {
+      ScanResultFeature()
     }
     Reduce { state, action in
       switch action {
@@ -109,7 +112,7 @@ public struct ScanningFeature {
           @Dependency(\.locationService) var locationService
           @Dependency(\.apiClient) var apiClient
           let location = await locationService.currentLocation()
-          let deviceInfo = await getDeviceInfo()
+          let deviceInfo = await DeviceInfoProvider.currentDescription()
 
           await send(
             .scanTicketResponse(
@@ -120,14 +123,14 @@ public struct ScanningFeature {
         }
 
       case .scanTicketResponse(.success(let response)):
-        state.lastScanResult = ScanResult(
-          success: response.success,
-          message: response.message,
-          ticket: response.ticket,
-          alreadyScanned: response.alreadyScanned,
-          previousScan: response.previousScan
-        )
-        state.isShowingResult = true
+        state.result = ScanResultFeature.State(
+          result: ScanResult(
+            success: response.success,
+            message: response.message,
+            ticket: response.ticket,
+            alreadyScanned: response.alreadyScanned,
+            previousScan: response.previousScan
+          ))
 
         let isSuccessful = response.success
         let feedbackEffect: Effect<Action> = .run { _ in
@@ -139,6 +142,20 @@ public struct ScanningFeature {
           }
         }
 
+        // Check if we should request horse audio for this order
+        let shouldRequestAudio: Bool
+        if let ticket = response.ticket,
+          let entry = state.cachedTickets.first(where: { $0.id == ticket.id }),
+          let orderNumber = entry.orderNumber
+        {
+          shouldRequestAudio = !state.requestedOrderNumbers.contains(orderNumber)
+          if shouldRequestAudio {
+            state.requestedOrderNumbers.insert(orderNumber)
+          }
+        } else {
+          shouldRequestAudio = response.ticket != nil
+        }
+
         // Reload stats and recent scans after successful scan
         let reloadEffects: Effect<Action> = .concatenate(
           .run { _ in
@@ -147,21 +164,23 @@ public struct ScanningFeature {
           },
           .send(.stats(.refresh(.scanUpdate))),
           .send(.loadAllTickets),
-          response.ticket.map { .send(.requestHorseAudio($0.id)) } ?? .none
+          shouldRequestAudio && response.ticket != nil
+            ? .send(.requestHorseAudio(response.ticket!.id))
+            : .none
         )
 
         return .merge(feedbackEffect, reloadEffects)
 
       case .scanTicketResponse(.failure(let error)):
         state.errorMessage = nil
-        state.lastScanResult = ScanResult(
-          success: false,
-          message: error.localizedDescription,
-          ticket: nil,
-          alreadyScanned: false,
-          previousScan: nil
-        )
-        state.isShowingResult = true
+        state.result = ScanResultFeature.State(
+          result: ScanResult(
+            success: false,
+            message: error.localizedDescription,
+            ticket: nil,
+            alreadyScanned: false,
+            previousScan: nil
+          ))
         let feedbackEffect: Effect<Action> = .run { _ in
           @Dependency(\.scanFeedbackClient) var scanFeedbackClient
           await scanFeedbackClient.playFailure()
@@ -171,12 +190,6 @@ public struct ScanningFeature {
           await barcodeScanner.stopScanning()
         }
         return .merge(feedbackEffect, stopEffect)
-
-      case .dismissResult:
-        state.isShowingResult = false
-        state.lastScanResult = nil
-        state.errorMessage = nil
-        return .none
 
       case .clearError:
         state.errorMessage = nil
@@ -257,6 +270,17 @@ public struct ScanningFeature {
         state.errorMessage = message
         return .none
 
+      case .result(.presented(.doneButtonTapped)):
+        state.result = nil
+        return .none
+
+      case .result(.dismiss):
+        state.result = nil
+        return .none
+
+      case .result:
+        return .none
+
       case .loadAllTickets:
         return .run { send in
           @Dependency(\.apiClient) var apiClient
@@ -278,12 +302,6 @@ public struct ScanningFeature {
       }
     }
   }
-}
-
-@MainActor
-private func getDeviceInfo() async -> String {
-  let device = UIDevice.current
-  return "\(device.model) - \(device.systemName) \(device.systemVersion)"
 }
 
 private enum HorseAudioPlaybackID: Hashable {

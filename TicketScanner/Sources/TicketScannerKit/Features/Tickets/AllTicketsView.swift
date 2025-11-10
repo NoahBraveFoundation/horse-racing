@@ -9,9 +9,48 @@ public struct AllTicketsView: View {
   }
 
   public var body: some View {
+    NavigationStack(path: $store.scope(state: \.path, action: \.path)) {
+      listContent
+    } destination: { store in
+      switch store.state {
+      case .detail:
+        if let store = store.scope(state: \.detail, action: \.detail) {
+          TicketDetailView(store: store)
+        }
+      }
+    }
+  }
+
+  private var listContent: some View {
     List {
+      Section {
+        Picker("Filter", selection: $store.filter) {
+          ForEach(AllTicketsFeature.State.Filter.allCases, id: \.self) { filter in
+            Text(filter.title).tag(filter)
+          }
+        }
+        .pickerStyle(.segmented)
+      }
+      .listRowInsets(EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0))
+      .listRowBackground(Color.clear)
+
       ForEach(store.filteredTickets) { entry in
-        ticketRow(for: entry)
+        Button {
+          store.send(.rowTapped(entry.id))
+        } label: {
+          ticketRow(for: entry)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+          if entry.ticket.isScanned {
+            Button(role: .destructive) {
+              store.send(.unscanTicket(entry.id))
+            } label: {
+              Label("Unscan", systemImage: "arrow.uturn.backward")
+            }
+          }
+        }
       }
     }
     .listStyle(.insetGrouped)
@@ -52,6 +91,12 @@ public struct AllTicketsView: View {
         "No tickets match “\(store.searchText)”",
         systemImage: "magnifyingglass"
       )
+    } else if store.filteredTickets.isEmpty {
+      ContentUnavailableView {
+        Label("No matches", systemImage: "slider.horizontal.3")
+      } description: {
+        Text("No \(store.filter.title.lowercased()) tickets match your filters.")
+      }
     }
   }
 

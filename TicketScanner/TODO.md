@@ -17,20 +17,20 @@
 - [x] Play success.wav and failure.wav sounds on ticket scan results.
 
 ## Phase 2
-- [ ] Investigate bug where sheet sometimes doesn't appear when scanning tickets. Use swift navigation from tca if not already.
-- [ ] Support searching ticket by id.
-- [ ] In all tickets view, show scanned status with green check. Allow filtering by scanned/unscanned/all.
-- [ ] Allow manual scan in all tickets view by adding detail view with button labeled "Scan" in navigation bar.
-- [ ] Implement location services to log where tickets are scanned. If possible, use apple maps to get location name.
+- [x] Investigate bug where sheet sometimes doesn't appear when scanning tickets. Use swift navigation from tca if not already.
+- [x] Support searching ticket by id.
+- [x] In all tickets view, show scanned status with green check. Allow filtering by scanned/unscanned/all.
+- [x] Allow manual scan in all tickets view by adding detail view with button labeled "Scan" in navigation bar.
+- [x] Implement location services to log where tickets are scanned. If possible, use apple maps to get location name.
 - [ ] Add swipe to unscan ticket in all tickets view and stats view.
-- [ ] Tapping ticket in stats view should open ticket detail view.
+- [x] Tapping ticket in stats view should open ticket detail view.
 - [ ] Ticket detail view should show scan history, attatched tickets, horse information, and any other relevant info.
 
 ## Phase 3
 - [ ] Add horse information to ticket details view (scanning and all tickets).
 - [ ] Add horse board like frontend web app with navigation button on all tickets view.
 - [ ] Add settings tab, allow turning on/off haptics, audio feedback, and audio clip greetings. Move logout button here.
-- [ ] Allow user to adjust seating assignment in ticket details view.
+- [ ] Allow user to adjust seating assignment in ticket details view. Push new view with editable text view.
 
 ## Phase 4
-- [ ] Publish to TestFlight on push to main branch if touches ticket sources.
+- [ ] Publish to TestFlight on push to main branch if touches ticket sources with github actions.

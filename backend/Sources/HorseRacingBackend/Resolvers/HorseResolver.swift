@@ -199,7 +199,12 @@ final class HorseResolver: @unchecked Sendable {
 
   func allTickets(request: Request, _: NoArguments) throws -> EventLoopFuture<[Ticket]> {
     guard let user = request.auth.get(User.self), user.isAdmin else { throw Abort(.forbidden) }
-    return Ticket.query(on: request.db).with(\.$owner).all()
+    return Ticket.query(on: request.db)
+      .with(\.$owner)
+      .with(\.$cart) { builder in
+        builder.with(\.$tickets)
+      }
+      .all()
   }
 
   func abandonedCarts(request: Request, _: NoArguments) throws -> EventLoopFuture<[Cart]> {
@@ -1319,7 +1324,7 @@ extension HorseResolver {
     }
 
     let totalScanned = TicketScan.query(on: request.db).count()
-    let totalTickets = Ticket.query(on: request.db).count()
+    let totalTickets = Ticket.query(on: request.db).filter(\.$state == .confirmed).count()
 
     let recentScans = TicketScan.query(on: request.db)
       .with(\.$ticket)

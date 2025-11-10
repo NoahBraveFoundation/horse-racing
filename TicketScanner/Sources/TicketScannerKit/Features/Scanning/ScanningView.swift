@@ -4,7 +4,6 @@ import SwiftUI
 
 public struct ScanningView: View {
   @Bindable var store: StoreOf<ScanningFeature>
-  @State private var showingResult = false
   let onLogout: () -> Void
 
   public init(store: StoreOf<ScanningFeature>, onLogout: @escaping () -> Void = {}) {
@@ -21,16 +20,10 @@ public struct ScanningView: View {
           Button("Logout", action: onLogout)
         }
       }
-      .sheet(isPresented: $showingResult) {
-        if let result = store.lastScanResult {
-          ScanResultView(result: result) {
-            showingResult = false
-            store.send(.dismissResult)
-          }
-        }
-      }
-      .onChange(of: store.isShowingResult) { _, newValue in
-        showingResult = newValue
+      .sheet(
+        store: store.scope(state: \.$result, action: \.result)
+      ) { store in
+        ScanResultView(store: store)
       }
       .alert("Error", isPresented: .constant(store.errorMessage != nil)) {
         Button("OK") {

@@ -1,4 +1,3 @@
-import Charts
 import ComposableArchitecture
 import SwiftUI
 
@@ -10,98 +9,68 @@ public struct StatsView: View {
   }
 
   public var body: some View {
-    ScrollView {
-      VStack(alignment: .leading, spacing: 20) {
-        if let stats = store.scanningStats {
-          Text("Scanning Statistics")
-            .font(.title2)
-            .fontWeight(.bold)
-          VStack(spacing: 16) {
-            HStack(spacing: 20) {
-              StatCard(
-                title: "Scanned",
-                value: "\(stats.totalScanned)",
-                color: .green
-              )
-
-              StatCard(
-                title: "Total",
-                value: "\(stats.totalTickets)",
-                color: .blue
-              )
-
-              StatCard(
-                title: "Completed",
-                value: "\(Int(Double(stats.totalScanned) / Double(stats.totalTickets) * 100))%",
-                color: .orange
-              )
-            }
-          }
-          .padding()
-          .background(Color(.systemGray6))
-          .cornerRadius(12)
-        }
-
-        VStack(alignment: .leading, spacing: 12) {
-          Text("Recent Scans")
-            .font(.title2)
-            .fontWeight(.bold)
-
-          let recentScans = store.recentScans
-
-          if recentScans.isEmpty {
-            Text("No recent scans")
-              .foregroundColor(.secondary)
-              .frame(maxWidth: .infinity, alignment: .center)
-              .padding()
-          } else {
-            LazyVStack(spacing: 8) {
-              ForEach(recentScans) { scan in
-                RecentScanRow(scan: scan)
-              }
-            }
-          }
-        }
-        .padding()
-        .background(Color(.systemGray6))
-        .cornerRadius(12)
+    NavigationStack(path: $store.scope(state: \.path, action: \.path)) {
+      ScrollView {
+        content
       }
-      .padding()
-    }
-    .refreshable {
-      await store.send(.refresh(.userInitiated))
-    }
-    .navigationTitle("Statistics")
-    .navigationBarTitleDisplayMode(.inline)
-    .toolbar {
-      ToolbarItem(placement: .navigationBarTrailing) {
-        if store.isLoading {
+      .refreshable {
+        await store.send(.refresh(.userInitiated)).finish()
+      }
+      .navigationTitle("Statistics")
+      .navigationBarTitleDisplayMode(.inline)
+      .alert("Error", isPresented: .constant(store.errorMessage != nil)) {
+        Button("OK") {
+          store.send(.clearError)
+        }
+      } message: {
+        Text(store.errorMessage ?? "")
+      }
+      .overlay(alignment: .top) {
+        if store.isLoading && store.scanningStats == nil {
           ProgressView()
-        } else {
-          Button {
-            store.send(.refresh(.userInitiated))
-          } label: {
-            Image(systemName: "arrow.clockwise")
-          }
-          .accessibilityLabel("Refresh statistics")
+            .padding()
         }
       }
-    }
-    .alert("Error", isPresented: .constant(store.errorMessage != nil)) {
-      Button("OK") {
-        store.send(.clearError)
+      .onAppear {
+        store.send(.onAppear)
       }
-    } message: {
-      Text(store.errorMessage ?? "")
+    } destination: { pathStore in
+      destinationView(for: pathStore)
     }
-    .overlay(alignment: .top) {
-      if store.isLoading && store.scanningStats == nil {
-        ProgressView()
-          .padding()
+  }
+
+  private var content: some View {
+    VStack(alignment: .leading, spacing: 20) {
+      statsSection
+      recentScansSection
+    }
+    .padding()
+  }
+
+  @ViewBuilder
+  private var statsSection: some View {
+    if let stats = store.scanningStats {
+      StatsOverviewSection(stats: stats)
+    }
+  }
+
+  private var recentScansSection: some View {
+    RecentScansSection(scans: store.recentScans) { id in
+      store.send(.openTicket(id))
+    } onUnscan: { id in
+      store.send(.unscanTicket(id))
+    }
+  }
+
+  @ViewBuilder
+  private func destinationView(
+    for store: Store<StatsFeature.Path.State, StatsFeature.Path.Action>
+  ) -> some View {
+    switch store.state {
+    case .detail:
+      if let store = store.scope(state: \.detail, action: \.detail) {
+        TicketDetailView(store: store)
       }
-    }
-    .onAppear {
-      store.send(.onAppear)
     }
   }
 }
@@ -165,6 +134,89 @@ struct RecentScanRow: View {
     .padding()
     .background(Color(.systemGray6))
     .cornerRadius(8)
+  }
+}
+
+private struct StatsOverviewSection: View {
+  let stats: ScanningStats
+
+  var body: some View {
+    VStack(alignment: .leading, spacing: 16) {
+      Text("Scanning Statistics")
+        .font(.title2)
+        .fontWeight(.bold)
+
+      HStack(spacing: 20) {
+        StatCard(
+          title: "Scanned",
+          value: "\(stats.totalScanned)",
+          color: .green
+        )
+
+        StatCard(
+          title: "Total",
+          value: "\(stats.totalTickets)",
+          color: .blue
+        )
+
+        let completion =
+          stats.totalTickets == 0
+          ? 0
+          : Int(Double(stats.totalScanned) / Double(stats.totalTickets) * 100)
+
+        StatCard(
+          title: "Completed",
+          value: "\(completion)%",
+          color: .orange
+        )
+      }
+    }
+    .padding()
+    .background(Color(.systemGray6))
+    .cornerRadius(12)
+  }
+}
+
+private struct RecentScansSection: View {
+  let scans: [TicketScan]
+  let onSelect: (UUID) -> Void
+  let onUnscan: (UUID) -> Void
+
+  var body: some View {
+    VStack(alignment: .leading, spacing: 12) {
+      Text("Recent Scans")
+        .font(.title2)
+        .fontWeight(.bold)
+
+      if scans.isEmpty {
+        Text("No recent scans")
+          .foregroundColor(.secondary)
+          .frame(maxWidth: .infinity, alignment: .center)
+          .padding()
+      } else {
+        LazyVStack(spacing: 8) {
+          ForEach(scans) { scan in
+            Button {
+              onSelect(scan.ticket.id)
+            } label: {
+              RecentScanRow(scan: scan)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+              Button(role: .destructive) {
+                onUnscan(scan.ticket.id)
+              } label: {
+                Label("Unscan", systemImage: "arrow.uturn.backward")
+              }
+            }
+          }
+        }
+      }
+    }
+    .padding()
+    .background(Color(.systemGray6))
+    .cornerRadius(12)
   }
 }
 

@@ -1,31 +1,30 @@
+import ComposableArchitecture
 import SwiftUI
 
 public struct ScanResultView: View {
-  let result: ScanResult
-  let onDismiss: () -> Void
+  @Bindable var store: StoreOf<ScanResultFeature>
 
-  public init(result: ScanResult, onDismiss: @escaping () -> Void) {
-    self.result = result
-    self.onDismiss = onDismiss
+  public init(store: StoreOf<ScanResultFeature>) {
+    self.store = store
   }
 
   public var body: some View {
     NavigationView {
       VStack(spacing: 20) {
         // Status Icon
-        Image(systemName: result.success ? "checkmark.circle.fill" : "xmark.circle.fill")
+        Image(systemName: store.result.success ? "checkmark.circle.fill" : "xmark.circle.fill")
           .font(.system(size: 60))
-          .foregroundColor(result.success ? .green : .red)
+          .foregroundColor(store.result.success ? .green : .red)
 
         // Message
-        Text(result.message)
+        Text(store.result.message)
           .font(.headline)
-          .foregroundColor(result.success ? .primary : .red)
+          .foregroundColor(store.result.success ? .primary : .red)
           .multilineTextAlignment(.center)
           .padding(.horizontal)
 
         // Ticket Info
-        if let ticket = result.ticket {
+        if let ticket = store.result.ticket {
           VStack(alignment: .leading, spacing: 8) {
             Text("Ticket Details")
               .font(.headline)
@@ -68,7 +67,7 @@ public struct ScanResultView: View {
         }
 
         // Previous Scan Info
-        if result.alreadyScanned, let previousScan = result.previousScan {
+        if store.result.alreadyScanned, let previousScan = store.result.previousScan {
           VStack(alignment: .leading, spacing: 8) {
             Text("Previously Scanned")
               .font(.headline)
@@ -110,7 +109,7 @@ public struct ScanResultView: View {
       .toolbar {
         ToolbarItem(placement: .navigationBarTrailing) {
           Button("Done") {
-            onDismiss()
+            store.send(.doneButtonTapped)
           }
         }
       }
@@ -120,23 +119,28 @@ public struct ScanResultView: View {
 
 #Preview {
   ScanResultView(
-    result: ScanResult(
-      success: true,
-      message: "Ticket scanned successfully",
-      ticket: Ticket(
-        id: UUID(),
-        attendeeFirst: "John",
-        attendeeLast: "Doe",
-        seatingPreference: nil,
-        seatAssignment: "Table 5, Seat 3",
-        state: .confirmed,
-        scannedAt: Date(),
-        scannedByUserID: UUID(),
-        scanLocation: "Main Entrance"
-      ),
-      alreadyScanned: false,
-      previousScan: nil
-    ),
-    onDismiss: {}
+    store: Store(
+      initialState: ScanResultFeature.State(
+        result: ScanResult(
+          success: true,
+          message: "Ticket scanned successfully",
+          ticket: Ticket(
+            id: UUID(),
+            attendeeFirst: "John",
+            attendeeLast: "Doe",
+            seatingPreference: nil,
+            seatAssignment: "Table 5, Seat 3",
+            state: .confirmed,
+            scannedAt: Date(),
+            scannedByUserID: UUID(),
+            scanLocation: "Main Entrance"
+          ),
+          alreadyScanned: false,
+          previousScan: nil
+        )
+      )
+    ) {
+      ScanResultFeature()
+    }
   )
 }

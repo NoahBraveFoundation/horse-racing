@@ -42,7 +42,7 @@ final class ApolloClientService: @unchecked Sendable {
 
   func fetch<Query: GraphQLQuery>(
     query: Query,
-    cachePolicy: CachePolicy = .returnCacheDataElseFetch
+    cachePolicy: CachePolicy = .fetchIgnoringCacheCompletely
   ) async throws -> Query.Data {
     try await withCheckedThrowingContinuation { continuation in
       apollo.fetch(query: query, cachePolicy: cachePolicy) { result in

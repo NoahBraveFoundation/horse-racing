@@ -37,6 +37,8 @@
 	<array>
 		<string>arm64</string>
 	</array>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>We use your location to record where tickets are scanned at the event venue.</string>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>

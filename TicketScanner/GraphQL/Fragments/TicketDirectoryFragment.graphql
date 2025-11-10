@@ -6,4 +6,14 @@ fragment TicketDirectoryFragment on Ticket {
     lastName
     email
   }
+  cart {
+    id
+    orderNumber
+    tickets {
+      id
+      attendeeFirst
+      attendeeLast
+      scannedAt
+    }
+  }
 }

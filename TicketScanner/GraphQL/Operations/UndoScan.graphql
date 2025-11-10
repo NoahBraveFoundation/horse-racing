@@ -1,0 +1,13 @@
+mutation UndoScan($scanId: UUID!) {
+  undoScan(scanId: $scanId) {
+    success
+    message
+    ticket {
+      ...TicketFragment
+    }
+    alreadyScanned
+    previousScan {
+      ...TicketScanFragment
+    }
+  }
+}

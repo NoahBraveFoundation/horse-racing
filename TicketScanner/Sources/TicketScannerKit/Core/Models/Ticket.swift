@@ -19,6 +19,12 @@ public struct Ticket: Codable, Identifiable, Equatable, Sendable {
     scannedAt != nil
   }
 
+  public var shortCode: String {
+    let sanitized = id.uuidString.replacingOccurrences(of: "-", with: "")
+    return String(sanitized.prefix(5))
+      .uppercased()
+  }
+
   public init(
     id: UUID, attendeeFirst: String, attendeeLast: String, seatingPreference: String? = nil,
     seatAssignment: String? = nil, state: TicketState, scannedAt: Date? = nil,

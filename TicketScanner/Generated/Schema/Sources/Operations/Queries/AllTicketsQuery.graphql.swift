@@ -38,6 +38,7 @@ public class AllTicketsQuery: GraphQLQuery {
       ] }
 
       public var owner: Owner { __data["owner"] }
+      public var cart: Cart? { __data["cart"] }
       public var id: HorseRacingAPI.UUID? { __data["id"] }
       public var attendeeFirst: String { __data["attendeeFirst"] }
       public var attendeeLast: String { __data["attendeeLast"] }
@@ -56,6 +57,8 @@ public class AllTicketsQuery: GraphQLQuery {
       }
 
       public typealias Owner = TicketDirectoryFragment.Owner
+
+      public typealias Cart = TicketDirectoryFragment.Cart
     }
   }
 }

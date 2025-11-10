@@ -78,6 +78,7 @@ let horseRacingSchema = try! Graphiti.Schema<HorseResolver, Request> {
     Field("scanLocation", at: \.scanLocation)
     Field("scans", with: \.$scans)
     Field("costCents", at: HorseResolver.ticketCost)
+    Field("cart", with: \.$cart)
   }
 
   // Horse type

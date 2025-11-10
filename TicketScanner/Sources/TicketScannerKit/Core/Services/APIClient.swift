@@ -8,6 +8,7 @@ struct APIClient {
   var sendMagicLink: @Sendable (String) async throws -> Void
   var validateToken: @Sendable (String) async throws -> User
   var scanTicket: @Sendable (String, String?, String?) async throws -> ScanTicketResponse
+  var undoScan: @Sendable (HorseRacingAPI.UUID) async throws -> ScanTicketResponse
   var getScanningStats: @Sendable () async throws -> ScanningStats
   var getRecentScans: @Sendable (Int) async throws -> [TicketScan]
   var getTicketByBarcode: @Sendable (String) async throws -> Ticket?
@@ -74,19 +75,34 @@ extension APIClient: DependencyKey {
 
       let result = try await ApolloClientService.shared.perform(mutation: mutation)
 
-      guard result.scanTicket.success else {
-        throw APIClientError.graphQLError(result.scanTicket.message)
-      }
+      let payload = result.scanTicket
 
       // Convert GraphQL response to our local models
-      let ticket = result.scanTicket.ticket?.toLocal()
-      let previousScan = result.scanTicket.previousScan?.toLocal()
+      let ticket = payload.ticket?.toLocal()
+      let previousScan = payload.previousScan?.toLocal()
 
       return ScanTicketResponse(
-        success: result.scanTicket.success,
-        message: result.scanTicket.message,
+        success: payload.success,
+        message: payload.message,
         ticket: ticket,
-        alreadyScanned: result.scanTicket.alreadyScanned,
+        alreadyScanned: payload.alreadyScanned,
+        previousScan: previousScan
+      )
+    },
+
+    undoScan: { scanId in
+      let mutation = UndoScanMutation(scanId: scanId)
+      let result = try await ApolloClientService.shared.perform(mutation: mutation)
+      let payload = result.undoScan
+
+      let ticket = payload.ticket?.fragments.ticketFragment.toLocal()
+      let previousScan = payload.previousScan?.fragments.ticketScanFragment.toLocal()
+
+      return ScanTicketResponse(
+        success: payload.success,
+        message: payload.message,
+        ticket: ticket,
+        alreadyScanned: payload.alreadyScanned,
         previousScan: previousScan
       )
     },
@@ -337,7 +353,34 @@ extension TicketDirectoryFragment {
   func toDirectoryEntry() -> TicketDirectoryEntry? {
     guard let ticket = fragments.ticketFragment.toLocal() else { return nil }
     let ownerName = "\(owner.firstName) \(owner.lastName)"
-    return TicketDirectoryEntry(ticket: ticket, ownerName: ownerName, ownerEmail: owner.email)
+    let orderNumber = cart?.orderNumber
+    let associatedTickets =
+      cart?.tickets
+      .compactMap { $0.toAssociatedTicket() }
+      .filter { $0.id != ticket.id } ?? []
+
+    return TicketDirectoryEntry(
+      ticket: ticket,
+      ownerName: ownerName,
+      ownerEmail: owner.email,
+      orderNumber: orderNumber,
+      associatedTickets: associatedTickets
+    )
+  }
+}
+
+extension TicketDirectoryFragment.Cart.Ticket {
+  fileprivate func toAssociatedTicket() -> TicketDirectoryEntry.AssociatedTicket? {
+    guard let idStr = id, let uuid = UUID(uuidString: idStr) else {
+      return nil
+    }
+
+    return TicketDirectoryEntry.AssociatedTicket(
+      id: uuid,
+      attendeeFirst: attendeeFirst,
+      attendeeLast: attendeeLast,
+      scannedAt: APIDateParser.parse(scannedAt)
+    )
   }
 }
 
