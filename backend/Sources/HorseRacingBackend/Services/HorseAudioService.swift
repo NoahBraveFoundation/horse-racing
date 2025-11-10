@@ -113,9 +113,9 @@ struct HorseAudioService {
     logger: Logger
   ) async throws -> String {
     let systemInstructions = """
-      You craft tight, energetic arena-style announcements for charity horse racing events.
+      You craft tight, energetic arena-style announcements for the NoahBRAVE horse racing event.
       Keep scripts between 5 and 12 seconds when spoken.
-      Highlight names with excitement, celebrate supporters, and embrace goofy horse racing vibes.
+      Highlight names with excitement, celebrate supporters.
       """
     let chatQuery = ChatQuery(
       messages: [

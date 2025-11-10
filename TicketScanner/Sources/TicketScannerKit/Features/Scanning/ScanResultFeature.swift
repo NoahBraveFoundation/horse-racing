@@ -7,10 +7,12 @@ public struct ScanResultFeature {
   public struct State: Equatable, Identifiable {
     public let id: UUID
     public var result: ScanResult
+    public var isLoading: Bool
 
-    public init(id: UUID = UUID(), result: ScanResult) {
+    public init(id: UUID = UUID(), result: ScanResult, isLoading: Bool = false) {
       self.id = id
       self.result = result
+      self.isLoading = isLoading
     }
   }
 

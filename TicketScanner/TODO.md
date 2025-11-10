@@ -22,15 +22,16 @@
 - [x] In all tickets view, show scanned status with green check. Allow filtering by scanned/unscanned/all.
 - [x] Allow manual scan in all tickets view by adding detail view with button labeled "Scan" in navigation bar.
 - [x] Implement location services to log where tickets are scanned. If possible, use apple maps to get location name.
-- [ ] Add swipe to unscan ticket in all tickets view and stats view.
+- [x] Add swipe to unscan ticket in all tickets view and stats view.
 - [x] Tapping ticket in stats view should open ticket detail view.
-- [ ] Ticket detail view should show scan history, attatched tickets, horse information, and any other relevant info.
 
 ## Phase 3
+- [ ] Ticket detail view should show scan history, attatched tickets, horse information, and any other relevant info.
 - [ ] Add horse information to ticket details view (scanning and all tickets).
 - [ ] Add horse board like frontend web app with navigation button on all tickets view.
 - [ ] Add settings tab, allow turning on/off haptics, audio feedback, and audio clip greetings. Move logout button here.
 - [ ] Allow user to adjust seating assignment in ticket details view. Push new view with editable text view.
+- [ ] Add a TCA logger for state and aciotns for easier debugging.
 
 ## Phase 4
 - [ ] Publish to TestFlight on push to main branch if touches ticket sources with github actions.

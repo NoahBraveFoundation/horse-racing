@@ -10,8 +10,37 @@ public struct StatsView: View {
 
   public var body: some View {
     NavigationStack(path: $store.scope(state: \.path, action: \.path)) {
-      ScrollView {
-        content
+      List {
+        // Stats Section
+        if let stats = store.state.scanningStats {
+          StatsOverviewSection(stats: stats)
+            .listRowInsets(EdgeInsets())
+            .listRowBackground(Color.clear)
+        }
+
+        // Recent Scans Section
+        Section(header: Text("Recent Scans")) {
+          if store.recentScans.isEmpty {
+            Text("No recent scans")
+              .foregroundColor(.secondary)
+          } else {
+            ForEach(store.recentScans) { scan in
+              Button {
+                store.send(.openTicket(scan.ticket.id))
+              } label: {
+                RecentScanRow(scan: scan)
+              }
+              .buttonStyle(.plain)
+              .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                Button(role: .destructive) {
+                  store.send(.unscanTicket(scan.ticket.id))
+                } label: {
+                  Label("Unscan", systemImage: "arrow.uturn.backward")
+                }
+              }
+            }
+          }
+        }
       }
       .refreshable {
         await store.send(.refresh(.userInitiated)).finish()
@@ -36,29 +65,6 @@ public struct StatsView: View {
       }
     } destination: { pathStore in
       destinationView(for: pathStore)
-    }
-  }
-
-  private var content: some View {
-    VStack(alignment: .leading, spacing: 20) {
-      statsSection
-      recentScansSection
-    }
-    .padding()
-  }
-
-  @ViewBuilder
-  private var statsSection: some View {
-    if let stats = store.scanningStats {
-      StatsOverviewSection(stats: stats)
-    }
-  }
-
-  private var recentScansSection: some View {
-    RecentScansSection(scans: store.recentScans) { id in
-      store.send(.openTicket(id))
-    } onUnscan: { id in
-      store.send(.unscanTicket(id))
     }
   }
 
@@ -146,7 +152,7 @@ private struct StatsOverviewSection: View {
         .font(.title2)
         .fontWeight(.bold)
 
-      HStack(spacing: 20) {
+      HStack(spacing: 8) {
         StatCard(
           title: "Scanned",
           value: "\(stats.totalScanned)",
@@ -169,49 +175,6 @@ private struct StatsOverviewSection: View {
           value: "\(completion)%",
           color: .orange
         )
-      }
-    }
-    .padding()
-    .background(Color(.systemGray6))
-    .cornerRadius(12)
-  }
-}
-
-private struct RecentScansSection: View {
-  let scans: [TicketScan]
-  let onSelect: (UUID) -> Void
-  let onUnscan: (UUID) -> Void
-
-  var body: some View {
-    VStack(alignment: .leading, spacing: 12) {
-      Text("Recent Scans")
-        .font(.title2)
-        .fontWeight(.bold)
-
-      if scans.isEmpty {
-        Text("No recent scans")
-          .foregroundColor(.secondary)
-          .frame(maxWidth: .infinity, alignment: .center)
-          .padding()
-      } else {
-        LazyVStack(spacing: 8) {
-          ForEach(scans) { scan in
-            Button {
-              onSelect(scan.ticket.id)
-            } label: {
-              RecentScanRow(scan: scan)
-                .contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
-            .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-              Button(role: .destructive) {
-                onUnscan(scan.ticket.id)
-              } label: {
-                Label("Unscan", systemImage: "arrow.uturn.backward")
-              }
-            }
-          }
-        }
       }
     }
     .padding()

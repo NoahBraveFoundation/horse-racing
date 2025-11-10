@@ -104,6 +104,9 @@ public struct AppFeature {
           }
         }
 
+      case .scanning(.scanTicketResponse):
+        return .send(.stats(.refresh(.scanUpdate)))
+
       default:
         return .none
       }

@@ -11,7 +11,6 @@ public struct ScanningFeature {
     public var isScanning = false
     public var errorMessage: String?
     public var currentScanner: User?
-    public var stats = StatsFeature.State()
     @Presents public var result: ScanResultFeature.State?
     @Shared(.appStorage(SharedStorageKey.tickets))
     var cachedTickets: [TicketDirectoryEntry] = []
@@ -28,7 +27,6 @@ public struct ScanningFeature {
     case scanTicketResponse(TaskResult<ScanTicketResponse>)
     case clearError
     case setCurrentScanner(User)
-    case stats(StatsFeature.Action)
     case loadAllTickets
     case allTicketsResponse(TaskResult<[TicketDirectoryEntry]>)
     case checkCameraPermissions
@@ -50,12 +48,6 @@ public struct ScanningFeature {
   public init() {}
 
   public var body: some ReducerOf<Self> {
-    Scope(state: \.stats, action: \.stats) {
-      StatsFeature()
-    }
-    .ifLet(\.$result, action: \.result) {
-      ScanResultFeature()
-    }
     Reduce { state, action in
       switch action {
       case .checkCameraPermissions:
@@ -108,6 +100,16 @@ public struct ScanningFeature {
 
       case .barcodeScanned(let barcode):
         state.isScanning = false
+        state.result = ScanResultFeature.State(
+          result: ScanResult(
+            success: true,
+            message: "Checking ticket...",
+            ticket: nil,
+            alreadyScanned: false,
+            previousScan: nil
+          ),
+          isLoading: true
+        )
         return .run { send in
           @Dependency(\.locationService) var locationService
           @Dependency(\.apiClient) var apiClient
@@ -162,7 +164,6 @@ public struct ScanningFeature {
             @Dependency(\.barcodeScanner) var barcodeScanner
             await barcodeScanner.stopScanning()
           },
-          .send(.stats(.refresh(.scanUpdate))),
           .send(.loadAllTickets),
           shouldRequestAudio && response.ticket != nil
             ? .send(.requestHorseAudio(response.ticket!.id))
@@ -197,9 +198,6 @@ public struct ScanningFeature {
 
       case .setCurrentScanner(let scanner):
         state.currentScanner = scanner
-        return .none
-
-      case .stats:
         return .none
 
       case .requestHorseAudio(let ticketId):
@@ -300,6 +298,9 @@ public struct ScanningFeature {
         state.errorMessage = error.localizedDescription
         return .none
       }
+    }
+    .ifLet(\.$result, action: \.result) {
+      ScanResultFeature()
     }
   }
 }

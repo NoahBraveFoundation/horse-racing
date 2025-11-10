@@ -192,7 +192,6 @@ extension BarcodeScannerManager: @MainActor AVCaptureMetadataOutputObjectsDelega
 
         // Immediately stop capture to reduce duplicate delegate calls
         captureSession?.stopRunning()
-        isScanning = false
 
         Task { [barcodeCallback, logger] in
           logger.info("Barcode scanned: \(stringValue)")

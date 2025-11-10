@@ -34,7 +34,6 @@ public struct ScanningView: View {
       }
       .onAppear {
         store.send(.checkCameraPermissions)
-        store.send(.stats(.onAppear))
       }
   }
 
@@ -71,44 +70,6 @@ public struct ScanningView: View {
       }
       .buttonStyle(.borderedProminent)
       .controlSize(.large)
-
-      // Stats Summary
-      if let stats = store.stats.scanningStats {
-        let percentage =
-          stats.totalTickets > 0
-          ? Int(Double(stats.totalScanned) / Double(stats.totalTickets) * 100) : 0
-        HStack(spacing: 20) {
-          VStack {
-            Text("\(stats.totalScanned)")
-              .font(.title2)
-              .fontWeight(.bold)
-            Text("Scanned")
-              .font(.caption)
-              .foregroundColor(.secondary)
-          }
-
-          VStack {
-            Text("\(stats.totalTickets)")
-              .font(.title2)
-              .fontWeight(.bold)
-            Text("Total")
-              .font(.caption)
-              .foregroundColor(.secondary)
-          }
-
-          VStack {
-            Text("\(percentage)%")
-              .font(.title2)
-              .fontWeight(.bold)
-            Text("Complete")
-              .font(.caption)
-              .foregroundColor(.secondary)
-          }
-        }
-        .padding()
-        .background(Color(.systemGray6))
-        .cornerRadius(12)
-      }
       Spacer()
     }
     .overlay(alignment: .bottom) {

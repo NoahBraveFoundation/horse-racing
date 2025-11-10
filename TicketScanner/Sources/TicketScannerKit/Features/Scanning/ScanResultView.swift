@@ -11,20 +11,31 @@ public struct ScanResultView: View {
   public var body: some View {
     NavigationView {
       VStack(spacing: 20) {
-        // Status Icon
-        Image(systemName: store.result.success ? "checkmark.circle.fill" : "xmark.circle.fill")
-          .font(.system(size: 60))
-          .foregroundColor(store.result.success ? .green : .red)
+        if store.isLoading {
+          ProgressView()
+            .progressViewStyle(.circular)
+            .scaleEffect(1.4)
 
-        // Message
-        Text(store.result.message)
-          .font(.headline)
-          .foregroundColor(store.result.success ? .primary : .red)
-          .multilineTextAlignment(.center)
-          .padding(.horizontal)
+          Text(store.result.message)
+            .font(.headline)
+            .multilineTextAlignment(.center)
+            .padding(.horizontal)
+        } else {
+          // Status Icon
+          Image(systemName: store.result.success ? "checkmark.circle.fill" : "xmark.circle.fill")
+            .font(.system(size: 60))
+            .foregroundColor(store.result.success ? .green : .red)
+
+          // Message
+          Text(store.result.message)
+            .font(.headline)
+            .foregroundColor(store.result.success ? .primary : .red)
+            .multilineTextAlignment(.center)
+            .padding(.horizontal)
+        }
 
         // Ticket Info
-        if let ticket = store.result.ticket {
+        if !store.isLoading, let ticket = store.result.ticket {
           VStack(alignment: .leading, spacing: 8) {
             Text("Ticket Details")
               .font(.headline)
@@ -67,7 +78,9 @@ public struct ScanResultView: View {
         }
 
         // Previous Scan Info
-        if store.result.alreadyScanned, let previousScan = store.result.previousScan {
+        if !store.isLoading, store.result.alreadyScanned,
+          let previousScan = store.result.previousScan
+        {
           VStack(alignment: .leading, spacing: 8) {
             Text("Previously Scanned")
               .font(.headline)
@@ -108,8 +121,10 @@ public struct ScanResultView: View {
       .navigationBarTitleDisplayMode(.inline)
       .toolbar {
         ToolbarItem(placement: .navigationBarTrailing) {
-          Button("Done") {
-            store.send(.doneButtonTapped)
+          if !store.isLoading {
+            Button("Done") {
+              store.send(.doneButtonTapped)
+            }
           }
         }
       }

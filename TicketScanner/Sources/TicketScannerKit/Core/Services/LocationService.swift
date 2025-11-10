@@ -5,17 +5,27 @@ import Foundation
 struct LocationService {
   var currentLocation: @Sendable () async -> String?
   var requestAuthorization: @Sendable () async -> Bool
+  var preWarm: @Sendable () async -> Void
 }
 
 extension LocationService: DependencyKey {
   static let liveValue: LocationService = {
-    let manager = LocationManager()
+    @MainActor
+    final class ManagerHolder {
+      static let shared = ManagerHolder()
+      let manager = LocationManager()
+      private init() {}
+    }
+
     return LocationService(
       currentLocation: {
-        await manager.getCurrentLocationName()
+        await ManagerHolder.shared.manager.getCurrentLocationName()
       },
       requestAuthorization: {
-        await manager.requestAuthorization()
+        await ManagerHolder.shared.manager.requestAuthorization()
+      },
+      preWarm: {
+        await ManagerHolder.shared.manager.preWarmLocation()
       }
     )
   }()
@@ -35,6 +45,12 @@ private final class LocationManager: NSObject, CLLocationManagerDelegate {
   private let manager = CLLocationManager()
   private var continuation: CheckedContinuation<CLLocation?, Never>?
   private var authContinuation: CheckedContinuation<Bool, Never>?
+  private var cachedLocation: CLLocation?
+  private var cachedLocationName: String?
+  private var cachedTimestamp: Date?
+  private let cacheTTL: TimeInterval = 60 * 10
+  private let cacheDistanceThreshold: CLLocationDistance = 25
+  private var refreshTask: Task<Void, Never>?
 
   override init() {
     super.init()
@@ -58,22 +74,77 @@ private final class LocationManager: NSObject, CLLocationManagerDelegate {
   }
 
   func getCurrentLocationName() async -> String? {
-    guard await requestAuthorization() else {
-      return nil
+    if let cachedName = cachedLocationName, let timestamp = cachedTimestamp {
+      let age = Date().timeIntervalSince(timestamp)
+      if age < cacheTTL {
+        return cachedName
+      }
+      if refreshTask == nil {
+        scheduleRefresh()
+      }
+      return cachedName
     }
 
-    guard let location = await getCurrentLocation() else {
-      return nil
-    }
-
-    return await reverseGeocode(location)
+    return await refreshLocation()
   }
 
   private func getCurrentLocation() async -> CLLocation? {
     await withCheckedContinuation { continuation in
+      // Resume any in-flight request to avoid leaking continuations if callers re-enter
+      if let pending = self.continuation {
+        pending.resume(returning: nil)
+      }
+
+      guard CLLocationManager.locationServicesEnabled() else {
+        continuation.resume(returning: nil)
+        return
+      }
+
       self.continuation = continuation
       manager.requestLocation()
     }
+  }
+
+  private func refreshLocation() async -> String? {
+    guard await requestAuthorization() else {
+      return cachedLocationName
+    }
+
+    guard let location = await getCurrentLocation() else {
+      return cachedLocationName
+    }
+
+    if let cachedLocation, let cachedName = cachedLocationName,
+      location.distance(from: cachedLocation) < cacheDistanceThreshold
+    {
+      cachedTimestamp = Date()
+      return cachedName
+    }
+
+    guard let name = await reverseGeocode(location) else {
+      return cachedLocationName
+    }
+
+    cachedLocation = location
+    cachedLocationName = name
+    cachedTimestamp = Date()
+    return name
+  }
+
+  private func scheduleRefresh() {
+    refreshTask?.cancel()
+    refreshTask = Task { @MainActor [weak self] in
+      guard let self else { return }
+      defer { self.refreshTask = nil }
+      _ = await self.refreshLocation()
+    }
+  }
+
+  func preWarmLocation() async {
+    if cachedLocationName != nil {
+      return
+    }
+    _ = await refreshLocation()
   }
 
   private func reverseGeocode(_ location: CLLocation) async -> String? {
