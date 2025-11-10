@@ -15,5 +15,27 @@ fragment TicketDirectoryFragment on Ticket {
       attendeeLast
       scannedAt
     }
+    horses {
+      id
+      horseName
+      ownershipLabel
+      state
+      owner {
+        id
+        firstName
+        lastName
+        email
+      }
+      lane {
+        id
+        number
+        round {
+          id
+          name
+          startAt
+          endAt
+        }
+      }
+    }
   }
 }

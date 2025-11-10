@@ -44,6 +44,7 @@ public struct AllTicketsFeature {
     case rowTapped(UUID)
     case unscanTicket(UUID)
     case unscanResponse(TaskResult<ScanTicketResponse>)
+    case showHorseBoard
     case path(StackAction<Path.State, Path.Action>)
   }
 
@@ -92,6 +93,10 @@ public struct AllTicketsFeature {
         if state.tickets.contains(where: { $0.id == id }) {
           state.path.append(.detail(TicketDetailFeature.State(ticketID: id)))
         }
+        return .none
+
+      case .showHorseBoard:
+        state.path.append(.horseBoard(HorseBoardFeature.State()))
         return .none
 
       case .unscanTicket(let ticketId):
@@ -173,15 +178,20 @@ extension AllTicketsFeature {
     @ObservableState
     public enum State: Equatable {
       case detail(TicketDetailFeature.State)
+      case horseBoard(HorseBoardFeature.State)
     }
 
     public enum Action: Equatable {
       case detail(TicketDetailFeature.Action)
+      case horseBoard(HorseBoardFeature.Action)
     }
 
     public var body: some ReducerOf<Self> {
       Scope(state: \.detail, action: \.detail) {
         TicketDetailFeature()
+      }
+      Scope(state: \.horseBoard, action: \.horseBoard) {
+        HorseBoardFeature()
       }
     }
   }

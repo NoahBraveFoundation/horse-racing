@@ -14,6 +14,7 @@ struct APIClient {
   var getTicketByBarcode: @Sendable (String) async throws -> Ticket?
   var getAllTickets: @Sendable () async throws -> [TicketDirectoryEntry]
   var requestHorseAudio: @Sendable (Foundation.UUID) async throws -> HorseAudioClip
+  var getHorseBoard: @Sendable () async throws -> [HorseBoardRound]
 }
 
 extension APIClient: DependencyKey {
@@ -163,6 +164,16 @@ extension APIClient: DependencyKey {
         throw APIClientError.invalidResponse
       }
       return clip
+    },
+
+    getHorseBoard: {
+      let query = HorseBoardQuery()
+      let result = try await ApolloClientService.shared.fetch(
+        query: query,
+        cachePolicy: .fetchIgnoringCacheData
+      )
+
+      return result.rounds.compactMap { $0.toLocal() }
     }
   )
 }
@@ -358,13 +369,15 @@ extension TicketDirectoryFragment {
       cart?.tickets
       .compactMap { $0.toAssociatedTicket() }
       .filter { $0.id != ticket.id } ?? []
+    let horses = cart?.horses.compactMap { $0.toDirectoryHorse() } ?? []
 
     return TicketDirectoryEntry(
       ticket: ticket,
       ownerName: ownerName,
       ownerEmail: owner.email,
       orderNumber: orderNumber,
-      associatedTickets: associatedTickets
+      associatedTickets: associatedTickets,
+      horses: horses
     )
   }
 }
@@ -380,6 +393,100 @@ extension TicketDirectoryFragment.Cart.Ticket {
       attendeeFirst: attendeeFirst,
       attendeeLast: attendeeLast,
       scannedAt: APIDateParser.parse(scannedAt)
+    )
+  }
+}
+
+extension TicketDirectoryFragment.Cart.Horse {
+  fileprivate func toDirectoryHorse() -> TicketDirectoryEntry.Horse? {
+    guard let horseIdStr = id, let horseId = UUID(uuidString: horseIdStr) else {
+      return nil
+    }
+
+    guard let roundIdStr = lane.round.id, let roundId = UUID(uuidString: roundIdStr) else {
+      return nil
+    }
+
+    guard let entryState = HorseEntryState(rawValue: state.rawValue) else {
+      return nil
+    }
+
+    let roundStart = APIDateParser.parse(lane.round.startAt)
+    let roundEnd = APIDateParser.parse(lane.round.endAt)
+
+    return TicketDirectoryEntry.Horse(
+      id: horseId,
+      horseName: horseName,
+      ownershipLabel: ownershipLabel,
+      state: entryState,
+      ownerEmail: owner.email,
+      ownerName: "\(owner.firstName) \(owner.lastName)",
+      laneNumber: lane.number,
+      roundId: roundId,
+      roundName: lane.round.name,
+      roundStartAt: roundStart,
+      roundEndAt: roundEnd
+    )
+  }
+}
+
+extension HorseBoardQuery.Data.Round {
+  func toLocal() -> HorseBoardRound? {
+    guard let roundIdStr = id, let roundId = UUID(uuidString: roundIdStr) else {
+      return nil
+    }
+
+    let roundStart = APIDateParser.parse(startAt)
+    let roundEnd = APIDateParser.parse(endAt)
+
+    let localLanes = lanes.compactMap { lane in
+      lane.toLocal()
+    }
+
+    return HorseBoardRound(
+      id: roundId,
+      name: name,
+      startAt: roundStart,
+      endAt: roundEnd,
+      lanes: localLanes
+    )
+  }
+}
+
+extension HorseBoardQuery.Data.Round.Lane {
+  fileprivate func toLocal() -> HorseBoardLane? {
+    guard let laneIdStr = id, let laneId = UUID(uuidString: laneIdStr) else {
+      return nil
+    }
+
+    let localHorse = horse?.toLocal()
+
+    return HorseBoardLane(
+      id: laneId,
+      number: number,
+      horse: localHorse
+    )
+  }
+}
+
+extension HorseBoardQuery.Data.Round.Lane.Horse {
+  fileprivate func toLocal() -> HorseBoardHorse? {
+    guard let horseIdStr = id, let horseId = UUID(uuidString: horseIdStr) else {
+      return nil
+    }
+
+    guard let entryState = HorseEntryState(rawValue: state.rawValue) else {
+      return nil
+    }
+
+    return HorseBoardHorse(
+      id: horseId,
+      horseName: horseName,
+      ownershipLabel: ownershipLabel,
+      state: entryState,
+      ownerFirstName: owner.firstName,
+      ownerLastName: owner.lastName,
+      ownerEmail: owner.email
     )
   }
 }

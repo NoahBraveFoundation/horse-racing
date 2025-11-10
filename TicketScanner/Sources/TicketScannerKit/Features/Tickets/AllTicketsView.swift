@@ -11,11 +11,24 @@ public struct AllTicketsView: View {
   public var body: some View {
     NavigationStack(path: $store.scope(state: \.path, action: \.path)) {
       listContent
+        .toolbar {
+          ToolbarItem(placement: .navigationBarTrailing) {
+            Button {
+              store.send(.showHorseBoard)
+            } label: {
+              Label("Horse Board", systemImage: "flag.checkered")
+            }
+          }
+        }
     } destination: { store in
       switch store.state {
       case .detail:
         if let store = store.scope(state: \.detail, action: \.detail) {
           TicketDetailView(store: store)
+        }
+      case .horseBoard:
+        if let store = store.scope(state: \.horseBoard, action: \.horseBoard) {
+          HorseBoardView(store: store)
         }
       }
     }

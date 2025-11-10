@@ -6,6 +6,7 @@ public struct TicketDirectoryEntry: Codable, Equatable, Identifiable, Sendable {
   public let ownerEmail: String
   public let orderNumber: String?
   public var associatedTickets: [AssociatedTicket] = []
+  public var horses: [Horse] = []
 
   public var id: UUID { ticket.id }
 
@@ -14,13 +15,16 @@ public struct TicketDirectoryEntry: Codable, Equatable, Identifiable, Sendable {
     ownerName: String,
     ownerEmail: String,
     orderNumber: String? = nil,
-    associatedTickets: [AssociatedTicket] = []
+    associatedTickets: [AssociatedTicket] = [],
+    horses: [Horse] = []
   ) {
     self.ticket = ticket
     self.ownerName = ownerName
     self.ownerEmail = ownerEmail
     self.orderNumber = orderNumber
     self.associatedTickets = associatedTickets
+    self.horses = horses
+    self.horses.sort(by: Self.horseSortComparator)
   }
 
   private enum CodingKeys: String, CodingKey {
@@ -29,6 +33,7 @@ public struct TicketDirectoryEntry: Codable, Equatable, Identifiable, Sendable {
     case ownerEmail
     case orderNumber
     case associatedTickets
+    case horses
   }
 
   public init(from decoder: Decoder) throws {
@@ -42,6 +47,12 @@ public struct TicketDirectoryEntry: Codable, Equatable, Identifiable, Sendable {
         [AssociatedTicket].self,
         forKey: .associatedTickets
       ) ?? []
+    horses =
+      try container.decodeIfPresent(
+        [Horse].self,
+        forKey: .horses
+      ) ?? []
+    horses.sort(by: TicketDirectoryEntry.horseSortComparator)
   }
 
   public func encode(to encoder: Encoder) throws {
@@ -52,6 +63,9 @@ public struct TicketDirectoryEntry: Codable, Equatable, Identifiable, Sendable {
     try container.encodeIfPresent(orderNumber, forKey: .orderNumber)
     if !associatedTickets.isEmpty {
       try container.encode(associatedTickets, forKey: .associatedTickets)
+    }
+    if !horses.isEmpty {
+      try container.encode(horses, forKey: .horses)
     }
   }
 
@@ -76,6 +90,14 @@ public struct TicketDirectoryEntry: Codable, Equatable, Identifiable, Sendable {
       || associatedTickets.contains {
         $0.attendeeName.lowercased().contains(lowerQuery)
           || $0.shortCode.lowercased().contains(lowerQuery)
+      }
+      || horses.contains {
+        $0.horseName.lowercased().contains(lowerQuery)
+          || $0.ownershipLabel.lowercased().contains(lowerQuery)
+          || $0.roundName.lowercased().contains(lowerQuery)
+          || "lane \($0.laneNumber)".lowercased().contains(lowerQuery)
+          || $0.ownerName.lowercased().contains(lowerQuery)
+          || $0.ownerEmail.lowercased().contains(lowerQuery)
       }
   }
 
@@ -104,6 +126,58 @@ public struct TicketDirectoryEntry: Codable, Equatable, Identifiable, Sendable {
       let sanitized = id.uuidString.replacingOccurrences(of: "-", with: "")
       return String(sanitized.prefix(5)).uppercased()
     }
+  }
+
+  public struct Horse: Codable, Equatable, Identifiable, Sendable {
+    public let id: UUID
+    public let horseName: String
+    public let ownershipLabel: String
+    public let state: HorseEntryState
+    public let ownerEmail: String
+    public let ownerName: String
+    public let laneNumber: Int
+    public let roundId: UUID
+    public let roundName: String
+    public let roundStartAt: Date?
+    public let roundEndAt: Date?
+
+    public init(
+      id: UUID,
+      horseName: String,
+      ownershipLabel: String,
+      state: HorseEntryState,
+      ownerEmail: String,
+      ownerName: String,
+      laneNumber: Int,
+      roundId: UUID,
+      roundName: String,
+      roundStartAt: Date?,
+      roundEndAt: Date?
+    ) {
+      self.id = id
+      self.horseName = horseName
+      self.ownershipLabel = ownershipLabel
+      self.state = state
+      self.ownerEmail = ownerEmail
+      self.ownerName = ownerName
+      self.laneNumber = laneNumber
+      self.roundId = roundId
+      self.roundName = roundName
+      self.roundStartAt = roundStartAt
+      self.roundEndAt = roundEndAt
+    }
+
+    public var idString: String {
+      id.uuidString
+    }
+  }
+
+  private static func horseSortComparator(_ lhs: Horse, _ rhs: Horse) -> Bool {
+    if lhs.roundName == rhs.roundName {
+      return lhs.laneNumber < rhs.laneNumber
+    }
+
+    return lhs.roundName.localizedCaseInsensitiveCompare(rhs.roundName) == .orderedAscending
   }
 
 }

@@ -1,0 +1,24 @@
+query HorseBoard {
+  rounds {
+    id
+    name
+    startAt
+    endAt
+    lanes {
+      id
+      number
+      horse {
+        id
+        horseName
+        ownershipLabel
+        state
+        owner {
+          id
+          firstName
+          lastName
+          email
+        }
+      }
+    }
+  }
+}

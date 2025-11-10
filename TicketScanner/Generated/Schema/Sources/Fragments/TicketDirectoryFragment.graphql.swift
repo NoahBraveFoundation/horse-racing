@@ -5,7 +5,7 @@
 
 public struct TicketDirectoryFragment: HorseRacingAPI.SelectionSet, Fragment {
   public static var fragmentDefinition: StaticString {
-    #"fragment TicketDirectoryFragment on Ticket { __typename ...TicketFragment owner { __typename id firstName lastName email } cart { __typename id orderNumber tickets { __typename id attendeeFirst attendeeLast scannedAt } } }"#
+    #"fragment TicketDirectoryFragment on Ticket { __typename ...TicketFragment owner { __typename id firstName lastName email } cart { __typename id orderNumber tickets { __typename id attendeeFirst attendeeLast scannedAt } horses { __typename id horseName ownershipLabel state owner { __typename id firstName lastName email } lane { __typename id number round { __typename id name startAt endAt } } } } }"#
   }
 
   public let __data: DataDict
@@ -72,11 +72,13 @@ public struct TicketDirectoryFragment: HorseRacingAPI.SelectionSet, Fragment {
       .field("id", HorseRacingAPI.UUID?.self),
       .field("orderNumber", String.self),
       .field("tickets", [Ticket].self),
+      .field("horses", [Horse].self),
     ] }
 
     public var id: HorseRacingAPI.UUID? { __data["id"] }
     public var orderNumber: String { __data["orderNumber"] }
     public var tickets: [Ticket] { __data["tickets"] }
+    public var horses: [Horse] { __data["horses"] }
 
     /// Cart.Ticket
     ///
@@ -98,6 +100,96 @@ public struct TicketDirectoryFragment: HorseRacingAPI.SelectionSet, Fragment {
       public var attendeeFirst: String { __data["attendeeFirst"] }
       public var attendeeLast: String { __data["attendeeLast"] }
       public var scannedAt: HorseRacingAPI.Date? { __data["scannedAt"] }
+    }
+
+    /// Cart.Horse
+    ///
+    /// Parent Type: `Horse`
+    public struct Horse: HorseRacingAPI.SelectionSet {
+      public let __data: DataDict
+      public init(_dataDict: DataDict) { __data = _dataDict }
+
+      public static var __parentType: any ApolloAPI.ParentType { HorseRacingAPI.Objects.Horse }
+      public static var __selections: [ApolloAPI.Selection] { [
+        .field("__typename", String.self),
+        .field("id", HorseRacingAPI.UUID?.self),
+        .field("horseName", String.self),
+        .field("ownershipLabel", String.self),
+        .field("state", GraphQLEnum<HorseRacingAPI.HorseEntryState>.self),
+        .field("owner", Owner.self),
+        .field("lane", Lane.self),
+      ] }
+
+      public var id: HorseRacingAPI.UUID? { __data["id"] }
+      public var horseName: String { __data["horseName"] }
+      public var ownershipLabel: String { __data["ownershipLabel"] }
+      public var state: GraphQLEnum<HorseRacingAPI.HorseEntryState> { __data["state"] }
+      public var owner: Owner { __data["owner"] }
+      public var lane: Lane { __data["lane"] }
+
+      /// Cart.Horse.Owner
+      ///
+      /// Parent Type: `User`
+      public struct Owner: HorseRacingAPI.SelectionSet {
+        public let __data: DataDict
+        public init(_dataDict: DataDict) { __data = _dataDict }
+
+        public static var __parentType: any ApolloAPI.ParentType { HorseRacingAPI.Objects.User }
+        public static var __selections: [ApolloAPI.Selection] { [
+          .field("__typename", String.self),
+          .field("id", HorseRacingAPI.UUID?.self),
+          .field("firstName", String.self),
+          .field("lastName", String.self),
+          .field("email", String.self),
+        ] }
+
+        public var id: HorseRacingAPI.UUID? { __data["id"] }
+        public var firstName: String { __data["firstName"] }
+        public var lastName: String { __data["lastName"] }
+        public var email: String { __data["email"] }
+      }
+
+      /// Cart.Horse.Lane
+      ///
+      /// Parent Type: `Lane`
+      public struct Lane: HorseRacingAPI.SelectionSet {
+        public let __data: DataDict
+        public init(_dataDict: DataDict) { __data = _dataDict }
+
+        public static var __parentType: any ApolloAPI.ParentType { HorseRacingAPI.Objects.Lane }
+        public static var __selections: [ApolloAPI.Selection] { [
+          .field("__typename", String.self),
+          .field("id", HorseRacingAPI.UUID?.self),
+          .field("number", Int.self),
+          .field("round", Round.self),
+        ] }
+
+        public var id: HorseRacingAPI.UUID? { __data["id"] }
+        public var number: Int { __data["number"] }
+        public var round: Round { __data["round"] }
+
+        /// Cart.Horse.Lane.Round
+        ///
+        /// Parent Type: `Round`
+        public struct Round: HorseRacingAPI.SelectionSet {
+          public let __data: DataDict
+          public init(_dataDict: DataDict) { __data = _dataDict }
+
+          public static var __parentType: any ApolloAPI.ParentType { HorseRacingAPI.Objects.Round }
+          public static var __selections: [ApolloAPI.Selection] { [
+            .field("__typename", String.self),
+            .field("id", HorseRacingAPI.UUID?.self),
+            .field("name", String.self),
+            .field("startAt", HorseRacingAPI.Date.self),
+            .field("endAt", HorseRacingAPI.Date.self),
+          ] }
+
+          public var id: HorseRacingAPI.UUID? { __data["id"] }
+          public var name: String { __data["name"] }
+          public var startAt: HorseRacingAPI.Date { __data["startAt"] }
+          public var endAt: HorseRacingAPI.Date { __data["endAt"] }
+        }
+      }
     }
   }
 }

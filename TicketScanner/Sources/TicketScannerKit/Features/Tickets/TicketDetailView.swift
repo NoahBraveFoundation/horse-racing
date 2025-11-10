@@ -1,4 +1,5 @@
 import ComposableArchitecture
+import Foundation
 import SwiftUI
 
 public struct TicketDetailView: View {
@@ -7,6 +8,13 @@ public struct TicketDetailView: View {
   public init(store: StoreOf<TicketDetailFeature>) {
     self.store = store
   }
+
+  private static let timeFormatter: DateFormatter = {
+    let formatter = DateFormatter()
+    formatter.dateStyle = .none
+    formatter.timeStyle = .short
+    return formatter
+  }()
 
   public var body: some View {
     List {
@@ -57,6 +65,40 @@ public struct TicketDetailView: View {
         Section("Owner") {
           LabeledContent("Name", value: entry.ownerName)
           LabeledContent("Email", value: entry.ownerEmail)
+        }
+      }
+
+      if !store.horses.isEmpty {
+        Section("Horses") {
+          ForEach(store.horses) { horse in
+            VStack(alignment: .leading, spacing: 6) {
+              HStack {
+                Text(horse.horseName)
+                  .font(.headline)
+                Spacer()
+                HorseStateBadge(state: horse.state)
+              }
+
+              Text(horse.ownershipLabel)
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+
+              Label("Lane \(horse.laneNumber)", systemImage: "flag.checkered")
+                .font(.caption)
+                .foregroundColor(.secondary)
+
+              Label(horse.roundName, systemImage: "clock")
+                .font(.caption)
+                .foregroundColor(.secondary)
+
+              if let range = formatRoundRange(for: horse) {
+                Text(range)
+                  .font(.caption2)
+                  .foregroundColor(.secondary)
+              }
+            }
+            .padding(.vertical, 6)
+          }
         }
       }
 
@@ -155,6 +197,50 @@ public struct TicketDetailView: View {
       }
     } message: {
       Text(store.errorMessage ?? "")
+    }
+  }
+
+  private func formatRoundRange(for horse: TicketDirectoryEntry.Horse) -> String? {
+    guard let start = horse.roundStartAt, let end = horse.roundEndAt else {
+      return nil
+    }
+
+    return "\(Self.timeFormatter.string(from: start)) — \(Self.timeFormatter.string(from: end))"
+  }
+}
+
+private struct HorseStateBadge: View {
+  let state: HorseEntryState
+
+  var body: some View {
+    Text(state.displayName)
+      .font(.caption2)
+      .padding(.horizontal, 8)
+      .padding(.vertical, 4)
+      .foregroundColor(foregroundColor)
+      .background(backgroundColor)
+      .clipShape(Capsule())
+  }
+
+  private var backgroundColor: Color {
+    switch state {
+    case .confirmed:
+      return Color.green.opacity(0.15)
+    case .pendingPayment:
+      return Color.orange.opacity(0.15)
+    case .onHold:
+      return Color.red.opacity(0.15)
+    }
+  }
+
+  private var foregroundColor: Color {
+    switch state {
+    case .confirmed:
+      return .green
+    case .pendingPayment:
+      return .orange
+    case .onHold:
+      return .red
     }
   }
 }

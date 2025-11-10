@@ -45,8 +45,14 @@ public struct TicketDetailFeature {
     }
 
     public var associatedTickets: [TicketDirectoryEntry.AssociatedTicket] {
-      entry?.associatedTickets.sorted { $0.attendeeName.localizedCaseInsensitiveCompare($1.attendeeName) == .orderedAscending }
+      entry?.associatedTickets.sorted {
+        $0.attendeeName.localizedCaseInsensitiveCompare($1.attendeeName) == .orderedAscending
+      }
         ?? []
+    }
+
+    public var horses: [TicketDirectoryEntry.Horse] {
+      entry?.horses ?? []
     }
   }
 
@@ -138,7 +144,8 @@ public struct TicketDetailFeature {
                 ownerName: existing.ownerName,
                 ownerEmail: existing.ownerEmail,
                 orderNumber: existing.orderNumber,
-                associatedTickets: existing.associatedTickets
+                associatedTickets: existing.associatedTickets,
+                horses: existing.horses
               )
             }
           }
@@ -184,7 +191,8 @@ public struct TicketDetailFeature {
                 ownerName: existing.ownerName,
                 ownerEmail: existing.ownerEmail,
                 orderNumber: existing.orderNumber,
-                associatedTickets: existing.associatedTickets
+                associatedTickets: existing.associatedTickets,
+                horses: existing.horses
               )
             }
           }
