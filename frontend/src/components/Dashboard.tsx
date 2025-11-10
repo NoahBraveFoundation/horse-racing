@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { graphql, useLazyLoadQuery, useMutation } from 'react-relay';
 import Header from './Header';
@@ -7,6 +7,7 @@ import { useLogout, getCurrentUser } from '../utils/auth'
 import DashboardBoard from './horse-board/DashboardBoard';
 import ErrorBoundary from './common/ErrorBoundary';
 import ErrorFallback from './common/ErrorFallback';
+import LoadingIndicator from './common/LoadingIndicator';
 import type { DashboardAdminQuery } from '../__generated__/DashboardAdminQuery.graphql';
 import type { DashboardSetPaymentReceivedMutation } from '../__generated__/DashboardSetPaymentReceivedMutation.graphql';
 import type { DashboardSetAdminMutation } from '../__generated__/DashboardSetAdminMutation.graphql';
@@ -85,6 +86,8 @@ const removeSponsorInterestMutation = graphql`
   }
 `;
 
+const TICKETS_PER_PAGE = 12;
+
 interface LocalUser {
   id: string;
   email: string;
@@ -97,6 +100,10 @@ export const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<LocalUser | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [authChecked, setAuthChecked] = useState(false);
+  const [isDataLoading, setIsDataLoading] = useState(true);
+  const [ticketStatusFilter, setTicketStatusFilter] = useState<'all' | 'active' | 'on_hold'>('all');
+  const [ticketPage, setTicketPage] = useState(1);
   const { logout } = useLogout();
 
   useEffect(() => {
@@ -112,11 +119,21 @@ export const Dashboard: React.FC = () => {
       return;
     }
     setUser(userData);
+    setAuthChecked(true);
   }, [navigate]);
 
   const data = useLazyLoadQuery<DashboardAdminQuery>(adminQuery, {}, { fetchKey: refreshKey, fetchPolicy: 'network-only' });
 
+  useEffect(() => {
+    setIsDataLoading(false);
+  }, [data]);
+
   const APPLE_REFERENCE_EPOCH_SECONDS = 978_307_200;
+
+  const normalizeTicketStatus = (value: string | null | undefined) => {
+    const normalized = (value ?? '').trim().toLowerCase();
+    return normalized || 'active';
+  };
 
   const normalizeNumericDate = (num: number): number | undefined => {
     if (!Number.isFinite(num)) {
@@ -175,6 +192,52 @@ export const Dashboard: React.FC = () => {
     return new Date(timestamp).toLocaleString();
   };
 
+  const ticketsWithStatus = useMemo(
+    () =>
+      data.allTickets.map(ticket => {
+        const status = normalizeTicketStatus(ticket.state);
+        return {
+          ticket,
+          status,
+          isOnHold: status === 'on_hold',
+        };
+      }),
+    [data.allTickets],
+  );
+
+  const filteredTickets = useMemo(() => {
+    if (ticketStatusFilter === 'all') {
+      return ticketsWithStatus;
+    }
+    if (ticketStatusFilter === 'on_hold') {
+      return ticketsWithStatus.filter(t => t.isOnHold);
+    }
+    return ticketsWithStatus.filter(t => !t.isOnHold);
+  }, [ticketStatusFilter, ticketsWithStatus]);
+
+  useEffect(() => {
+    setTicketPage(1);
+  }, [ticketStatusFilter]);
+
+  useEffect(() => {
+    const totalPages = Math.max(1, Math.ceil(filteredTickets.length / TICKETS_PER_PAGE));
+    setTicketPage(prev => Math.min(prev, totalPages));
+  }, [filteredTickets.length]);
+
+  const totalTicketPages = Math.max(1, Math.ceil(filteredTickets.length / TICKETS_PER_PAGE));
+  const currentTicketPage = Math.min(ticketPage, totalTicketPages);
+  const paginatedTickets = filteredTickets.slice(
+    (currentTicketPage - 1) * TICKETS_PER_PAGE,
+    currentTicketPage * TICKETS_PER_PAGE,
+  );
+  const firstTicketIndex = filteredTickets.length === 0 ? 0 : (currentTicketPage - 1) * TICKETS_PER_PAGE + 1;
+  const lastTicketIndex = Math.min(filteredTickets.length, currentTicketPage * TICKETS_PER_PAGE);
+
+  const formatStatusLabel = (status: string) => {
+    const normalized = status.replace(/_/g, ' ').trim();
+    return normalized || 'active';
+  };
+
   const timestampOrZero = (value: number | undefined) => value ?? 0;
 
   const pendingPayments = data.payments
@@ -198,13 +261,28 @@ export const Dashboard: React.FC = () => {
   const [commitSetSeatAssignment] = useMutation<DashboardSetSeatAssignmentMutation>(setSeatAssignmentMutation);
   const [commitRemoveSponsorInterest] = useMutation<DashboardRemoveSponsorInterestMutation>(removeSponsorInterestMutation);
 
-  const refresh = () => setRefreshKey(k => k + 1);
+  const refresh = () => {
+    setIsDataLoading(true);
+    setRefreshKey(k => k + 1);
+  };
 
   const handleLogout = () => {
-    logout('/login?redirectTo=/dashboard')
-  }
+    logout('/login?redirectTo=/dashboard');
+  };
 
-  if (!user) return null;
+  const isLoadingState = !authChecked || isDataLoading || !user;
+
+  if (isLoadingState) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-noahbrave-50 to-white font-body text-gray-800">
+        <Header />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+          <LoadingIndicator label="Loading dashboard..." />
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   const onSetPaymentReceived = (id: string, received: boolean) => {
     if (window.confirm(`Set this payment as ${received ? 'received' : 'not received'}?`)) {
@@ -259,8 +337,6 @@ export const Dashboard: React.FC = () => {
   };
 
   const onHoldHorses = data.allHorses.filter(h => h.state.toLowerCase() === 'on_hold');
-  const onHoldTickets = data.allTickets.filter(t => (t as any).state && (t as any).state.toLowerCase() === 'on_hold');
-  const nonOnHoldTickets = data.allTickets.filter(t => !(t as any).state || (t as any).state.toLowerCase() !== 'on_hold');
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-noahbrave-50 to-white font-body text-gray-800">
@@ -404,56 +480,98 @@ export const Dashboard: React.FC = () => {
           </div>
         </section>
 
-        {/* Tickets (excluding on-hold) */}
+        {/* Ticket management */}
         <section className="bg-white rounded-xl p-6 shadow">
-          <h2 className="text-xl font-semibold mb-4">Tickets</h2>
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="text-left border-b"><th className="py-2">Attendee</th><th>Owner</th><th>Seating Preference</th><th>Seat Assignment</th></tr>
-            </thead>
-            <tbody>
-              {nonOnHoldTickets.map(t => (
-                <tr key={t.id} className="border-b">
-                  <td className="py-2">{t.attendeeFirst} {t.attendeeLast}</td>
-                  <td>{t.owner.firstName} {t.owner.lastName}</td>
-                  <td>{t.seatingPreference || '-'}</td>
-                  <td>
-                    <input
-                      type="text"
-                      defaultValue={t.seatAssignment ?? ''}
-                      onBlur={e => onSetSeatAssignment(t.id, e.target.value)}
-                      className="border rounded px-1 py-0.5"
-                    />
-                  </td>
-                </tr>
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div>
+              <h2 className="text-xl font-semibold">Tickets</h2>
+              <p className="text-sm text-gray-500">Manage attendees, seating, and holds in one place.</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium text-gray-600">Status:</span>
+              {(['all', 'active', 'on_hold'] as const).map(filter => (
+                <button
+                  key={filter}
+                  type="button"
+                  onClick={() => setTicketStatusFilter(filter)}
+                  className={`rounded-full px-3 py-1 text-sm font-medium transition ${
+                    ticketStatusFilter === filter
+                      ? 'bg-noahbrave-500 text-white shadow-sm'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
+                  aria-pressed={ticketStatusFilter === filter}
+                >
+                  {filter === 'all' ? 'All' : filter === 'active' ? 'Active' : 'On Hold'}
+                </button>
               ))}
-              {nonOnHoldTickets.length === 0 && (
-                <tr><td colSpan={4} className="py-2 text-center text-gray-500">No tickets</td></tr>
-              )}
-            </tbody>
-          </table>
-        </section>
+            </div>
+          </div>
 
-        {/* On-hold Tickets */}
-        <section className="bg-white rounded-xl p-6 shadow">
-          <h2 className="text-xl font-semibold mb-4">On-hold Tickets</h2>
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="text-left border-b"><th className="py-2">Attendee</th><th>Owner</th><th>Status</th></tr>
-            </thead>
-            <tbody>
-              {onHoldTickets.map(t => (
-                <tr key={t.id} className="border-b">
-                  <td className="py-2">{t.attendeeFirst} {t.attendeeLast}</td>
-                  <td>{t.owner.firstName} {t.owner.lastName}</td>
-                  <td className="capitalize">on hold</td>
-                </tr>
-              ))}
-              {onHoldTickets.length === 0 && (
-                <tr><td colSpan={3} className="py-2 text-center text-gray-500">No on-hold tickets</td></tr>
-              )}
-            </tbody>
-          </table>
+          {filteredTickets.length === 0 ? (
+            <div className="mt-6 text-sm text-gray-500">No tickets match the selected filter.</div>
+          ) : (
+            <>
+              <div className="mt-6 overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-left border-b">
+                      <th className="py-2">Attendee</th>
+                      <th>Owner</th>
+                      <th>Status</th>
+                      <th>Seating Preference</th>
+                      <th>Seat Assignment</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {paginatedTickets.map(({ ticket, status, isOnHold }) => (
+                      <tr key={ticket.id} className={`border-b ${isOnHold ? 'bg-yellow-50/60' : ''}`}>
+                        <td className="py-2">{ticket.attendeeFirst} {ticket.attendeeLast}</td>
+                        <td>{ticket.owner.firstName} {ticket.owner.lastName}</td>
+                        <td className="capitalize">{formatStatusLabel(status)}</td>
+                        <td>{ticket.seatingPreference || '—'}</td>
+                        <td>
+                          {isOnHold ? (
+                            <span className="text-gray-500">{ticket.seatAssignment || '—'}</span>
+                          ) : (
+                            <input
+                              type="text"
+                              defaultValue={ticket.seatAssignment ?? ''}
+                              onBlur={e => onSetSeatAssignment(ticket.id, e.target.value)}
+                              className="w-32 rounded border px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-noahbrave-200"
+                            />
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="mt-4 flex flex-col gap-3 border-t pt-4 text-sm text-gray-600 md:flex-row md:items-center md:justify-between">
+                <div>
+                  Showing {firstTicketIndex}-{lastTicketIndex} of {filteredTickets.length} tickets
+                </div>
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setTicketPage(page => Math.max(1, page - 1))}
+                    disabled={currentTicketPage === 1}
+                    className="rounded border border-gray-300 px-3 py-1 transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    Previous
+                  </button>
+                  <span className="font-medium">Page {currentTicketPage} of {totalTicketPages}</span>
+                  <button
+                    type="button"
+                    onClick={() => setTicketPage(page => Math.min(totalTicketPages, page + 1))}
+                    disabled={currentTicketPage === totalTicketPages}
+                    className="rounded border border-gray-300 px-3 py-1 transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
         </section>
 
         {/* User management */}
@@ -477,30 +595,9 @@ export const Dashboard: React.FC = () => {
           </table>
         </section>
 
-        {/* Horse board overview */}
+        {/* Horse Board */}
         <section className="bg-white rounded-xl p-6 shadow">
           <h2 className="text-xl font-semibold mb-4">Horse Board</h2>
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="text-left border-b"><th className="py-2">Horse</th><th>Owner</th><th>Round</th><th>Lane</th><th>State</th></tr>
-            </thead>
-            <tbody>
-              {data.allHorses.map(h => (
-                <tr key={h.id} className="border-b">
-                  <td className="py-2">{h.horseName}</td>
-                  <td>{h.owner.firstName} {h.owner.lastName}</td>
-                  <td>{h.round.name}</td>
-                  <td>{h.lane.number}</td>
-                  <td className="capitalize">{h.state.replace('_', ' ')}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </section>
-
-        {/* Visual Horse Board */}
-        <section className="bg-white rounded-xl p-6 shadow">
-          <h2 className="text-xl font-semibold mb-4">Visual Horse Board</h2>
           <DashboardBoard />
         </section>
 
