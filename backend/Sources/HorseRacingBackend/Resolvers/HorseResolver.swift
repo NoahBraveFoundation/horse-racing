@@ -5,11 +5,16 @@ import Fluent
 final class HorseResolver: @unchecked Sendable {
     // Rounds
     func getRounds(request: Request, _: NoArguments) throws -> EventLoopFuture<[Round]> {
-        Round.query(on: request.db).all()
+        Round.query(on: request.db)
+            .withGraphQLRelations()
+            .all()
     }
 
     func getLanes(request: Request, arguments: GetLanesArguments) throws -> EventLoopFuture<[Lane]> {
-        Lane.query(on: request.db).filter(\.$round.$id == arguments.roundId).all()
+        Lane.query(on: request.db)
+            .filter(\.$round.$id == arguments.roundId)
+            .withGraphQLRelations()
+            .all()
     }
 
     // Current user
@@ -24,7 +29,7 @@ final class HorseResolver: @unchecked Sendable {
         return Payment.query(on: request.db)
             .filter(\.$user.$id == user.id!)
             .sort(\.$createdAt, .descending)
-            .with(\.$cart)
+            .withGraphQLRelations()
             .first()
     }
 
@@ -132,12 +137,18 @@ final class HorseResolver: @unchecked Sendable {
 
     func allUsers(request: Request, _: NoArguments) throws -> EventLoopFuture<[User]> {
         guard let user = request.auth.get(User.self), user.isAdmin else { throw Abort(.forbidden) }
-        return User.query(on: request.db).all()
+        return User.query(on: request.db)
+            .withGraphQLRelations()
+            .all()
     }
 
     func userById(request: Request, arguments: UserIdArguments) throws -> EventLoopFuture<User> {
         guard let currentUser = request.auth.get(User.self), currentUser.isAdmin else { throw Abort(.forbidden) }
-        return User.find(arguments.userId, on: request.db).unwrap(or: Abort(.notFound))
+        return User.query(on: request.db)
+            .filter(\.$id == arguments.userId)
+            .withGraphQLRelations()
+            .first()
+            .unwrap(or: Abort(.notFound))
     }
 
     func setUserAdmin(request: Request, arguments: SetUserAdminArguments) throws -> EventLoopFuture<User> {
@@ -153,8 +164,7 @@ final class HorseResolver: @unchecked Sendable {
     func payments(request: Request, _: NoArguments) throws -> EventLoopFuture<[Payment]> {
         guard let user = request.auth.get(User.self), user.isAdmin else { throw Abort(.forbidden) }
         return Payment.query(on: request.db)
-            .with(\.$user)
-            .with(\.$cart)
+            .withGraphQLRelations()
             .sort(\.$paymentReceived, .ascending)
             .sort(\.$createdAt, .descending)
             .all()
@@ -187,7 +197,10 @@ final class HorseResolver: @unchecked Sendable {
 
     func abandonedCarts(request: Request, _: NoArguments) throws -> EventLoopFuture<[Cart]> {
         guard let user = request.auth.get(User.self), user.isAdmin else { throw Abort(.forbidden) }
-        return Cart.query(on: request.db).filter(\.$status == .abandoned).with(\.$user).all()
+        return Cart.query(on: request.db)
+            .filter(\.$status == .abandoned)
+            .withGraphQLRelations()
+            .all()
     }
 
     func releaseHorse(request: Request, arguments: ReleaseHorseArguments) throws -> EventLoopFuture<Bool> {
@@ -253,7 +266,9 @@ final class HorseResolver: @unchecked Sendable {
 
     func allSponsorInterests(request: Request, _: NoArguments) throws -> EventLoopFuture<[SponsorInterest]> {
         guard let user = request.auth.get(User.self), user.isAdmin else { throw Abort(.forbidden) }
-        return SponsorInterest.query(on: request.db).all()
+        return SponsorInterest.query(on: request.db)
+            .withGraphQLRelations()
+            .all()
     }
 
     func adminRemoveSponsorInterest(request: Request, arguments: AdminRemoveSponsorInterestArguments) throws -> EventLoopFuture<Bool> {
@@ -316,7 +331,9 @@ final class HorseResolver: @unchecked Sendable {
 
     func allGiftBasketInterests(request: Request, _: NoArguments) throws -> EventLoopFuture<[GiftBasketInterest]> {
         guard let user = request.auth.get(User.self), user.isAdmin else { throw Abort(.forbidden) }
-        return GiftBasketInterest.query(on: request.db).all()
+        return GiftBasketInterest.query(on: request.db)
+            .withGraphQLRelations()
+            .all()
     }
 
     // MARK: - Authentication helpers
@@ -327,31 +344,57 @@ final class HorseResolver: @unchecked Sendable {
 
     // MARK: - Cart helpers
     private func getOrCreateOpenCart(for userId: UUID, on req: Request) -> EventLoopFuture<Cart> {
-        Cart.query(on: req.db)
+        let db = req.db
+        let eventLoop = req.eventLoop
+
+        return Cart.query(on: db)
             .filter(\.$user.$id == userId)
             .filter(\.$status == .open)
+            .withGraphQLRelations()
             .first()
             .flatMap { existing -> EventLoopFuture<Cart> in
-                if let existing = existing { return req.eventLoop.makeSucceededFuture(existing) }
+                if let existing = existing {
+                    return eventLoop.makeSucceededFuture(existing)
+                }
 
-                return Cart.query(on: req.db)
+                return Cart.query(on: db)
                     .filter(\.$user.$id == userId)
                     .count()
                     .flatMap { cartCount in
                         let cart = Cart(userID: userId, status: .open)
-                        return cart.create(on: req.db).flatMap { _ in
-                            guard cartCount == 0 else {
-                                return req.eventLoop.makeSucceededFuture(cart)
+                        return cart.create(on: db).flatMap {
+                            let seedTicket: EventLoopFuture<Void>
+
+                            if cartCount == 0 {
+                                seedTicket = User.find(userId, on: db)
+                                    .unwrap(or: Abort(.notFound))
+                                    .flatMap { user in
+                                        let ticket = Ticket(
+                                            ownerID: userId,
+                                            attendeeFirst: user.firstName,
+                                            attendeeLast: user.lastName,
+                                            state: .onHold,
+                                            canRemove: false
+                                        )
+                                        ticket.$cart.id = cart.id
+                                        return ticket.create(on: db).transform(to: ())
+                                    }
+                            } else {
+                                seedTicket = eventLoop.makeSucceededFuture(())
                             }
 
-                            // Only seed a default ticket when this is the user's very first cart
-                            return User.find(userId, on: req.db)
-                                .unwrap(or: Abort(.notFound))
-                                .flatMap { user in
-                                    let ticket = Ticket(ownerID: userId, attendeeFirst: user.firstName, attendeeLast: user.lastName, state: .onHold, canRemove: false)
-                                    ticket.$cart.id = cart.id
-                                    return ticket.create(on: req.db).map { _ in cart }
+                            return seedTicket.flatMap {
+                                do {
+                                    let cartId = try cart.requireID()
+                                    return Cart.query(on: db)
+                                        .filter(\.$id == cartId)
+                                        .withGraphQLRelations()
+                                        .first()
+                                        .unwrap(or: Abort(.notFound))
+                                } catch {
+                                    return eventLoop.makeFailedFuture(error)
                                 }
+                            }
                         }
                     }
             }
@@ -362,15 +405,29 @@ final class HorseResolver: @unchecked Sendable {
     func myCart(request: Request, _: NoArguments) throws -> EventLoopFuture<Cart?> {
         guard let user = request.auth.get(User.self), let userId = user.id else { throw Abort(.unauthorized) }
 
+        let db = request.db
+        let eventLoop = request.eventLoop
+
         // Prefer returning the user's open cart when one exists, otherwise fall back to the
         // most recently updated cart (regardless of status) so returning users see their latest data.
-        return Cart.query(on: request.db)
+        return Cart.query(on: db)
             .filter(\.$user.$id == userId)
+            .filter(\.$status == .open)
             .sort(\.$updatedAt, .descending)
             .sort(\.$createdAt, .descending)
-            .all()
-            .map { carts in
-                carts.first(where: { $0.status == .open }) ?? carts.first
+            .withGraphQLRelations()
+            .first()
+            .flatMap { openCart -> EventLoopFuture<Cart?> in
+                if let openCart = openCart {
+                    return eventLoop.makeSucceededFuture(openCart)
+                }
+
+                return Cart.query(on: db)
+                    .filter(\.$user.$id == userId)
+                    .sort(\.$updatedAt, .descending)
+                    .sort(\.$createdAt, .descending)
+                    .withGraphQLRelations()
+                    .first()
             }
     }
 
@@ -997,5 +1054,184 @@ extension HorseResolver {
         let ticketCount: Int
         let sponsorCount: Int
         let giftBasketCount: Int
+    }
+}
+
+private extension QueryBuilder where Model == Round {
+    @discardableResult
+    func withGraphQLRelations() -> QueryBuilder<Round> {
+        self.with(\.$lanes) { lane in
+            lane.with(\.$round)
+            lane.with(\.$horse) { horse in
+                horse.with(\.$owner)
+                horse.with(\.$round)
+                horse.with(\.$lane)
+            }
+        }
+        self.with(\.$horses) { horse in
+            horse.with(\.$owner)
+            horse.with(\.$round)
+            horse.with(\.$lane)
+        }
+        return self
+    }
+}
+
+private extension QueryBuilder where Model == Lane {
+    @discardableResult
+    func withGraphQLRelations() -> QueryBuilder<Lane> {
+        self.with(\.$round)
+        self.with(\.$horse) { horse in
+            horse.with(\.$owner)
+            horse.with(\.$round)
+            horse.with(\.$lane)
+        }
+        return self
+    }
+}
+
+private extension QueryBuilder where Model == Horse {
+    @discardableResult
+    func withGraphQLRelations() -> QueryBuilder<Horse> {
+        self.with(\.$owner)
+        self.with(\.$round)
+        self.with(\.$lane)
+        return self
+    }
+}
+
+private extension QueryBuilder where Model == Ticket {
+    @discardableResult
+    func withGraphQLRelations() -> QueryBuilder<Ticket> {
+        self.with(\.$owner)
+        return self
+    }
+}
+
+private extension QueryBuilder where Model == SponsorInterest {
+    @discardableResult
+    func withGraphQLRelations(includeUser: Bool = true) -> QueryBuilder<SponsorInterest> {
+        if includeUser {
+            self.with(\.$user)
+        }
+        return self
+    }
+}
+
+private extension QueryBuilder where Model == GiftBasketInterest {
+    @discardableResult
+    func withGraphQLRelations(includeUser: Bool = true) -> QueryBuilder<GiftBasketInterest> {
+        if includeUser {
+            self.with(\.$user)
+        }
+        return self
+    }
+}
+
+private extension QueryBuilder where Model == Cart {
+    @discardableResult
+    func withGraphQLRelations(includeUser: Bool = true) -> QueryBuilder<Cart> {
+        if includeUser {
+            self.with(\.$user)
+        }
+        self.with(\.$horses) { horse in
+            horse.with(\.$owner)
+            horse.with(\.$round)
+            horse.with(\.$lane)
+        }
+        self.with(\.$tickets) { ticket in
+            ticket.with(\.$owner)
+        }
+        self.with(\.$sponsorInterests) { interest in
+            interest.with(\.$user)
+        }
+        self.with(\.$giftBasketInterests) { interest in
+            interest.with(\.$user)
+        }
+        return self
+    }
+}
+
+private extension QueryBuilder where Model == User {
+    @discardableResult
+    func withGraphQLRelations() -> QueryBuilder<User> {
+        self.with(\.$tickets) { ticket in
+            ticket.with(\.$owner)
+        }
+        self.with(\.$horses) { horse in
+            horse.with(\.$owner)
+            horse.with(\.$round)
+            horse.with(\.$lane)
+        }
+        self.with(\.$sponsorInterests) { interest in
+            interest.with(\.$user)
+        }
+        self.with(\.$giftBasketInterests) { interest in
+            interest.with(\.$user)
+        }
+        self.with(\.$payments) { payment in
+            payment.with(\.$cart) { cart in
+                cart.with(\.$horses) { horse in
+                    horse.with(\.$owner)
+                    horse.with(\.$round)
+                    horse.with(\.$lane)
+                }
+                cart.with(\.$tickets) { ticket in
+                    ticket.with(\.$owner)
+                }
+                cart.with(\.$sponsorInterests) { interest in
+                    interest.with(\.$user)
+                }
+                cart.with(\.$giftBasketInterests) { interest in
+                    interest.with(\.$user)
+                }
+            }
+        }
+        self.with(\.$carts) { cart in
+            cart.with(\.$horses) { horse in
+                horse.with(\.$owner)
+                horse.with(\.$round)
+                horse.with(\.$lane)
+            }
+            cart.with(\.$tickets) { ticket in
+                ticket.with(\.$owner)
+            }
+            cart.with(\.$sponsorInterests) { interest in
+                interest.with(\.$user)
+            }
+            cart.with(\.$giftBasketInterests) { interest in
+                interest.with(\.$user)
+            }
+        }
+        return self
+    }
+}
+
+private extension QueryBuilder where Model == Payment {
+    @discardableResult
+    func withGraphQLRelations(includeUser: Bool = true, includeCartUser: Bool = true) -> QueryBuilder<Payment> {
+        if includeUser {
+            self.with(\.$user)
+        }
+        self.with(\.$cart) { cart in
+            if includeCartUser {
+                cart.with(\.$user)
+            }
+            cart.with(\.$horses) { horse in
+                horse.with(\.$owner)
+                horse.with(\.$round)
+                horse.with(\.$lane)
+            }
+            cart.with(\.$tickets) { ticket in
+                ticket.with(\.$owner)
+            }
+            cart.with(\.$sponsorInterests) { interest in
+                interest.with(\.$user)
+            }
+            cart.with(\.$giftBasketInterests) { interest in
+                interest.with(\.$user)
+            }
+        }
+        return self
     }
 }
