@@ -5,7 +5,7 @@ on:
     # branches: [main]
     paths:
       - "app/**"
-      - ".github/workflows/release-ticket-scanner.yml"
+      - ".github/workflows/build-and-deploy-app.yml"
   workflow_dispatch:
     inputs:
       release_notes:

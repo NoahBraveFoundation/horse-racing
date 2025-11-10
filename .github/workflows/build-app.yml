@@ -5,12 +5,12 @@ on:
     branches: [main]
     paths:
       - "app/**"
-      - ".github/workflows/ticket-scanner-ci.yml"
+      - ".github/workflows/build-app.yml"
   pull_request:
     branches: [main]
     paths:
       - "app/**"
-      - ".github/workflows/ticket-scanner-ci.yml"
+      - ".github/workflows/build-app.yml"
 
 permissions:
   contents: read
