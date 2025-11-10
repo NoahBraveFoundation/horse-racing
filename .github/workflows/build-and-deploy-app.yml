@@ -37,17 +37,6 @@ jobs:
           xcode-version: "26.0"
 
       - name: Validate required secrets
-        run: |
-          missing=0
-          for var in APP_STORE_CONNECT_API_KEY_ID APP_STORE_CONNECT_API_ISSUER_ID APP_STORE_CONNECT_API_KEY_BASE64 IOS_DISTRIBUTION_CERT_BASE64 IOS_DISTRIBUTION_CERT_PASSWORD IOS_PROVISIONING_PROFILE_BASE64 APPLE_TEAM_ID; do
-            if [ -z "${!var}" ]; then
-              echo "::error::Secret $var is not configured."
-              missing=1
-            fi
-          done
-          if [ "$missing" -eq 1 ]; then
-            exit 1
-          fi
         env:
           APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
           APP_STORE_CONNECT_API_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_ISSUER_ID }}
@@ -56,28 +45,38 @@ jobs:
           IOS_DISTRIBUTION_CERT_PASSWORD: ${{ secrets.IOS_DISTRIBUTION_CERT_PASSWORD }}
           IOS_PROVISIONING_PROFILE_BASE64: ${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}
           APPLE_TEAM_ID: ${{ vars.APPLE_TEAM_ID }}
-
-      - name: Xcodegen
-        working-directory: app/TicketScannerApp
         run: |
-          brew install xcodegen
-          xcodegen generate
+          missing=0
+          for var in APP_STORE_CONNECT_API_KEY_ID APP_STORE_CONNECT_API_ISSUER_ID APP_STORE_CONNECT_API_KEY_BASE64 IOS_DISTRIBUTION_CERT_BASE64 IOS_DISTRIBUTION_CERT_PASSWORD IOS_PROVISIONING_PROFILE_BASE64 APPLE_TEAM_ID; do
+            if [ -z "${!var}" ]; then
+              echo "::error::Secret or variable $var is not configured."
+              missing=1
+            fi
+          done
+          if [ "$missing" -eq 1 ]; then
+            exit 1
+          fi
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate Xcode project
+        working-directory: app/TicketScannerApp
+        run: xcodegen generate
 
       - name: Increment build number
         working-directory: app/TicketScannerApp
         run: agvtool new-version -all "$GITHUB_RUN_NUMBER"
 
       - name: Import signing certificate
-        id: import-certificate
+        id: import_certificate
         uses: apple-actions/import-codesign-certs@v2
         with:
           p12-file-base64: ${{ secrets.IOS_DISTRIBUTION_CERT_BASE64 }}
           p12-password: ${{ secrets.IOS_DISTRIBUTION_CERT_PASSWORD }}
 
-      - name: Remember signing keychain
-        run: echo "KEYCHAIN_PATH=${{ steps.import-certificate.outputs['keychain-path'] }}" >> "$GITHUB_ENV"
-
       - name: Install provisioning profile
+        id: install_profile
         env:
           IOS_PROVISIONING_PROFILE_BASE64: ${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}
         run: |
@@ -87,7 +86,7 @@ jobs:
           PROFILE_UUID=$(/usr/libexec/PlistBuddy -c 'Print UUID' "$RUNNER_TEMP/profile.plist")
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
           cp "$PROFILE_PATH" "$HOME/Library/MobileDevice/Provisioning Profiles/$PROFILE_UUID.mobileprovision"
-          echo "PROFILE_UUID=$PROFILE_UUID" >> "$GITHUB_ENV"
+          echo "uuid=$PROFILE_UUID" >> "$GITHUB_OUTPUT"
 
       - name: Prepare App Store Connect API key
         env:
@@ -100,8 +99,8 @@ jobs:
 
       - name: Archive app
         env:
-          KEYCHAIN_PATH: ${{ env.KEYCHAIN_PATH }}
-          PROFILE_UUID: ${{ env.PROFILE_UUID }}
+          KEYCHAIN_PATH: ${{ steps.import_certificate.outputs.keychain-path }}
+          PROFILE_UUID: ${{ steps.install_profile.outputs.uuid }}
           APPLE_TEAM_ID: ${{ vars.APPLE_TEAM_ID }}
         run: |
           set -eo pipefail
@@ -114,9 +113,9 @@ jobs:
             -destination 'generic/platform=iOS' \
             -skipMacroValidation \
             CODE_SIGN_STYLE=Manual \
-            DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
-            PROVISIONING_PROFILE_SPECIFIER="$PROFILE_UUID" \
-            CODE_SIGN_IDENTITY="Apple Distribution" \
+            "DEVELOPMENT_TEAM=$APPLE_TEAM_ID" \
+            "PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]=$PROFILE_UUID" \
+            "CODE_SIGN_IDENTITY[sdk=iphoneos*]=Apple Distribution" \
             OTHER_CODE_SIGN_FLAGS="--keychain $KEYCHAIN_PATH" \
             archive
           echo "ARCHIVE_PATH=$ARCHIVE_PATH" >> "$GITHUB_ENV"
@@ -124,7 +123,7 @@ jobs:
       - name: Export IPA
         env:
           APPLE_TEAM_ID: ${{ vars.APPLE_TEAM_ID }}
-          PROFILE_UUID: ${{ env.PROFILE_UUID }}
+          PROFILE_UUID: ${{ steps.install_profile.outputs.uuid }}
         run: |
           set -eo pipefail
           EXPORT_OPTIONS="$RUNNER_TEMP/ExportOptions.plist"
@@ -182,7 +181,7 @@ jobs:
       - name: Clean up keychain
         if: always()
         env:
-          KEYCHAIN_PATH: ${{ env.KEYCHAIN_PATH }}
+          KEYCHAIN_PATH: ${{ steps.import_certificate.outputs.keychain-path }}
         run: |
           if [ -n "$KEYCHAIN_PATH" ] && [ -f "$KEYCHAIN_PATH" ]; then
             security delete-keychain "$KEYCHAIN_PATH" || true
