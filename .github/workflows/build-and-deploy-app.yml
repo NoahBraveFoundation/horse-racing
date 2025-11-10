@@ -57,6 +57,12 @@ jobs:
           IOS_PROVISIONING_PROFILE_BASE64: ${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}
           APPLE_TEAM_ID: ${{ vars.APPLE_TEAM_ID }}
 
+      - name: Xcodegen
+        working-directory: app/TicketScannerApp
+        run: |
+          brew install xcodegen
+          xcodegen generate
+
       - name: Increment build number
         working-directory: app/TicketScannerApp
         run: agvtool new-version -all "$GITHUB_RUN_NUMBER"
