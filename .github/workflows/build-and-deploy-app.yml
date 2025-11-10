@@ -74,6 +74,9 @@ jobs:
           p12-file-base64: ${{ secrets.IOS_DISTRIBUTION_CERT_BASE64 }}
           p12-password: ${{ secrets.IOS_DISTRIBUTION_CERT_PASSWORD }}
 
+      - name: Remember signing keychain
+        run: echo "KEYCHAIN_PATH=${{ steps.import-certificate.outputs['keychain-path'] }}" >> "$GITHUB_ENV"
+
       - name: Install provisioning profile
         env:
           IOS_PROVISIONING_PROFILE_BASE64: ${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}
@@ -97,9 +100,9 @@ jobs:
 
       - name: Archive app
         env:
-          KEYCHAIN_PATH: ${{ steps.import-certificate.outputs.keychain-path }}
-          PROFILE_UUID: ${{ steps.install-profile.outputs.uuid }}
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          KEYCHAIN_PATH: ${{ env.KEYCHAIN_PATH }}
+          PROFILE_UUID: ${{ env.PROFILE_UUID }}
+          APPLE_TEAM_ID: ${{ vars.APPLE_TEAM_ID }}
         run: |
           set -eo pipefail
           ARCHIVE_PATH="$RUNNER_TEMP/TicketScannerApp.xcarchive"
@@ -120,8 +123,8 @@ jobs:
 
       - name: Export IPA
         env:
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-          PROFILE_UUID: ${{ steps.install-profile.outputs.uuid }}
+          APPLE_TEAM_ID: ${{ vars.APPLE_TEAM_ID }}
+          PROFILE_UUID: ${{ env.PROFILE_UUID }}
         run: |
           set -eo pipefail
           EXPORT_OPTIONS="$RUNNER_TEMP/ExportOptions.plist"
@@ -179,7 +182,7 @@ jobs:
       - name: Clean up keychain
         if: always()
         env:
-          KEYCHAIN_PATH: ${{ steps.import-certificate.outputs.keychain-path }}
+          KEYCHAIN_PATH: ${{ env.KEYCHAIN_PATH }}
         run: |
           if [ -n "$KEYCHAIN_PATH" ] && [ -f "$KEYCHAIN_PATH" ]; then
             security delete-keychain "$KEYCHAIN_PATH" || true
