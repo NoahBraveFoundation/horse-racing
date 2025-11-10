@@ -3,4 +3,3 @@ query TicketByBarcode($barcode: String!) {
     ...TicketFragment
   }
 }
-

@@ -22,12 +22,14 @@ struct AppFeature {
   struct State: Equatable {
     var authentication = AuthenticationFeature.State()
     var scanning = ScanningFeature.State()
+    var tickets = AllTicketsFeature.State()
     var isAuthenticated = false
   }
 
   enum Action: Equatable {
     case authentication(AuthenticationFeature.Action)
     case scanning(ScanningFeature.Action)
+    case tickets(AllTicketsFeature.Action)
     case checkAuthentication
     case handleDeepLink(URL)
     case loadStoredToken
@@ -42,6 +44,10 @@ struct AppFeature {
 
     Scope(state: \.scanning, action: \.scanning) {
       ScanningFeature()
+    }
+
+    Scope(state: \.tickets, action: \.tickets) {
+      AllTicketsFeature()
     }
 
     Reduce { state, action in
@@ -71,18 +77,20 @@ struct AppFeature {
 
       case .handleDeepLink(let url):
         // Check if this is an auth callback URL
-        if url.host == "auth-callback" || url.path.contains("auth") {
+        if url.path.contains("auth") {
           // Extract the token from the URL
           let components = URLComponents(url: url, resolvingAgainstBaseURL: true)
           if let token = components?.queryItems?.first(where: { $0.name == "token" })?.value {
             return .send(.authentication(.validateToken(token)))
           }
         }
-        // For other URLs, open in Safari
-        if UIApplication.shared.canOpenURL(url) {
-          UIApplication.shared.open(url)
+        // For other URLs, open in Safari on the main actor
+        return .run { _ in
+          await MainActor.run {
+            guard UIApplication.shared.canOpenURL(url) else { return }
+            UIApplication.shared.open(url)
+          }
         }
-        return .none
 
       default:
         return .none
@@ -97,7 +105,7 @@ struct AppView: View {
   var body: some View {
     Group {
       if store.isAuthenticated {
-        ScanningView(store: store.scope(state: \.scanning, action: \.scanning))
+        AuthenticatedView(store: store)
       } else {
         LoginView(store: store.scope(state: \.authentication, action: \.authentication))
       }
@@ -107,6 +115,38 @@ struct AppView: View {
     }
     .onOpenURL { url in
       store.send(.handleDeepLink(url))
+    }
+  }
+}
+
+struct AuthenticatedView: View {
+  let store: StoreOf<AppFeature>
+
+  var body: some View {
+    TabView {
+      NavigationStack {
+        ScanningView(
+          store: store.scope(state: \.scanning, action: \.scanning),
+          onLogout: { store.send(.authentication(.logout)) }
+        )
+      }
+      .tabItem {
+        Label("Scan", systemImage: "barcode.viewfinder")
+      }
+
+      NavigationStack {
+        StatsView(store: store.scope(state: \.scanning, action: \.scanning))
+      }
+      .tabItem {
+        Label("Stats", systemImage: "chart.bar.doc.horizontal")
+      }
+
+      NavigationStack {
+        AllTicketsView(store: store.scope(state: \.tickets, action: \.tickets))
+      }
+      .tabItem {
+        Label("Tickets", systemImage: "list.bullet")
+      }
     }
   }
 }

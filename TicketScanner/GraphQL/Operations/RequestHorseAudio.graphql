@@ -1,0 +1,5 @@
+mutation RequestHorseAudio($ticketId: UUID!) {
+  requestHorseAudio(ticketId: $ticketId) {
+    ...HorseAudioClipFragment
+  }
+}

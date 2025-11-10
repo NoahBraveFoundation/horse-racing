@@ -1,4 +1,4 @@
-import AVFoundation
+@preconcurrency import AVFoundation
 import Dependencies
 import UIKit
 
@@ -37,7 +37,7 @@ extension DependencyValues {
 class BarcodeScannerManager: NSObject, ObservableObject {
   static let shared = BarcodeScannerManager()
 
-  private var captureSession: AVCaptureSession?
+  private(set) var captureSession: AVCaptureSession?
   private var videoPreviewLayer: AVCaptureVideoPreviewLayer?
   private var barcodeCallback: (@Sendable (String) async -> Void)?
 
@@ -104,7 +104,10 @@ class BarcodeScannerManager: NSObject, ObservableObject {
       return
     }
 
-    captureSession.startRunning()
+    // Start running on a background thread to avoid UI unresponsiveness
+    DispatchQueue.global(qos: .userInitiated).async {
+      captureSession.startRunning()
+    }
   }
 
   func stopScanning() async {
@@ -129,6 +132,7 @@ extension BarcodeScannerManager: @MainActor AVCaptureMetadataOutputObjectsDelega
       // Only process barcodes that start with "NBT:"
       if stringValue.hasPrefix("NBT:") {
         Task {
+          print("Barcode scanned: \(stringValue)")
           await barcodeCallback?(stringValue)
           await stopScanning()
         }

@@ -1,0 +1,8 @@
+fragment HorseAudioClipFragment on HorseAudioClip {
+  ownerName
+  ownerEmail
+  ticketAttendeeName
+  horseNames
+  audioBase64
+  prompt
+}

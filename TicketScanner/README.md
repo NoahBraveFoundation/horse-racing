@@ -49,14 +49,13 @@ TicketScanner/
 The app uses a magic link authentication system:
 1. User enters email address
 2. Backend sends email with magic link (containing token)
-3. User taps link → app opens via deep link (`ticketscanner://auth-callback?token=...`)
+3. User taps link 
 4. App validates token with backend and receives user profile
 5. Token is stored locally and automatically included in all API requests
 6. User stays logged in across app launches
 
 **Deep Link Support:**
-- URL Scheme: `ticketscanner://`
-- Universal Links: `https://horses.noahbrave.org/auth-callback`
+- Universal Links: `https://horses.noahbrave.org/auth`
 
 ## Architecture
 

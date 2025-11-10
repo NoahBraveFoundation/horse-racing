@@ -10,78 +10,66 @@ public struct StatsView: View {
   }
 
   public var body: some View {
-    NavigationView {
-      ScrollView {
-        VStack(spacing: 20) {
-          // Overall Stats
-          if let stats = store.scanningStats {
-            VStack(spacing: 16) {
-              Text("Scanning Statistics")
-                .font(.title2)
-                .fontWeight(.bold)
+    ScrollView {
+      VStack(alignment: .leading, spacing: 20) {
+        if let stats = store.scanningStats {
+          Text("Scanning Statistics")
+            .font(.title2)
+            .fontWeight(.bold)
+          VStack(spacing: 16) {
+            HStack(spacing: 20) {
+              StatCard(
+                title: "Scanned",
+                value: "\(stats.totalScanned)",
+                color: .green
+              )
 
-              HStack(spacing: 20) {
-                StatCard(
-                  title: "Total Scanned",
-                  value: "\(stats.totalScanned)",
-                  color: .green
-                )
+              StatCard(
+                title: "Total",
+                value: "\(stats.totalTickets)",
+                color: .blue
+              )
 
-                StatCard(
-                  title: "Total Tickets",
-                  value: "\(stats.totalTickets)",
-                  color: .blue
-                )
-
-                StatCard(
-                  title: "Completion",
-                  value: "\(Int(Double(stats.totalScanned) / Double(stats.totalTickets) * 100))%",
-                  color: .orange
-                )
-              }
-            }
-            .padding()
-            .background(Color(.systemBackground))
-            .cornerRadius(12)
-          }
-
-          // Recent Scans
-          VStack(alignment: .leading, spacing: 12) {
-            Text("Recent Scans")
-              .font(.title2)
-              .fontWeight(.bold)
-
-            let recentScans = store.recentScans
-
-            if recentScans.isEmpty {
-              Text("No recent scans")
-                .foregroundColor(.secondary)
-                .frame(maxWidth: .infinity, alignment: .center)
-                .padding()
-            } else {
-              LazyVStack(spacing: 8) {
-                ForEach(recentScans) { scan in
-                  RecentScanRow(scan: scan)
-                }
-              }
+              StatCard(
+                title: "Completed",
+                value: "\(Int(Double(stats.totalScanned) / Double(stats.totalTickets) * 100))%",
+                color: .orange
+              )
             }
           }
           .padding()
-          .background(Color(.systemBackground))
+          .background(Color(.systemGray6))
           .cornerRadius(12)
         }
-        .padding()
-      }
-      .navigationTitle("Statistics")
-      .navigationBarTitleDisplayMode(.inline)
-      .toolbar {
-        ToolbarItem(placement: .navigationBarTrailing) {
-          Button("Done") {
-            // Dismiss the sheet
+
+        VStack(alignment: .leading, spacing: 12) {
+          Text("Recent Scans")
+            .font(.title2)
+            .fontWeight(.bold)
+
+          let recentScans = store.recentScans
+
+          if recentScans.isEmpty {
+            Text("No recent scans")
+              .foregroundColor(.secondary)
+              .frame(maxWidth: .infinity, alignment: .center)
+              .padding()
+          } else {
+            LazyVStack(spacing: 8) {
+              ForEach(recentScans) { scan in
+                RecentScanRow(scan: scan)
+              }
+            }
           }
         }
+        .padding()
+        .background(Color(.systemGray6))
+        .cornerRadius(12)
       }
+      .padding()
     }
+    .navigationTitle("Statistics")
+    .navigationBarTitleDisplayMode(.inline)
   }
 }
 

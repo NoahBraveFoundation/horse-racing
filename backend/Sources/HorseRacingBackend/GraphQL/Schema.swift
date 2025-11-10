@@ -204,6 +204,15 @@ let horseRacingSchema = try! Graphiti.Schema<HorseResolver, Request> {
     Field("recentScans", at: \.recentScans)
   }
 
+  Type(HorseAudioClipPayload.self) {
+    Field("ownerName", at: \.ownerName)
+    Field("ownerEmail", at: \.ownerEmail)
+    Field("ticketAttendeeName", at: \.ticketAttendeeName)
+    Field("horseNames", at: \.horseNames)
+    Field("audioBase64", at: \.audioBase64)
+    Field("prompt", at: \.prompt)
+  }
+
   // Queries
   Query {
     Field("me", at: HorseResolver.me)
@@ -344,6 +353,9 @@ let horseRacingSchema = try! Graphiti.Schema<HorseResolver, Request> {
       Argument("ticketId", at: \.ticketId)
       Argument("scanLocation", at: \.scanLocation)
       Argument("deviceInfo", at: \.deviceInfo)
+    }
+    Field("requestHorseAudio", at: HorseResolver.requestHorseAudio) {
+      Argument("ticketId", at: \.ticketId)
     }
     Field("undoScan", at: HorseResolver.undoScan) {
       Argument("scanId", at: \.scanId)

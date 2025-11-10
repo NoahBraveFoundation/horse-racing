@@ -7,15 +7,11 @@ directive @apollo_client_ios_localCacheMutation on QUERY | MUTATION | SUBSCRIPTI
 A directive used by the Apollo iOS code generation engine to generate custom import statements in operation or fragment definition files. An import statement to import a module with the name provided in the `module` argument will be added to the generated definition file.
 """
 directive @import(
-  """
-  The name of the module to import.
-  """
+  """The name of the module to import."""
   module: String!
 ) repeatable on QUERY | MUTATION | SUBSCRIPTION | FRAGMENT_DEFINITION
 
-"""
-Attach extra information to a given type.
-"""
+"""Attach extra information to a given type."""
 directive @typePolicy(
   """
   A selection set containing fields used to compute the cache key of an object. Referenced fields must have non-nullable scalar types. Order is important.
@@ -27,14 +23,10 @@ directive @typePolicy(
 Directs the executor to defer this fragment when the `if` argument is true or undefined.
 """
 directive @defer(
-  """
-  Deferred when true or undefined.
-  """
+  """Deferred when true or undefined."""
   if: Boolean
 
-  """
-  Unique name
-  """
+  """Unique name"""
   label: String
 ) on FRAGMENT_SPREAD | INLINE_FRAGMENT
 
@@ -117,17 +109,8 @@ type LogoutPayload {
 
 type Mutation {
   addGiftBasketToCart(description: String!): GiftBasketInterest!
-  addHorseToCart(
-    roundId: UUID!
-    laneId: UUID!
-    horseName: String!
-    ownershipLabel: String!
-  ): Horse!
-  addSponsorToCart(
-    companyName: String!
-    amountCents: Int!
-    companyLogoBase64: String
-  ): SponsorInterest!
+  addHorseToCart(roundId: UUID!, laneId: UUID!, horseName: String!, ownershipLabel: String!): Horse!
+  addSponsorToCart(companyName: String!, amountCents: Int!, companyLogoBase64: String): SponsorInterest!
   addTicketToCart(attendeeFirst: String!, attendeeLast: String!): Ticket!
   adminRemoveHorse(horseId: UUID!): Boolean!
   adminRemoveSponsorInterest(sponsorInterestId: UUID!): Boolean!
@@ -143,32 +126,16 @@ type Mutation {
   removeHorseFromCart(horseId: UUID!): Boolean!
   removeSponsorFromCart(sponsorId: UUID!): Boolean!
   removeTicketFromCart(ticketId: UUID!): Boolean!
-  renameHorse(
-    horseId: UUID!
-    horseName: String!
-    ownershipLabel: String!
-  ): Horse!
+  renameHorse(horseId: UUID!, horseName: String!, ownershipLabel: String!): Horse!
   resetDatabase: Boolean!
   runAdminCleanup: Boolean!
-  scanTicket(
-    ticketId: UUID!
-    scanLocation: String
-    deviceInfo: String
-  ): ScanTicketPayload!
+  scanTicket(ticketId: UUID!, scanLocation: String, deviceInfo: String): ScanTicketPayload!
+  requestHorseAudio(ticketId: UUID!): HorseAudioClip!
   setPaymentReceived(paymentId: UUID!, received: Boolean!): Payment!
   setTicketSeatAssignment(ticketId: UUID!, seatAssignment: String): Ticket!
-  setTicketSeatingPreference(
-    ticketId: UUID!
-    seatingPreference: String
-  ): Ticket!
+  setTicketSeatingPreference(ticketId: UUID!, seatingPreference: String): Ticket!
   setUserAdmin(userId: UUID!, isAdmin: Boolean!): User!
-  submitSponsorInterest(
-    name: String!
-    email: String!
-    companyName: String!
-    amountUsd: Float!
-    companyLogoBase64: String
-  ): SponsorInterest!
+  submitSponsorInterest(name: String!, email: String!, companyName: String!, amountUsd: Float!, companyLogoBase64: String): SponsorInterest!
   undoScan(scanId: UUID!): ScanTicketPayload!
   validateToken(token: String!): ValidateTokenPayload!
 }
@@ -224,6 +191,15 @@ type ScanningStats {
   recentScans: [TicketScan!]!
   totalScanned: Int!
   totalTickets: Int!
+}
+
+type HorseAudioClip {
+  ownerName: String!
+  ownerEmail: String!
+  ticketAttendeeName: String!
+  horseNames: [String!]!
+  audioBase64: String!
+  prompt: String!
 }
 
 type SponsorInterest {

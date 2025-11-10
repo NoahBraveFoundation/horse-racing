@@ -99,8 +99,6 @@ public struct AuthenticationFeature {
         return .run { _ in
           @Dependency(\.tokenStorage) var tokenStorage
           await tokenStorage.clearToken()
-          // Also clear token from Apollo client
-          ApolloClientService.shared.setAuthToken(nil)
         }
       }
     }

@@ -3,4 +3,3 @@ query RecentScans($limit: Int!) {
     ...TicketScanFragment
   }
 }
-

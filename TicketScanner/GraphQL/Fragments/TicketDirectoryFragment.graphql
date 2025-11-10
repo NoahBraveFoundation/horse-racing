@@ -1,0 +1,9 @@
+fragment TicketDirectoryFragment on Ticket {
+  ...TicketFragment
+  owner {
+    id
+    firstName
+    lastName
+    email
+  }
+}

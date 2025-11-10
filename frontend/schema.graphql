@@ -108,11 +108,13 @@ type Mutation {
   renameHorse(horseId: UUID!, horseName: String!, ownershipLabel: String!): Horse!
   resetDatabase: Boolean!
   runAdminCleanup: Boolean!
+  scanTicket(ticketId: UUID!, scanLocation: String, deviceInfo: String): ScanTicketPayload!
   setPaymentReceived(paymentId: UUID!, received: Boolean!): Payment!
   setTicketSeatAssignment(ticketId: UUID!, seatAssignment: String): Ticket!
   setTicketSeatingPreference(ticketId: UUID!, seatingPreference: String): Ticket!
   setUserAdmin(userId: UUID!, isAdmin: Boolean!): User!
   submitSponsorInterest(name: String!, email: String!, companyName: String!, amountUsd: Float!, companyLogoBase64: String): SponsorInterest!
+  undoScan(scanId: UUID!): ScanTicketPayload!
   validateToken(token: String!): ValidateTokenPayload!
 }
 
@@ -137,8 +139,11 @@ type Query {
   myCart: Cart
   paymentStatus: Payment
   payments: [Payment!]!
+  recentScans(limit: Int!): [TicketScan!]!
   rounds: [Round!]!
+  scanningStats: ScanningStats!
   sponsorInterests: [SponsorInterest!]!
+  ticketByBarcode(barcode: String!): Ticket
   user(userId: UUID!): User!
   users: [User!]!
 }
@@ -150,6 +155,20 @@ type Round {
   lanes: [Lane!]!
   name: String!
   startAt: Date!
+}
+
+type ScanningStats {
+  recentScans: [TicketScan!]!
+  totalScanned: Int!
+  totalTickets: Int!
+}
+
+type ScanTicketPayload {
+  alreadyScanned: Boolean!
+  message: String!
+  previousScan: TicketScan
+  success: Boolean!
+  ticket: Ticket
 }
 
 type SponsorInterest {
@@ -167,9 +186,23 @@ type Ticket {
   costCents: Int!
   id: UUID
   owner: User!
+  scanLocation: String
+  scannedAt: Date
+  scannedBy: User
+  scans: [TicketScan!]!
   seatAssignment: String
   seatingPreference: String
   state: TicketState!
+}
+
+type TicketScan {
+  createdAt: Date
+  deviceInfo: String
+  id: UUID
+  scanLocation: String
+  scanTimestamp: Date!
+  scanner: User!
+  ticket: Ticket!
 }
 
 enum TicketState {
@@ -188,7 +221,9 @@ type User {
   isAdmin: Boolean!
   lastName: String!
   payments: [Payment!]!
+  scannedTickets: [Ticket!]!
   sponsorInterests: [SponsorInterest!]!
+  ticketScans: [TicketScan!]!
   tickets: [Ticket!]!
 }
 

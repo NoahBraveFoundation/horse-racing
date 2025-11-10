@@ -11,6 +11,8 @@ struct APIClient {
   var getScanningStats: @Sendable () async throws -> ScanningStats
   var getRecentScans: @Sendable (Int) async throws -> [TicketScan]
   var getTicketByBarcode: @Sendable (String) async throws -> Ticket?
+  var getAllTickets: @Sendable () async throws -> [TicketDirectoryEntry]
+  var requestHorseAudio: @Sendable (Foundation.UUID) async throws -> HorseAudioClip
 }
 
 extension APIClient: DependencyKey {
@@ -18,7 +20,7 @@ extension APIClient: DependencyKey {
     sendMagicLink: { email in
       let mutation = LoginMutation(
         email: email,
-        redirectTo: .some("ticketscanner://auth-callback")
+        redirectTo: .null
       )
 
       let result = try await ApolloClientService.shared.perform(mutation: mutation)
@@ -44,9 +46,6 @@ extension APIClient: DependencyKey {
       guard let idString = userNode.id, let id = UUID(uuidString: idString) else {
         throw APIClientError.invalidResponse
       }
-
-      // Save the token for future requests
-      ApolloClientService.shared.setAuthToken(token)
 
       return User(
         id: id,
@@ -120,6 +119,24 @@ extension APIClient: DependencyKey {
       let result = try await ApolloClientService.shared.fetch(query: query)
 
       return result.ticketByBarcode?.toLocal()
+    },
+
+    getAllTickets: {
+      let query = AllTicketsQuery()
+      let result = try await ApolloClientService.shared.fetch(query: query)
+      return result.allTickets.compactMap { selection in
+        selection.fragments.ticketDirectoryFragment.toDirectoryEntry()
+      }
+    },
+
+    requestHorseAudio: { ticketId in
+      let mutation = RequestHorseAudioMutation(ticketId: ticketId.uuidString)
+      let result = try await ApolloClientService.shared.perform(mutation: mutation)
+      let fragment = result.requestHorseAudio.fragments.horseAudioClipFragment
+      guard let clip = fragment.toLocal() else {
+        throw APIClientError.invalidResponse
+      }
+      return clip
     }
   )
 }
@@ -160,7 +177,7 @@ extension TicketFragment {
     guard let idStr = id, let uuid = UUID(uuidString: idStr) else {
       return nil
     }
-    
+
     let ticketState: TicketState
     switch state.value {
     case .onHold:
@@ -174,7 +191,7 @@ extension TicketFragment {
     @unknown default:
       ticketState = .confirmed
     }
-    
+
     return Ticket(
       id: uuid,
       attendeeFirst: attendeeFirst,
@@ -207,11 +224,12 @@ extension UserFragment {
 extension TicketScanFragment {
   func toLocal() -> TicketScan? {
     guard let scanIdStr = id, let scanUUID = UUID(uuidString: scanIdStr),
-          let ticket = ticket.fragments.ticketFragment.toLocal(),
-          let scanner = scanner.fragments.userFragment.toLocal() else {
+      let ticket = ticket.fragments.ticketFragment.toLocal(),
+      let scanner = scanner.fragments.userFragment.toLocal()
+    else {
       return nil
     }
-    
+
     return TicketScan(
       id: scanUUID,
       ticket: ticket,
@@ -251,5 +269,26 @@ extension RecentScansQuery.Data.RecentScan {
 extension TicketByBarcodeQuery.Data.TicketByBarcode {
   func toLocal() -> Ticket? {
     fragments.ticketFragment.toLocal()
+  }
+}
+
+extension TicketDirectoryFragment {
+  func toDirectoryEntry() -> TicketDirectoryEntry? {
+    guard let ticket = fragments.ticketFragment.toLocal() else { return nil }
+    let ownerName = "\(owner.firstName) \(owner.lastName)"
+    return TicketDirectoryEntry(ticket: ticket, ownerName: ownerName, ownerEmail: owner.email)
+  }
+}
+
+extension HorseAudioClipFragment {
+  func toLocal() -> HorseAudioClip? {
+    HorseAudioClip(
+      ownerName: ownerName,
+      ownerEmail: ownerEmail,
+      ticketAttendeeName: ticketAttendeeName,
+      horseNames: horseNames,
+      audioBase64: audioBase64,
+      prompt: prompt
+    )
   }
 }

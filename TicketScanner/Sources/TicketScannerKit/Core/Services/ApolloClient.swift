@@ -137,6 +137,9 @@ class AuthInterceptor: ApolloInterceptor {
     response: HTTPResponse<Operation>?,
     completion: @escaping (Result<GraphQLResult<Operation.Data>, any Error>) -> Void
   ) {
+    // Add client platform header to identify mobile requests
+    request.addHeader(name: "X-Client-Platform", value: "ios")
+
     // Add auth token to request headers if available
     if let token = client?.getAuthToken() {
       request.addHeader(name: "Authorization", value: "Bearer \(token)")

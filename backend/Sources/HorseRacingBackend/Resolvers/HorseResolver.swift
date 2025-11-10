@@ -764,9 +764,19 @@ final class HorseResolver: @unchecked Sendable {
             Abort(.notFound, reason: "No account found for this email"))
         }
 
-        let token = AuthService.generateSecureLoginToken(for: userID)
+        // Admins get 7-day tokens, regular users get 30-minute tokens
+        let expiresInMinutes = user.isAdmin ? (7 * 24 * 60) : 30
+        let token = AuthService.generateSecureLoginToken(
+          for: userID, expiresInMinutes: expiresInMinutes)
         return token.create(on: request.db).flatMap { _ in
-          let host = Environment.get("APP_HOST") ?? "http://localhost:5173"
+          // Check if request is from iOS app by looking for X-Client-Platform header
+          let isMobileClient = request.headers["X-Client-Platform"].first == "ios"
+
+          // Use deep link URL for mobile clients, regular URL for web
+          let host =
+            isMobileClient
+            ? "https://horses.noahbrave.org"
+            : (Environment.get("APP_HOST") ?? "http://localhost:5173")
           var link = "\(host)/auth?token=\(token.token)"
           if let redirect = arguments.redirectTo?.trimmingCharacters(in: .whitespacesAndNewlines),
             !redirect.isEmpty
@@ -787,7 +797,7 @@ final class HorseResolver: @unchecked Sendable {
               try await EmailService.sendLoginMagicLink(
                 to: user,
                 magicLinkURL: link,
-                expiresInMinutes: 30,
+                expiresInMinutes: expiresInMinutes,
                 on: request
               )
               request.logger.info("Magic link email sent to \(email)")
@@ -1179,6 +1189,10 @@ extension HorseResolver {
     let limit: Int
   }
 
+  struct RequestHorseAudioArguments: Codable {
+    let ticketId: UUID
+  }
+
   // MARK: - Scanning Resolver Methods
 
   func scanTicket(request: Request, arguments: ScanTicketArguments) throws -> EventLoopFuture<
@@ -1339,5 +1353,16 @@ extension HorseResolver {
       .sort(\.$scanTimestamp, .descending)
       .limit(arguments.limit)
       .all()
+  }
+
+  func requestHorseAudio(
+    request: Request,
+    arguments: RequestHorseAudioArguments
+  ) throws -> EventLoopFuture<HorseAudioClipPayload> {
+    guard let user = request.auth.get(User.self), user.isAdmin else {
+      throw Abort(.unauthorized, reason: "Admin authentication required")
+    }
+
+    return HorseAudioService.generateClip(for: arguments.ticketId, requestedBy: user, on: request)
   }
 }
