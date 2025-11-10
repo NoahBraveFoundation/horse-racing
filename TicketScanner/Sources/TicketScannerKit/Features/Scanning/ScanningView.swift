@@ -4,22 +4,15 @@ import SwiftUI
 
 public struct ScanningView: View {
   @Bindable var store: StoreOf<ScanningFeature>
-  let onLogout: () -> Void
-
-  public init(store: StoreOf<ScanningFeature>, onLogout: @escaping () -> Void = {}) {
+  
+  public init(store: StoreOf<ScanningFeature>) {
     self.store = store
-    self.onLogout = onLogout
   }
 
   public var body: some View {
     contentView
       .navigationTitle("Ticket Scanner")
       .navigationBarTitleDisplayMode(.inline)
-      .toolbar {
-        ToolbarItem(placement: .navigationBarTrailing) {
-          Button("Logout", action: onLogout)
-        }
-      }
       .sheet(
         store: store.scope(state: \.$result, action: \.result)
       ) { store in

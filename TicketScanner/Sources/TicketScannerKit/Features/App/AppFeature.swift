@@ -14,6 +14,7 @@ public struct AppFeature {
     public var scanning = ScanningFeature.State()
     public var stats = StatsFeature.State()
     public var tickets = AllTicketsFeature.State()
+    public var settings = SettingsFeature.State()
     public var isAuthenticated = false
 
     public init() {}
@@ -24,6 +25,7 @@ public struct AppFeature {
     case scanning(ScanningFeature.Action)
     case stats(StatsFeature.Action)
     case tickets(AllTicketsFeature.Action)
+    case settings(SettingsFeature.Action)
     case checkAuthentication
     case handleDeepLink(URL)
     case loadStoredToken
@@ -49,6 +51,10 @@ public struct AppFeature {
 
     Scope(state: \.tickets, action: \.tickets) {
       AllTicketsFeature()
+    }
+
+    Scope(state: \.settings, action: \.settings) {
+      SettingsFeature()
     }
 
     Reduce { state, action in
@@ -107,10 +113,16 @@ public struct AppFeature {
       case .scanning(.scanTicketResponse):
         return .send(.stats(.refresh(.scanUpdate)))
 
+      case .settings(.logoutTapped):
+        return .send(.authentication(.logout))
+
       default:
         return .none
       }
     }
+    #if DEBUG
+      ._printChanges()
+    #endif
   }
 }
 
@@ -146,8 +158,7 @@ struct AuthenticatedView: View {
     TabView {
       NavigationStack {
         ScanningView(
-          store: store.scope(state: \.scanning, action: \.scanning),
-          onLogout: { store.send(.authentication(.logout)) }
+          store: store.scope(state: \.scanning, action: \.scanning)
         )
       }
       .tabItem {
@@ -166,6 +177,13 @@ struct AuthenticatedView: View {
       }
       .tabItem {
         Label("Tickets", systemImage: "list.bullet")
+      }
+
+      NavigationStack {
+        SettingsView(store: store.scope(state: \.settings, action: \.settings))
+      }
+      .tabItem {
+        Label("Settings", systemImage: "gear")
       }
     }
   }

@@ -14,6 +14,8 @@ public struct ScanningFeature {
     @Presents public var result: ScanResultFeature.State?
     @Shared(.appStorage(SharedStorageKey.tickets))
     var cachedTickets: [TicketDirectoryEntry] = []
+    @Shared(.appStorage(SharedStorageKey.horseGreetingsEnabled))
+    public var horseGreetingsEnabled: Bool = true
     public var horseAudio = HorseAudioState()
     public var requestedOrderNumbers: Set<String> = []
 
@@ -165,7 +167,7 @@ public struct ScanningFeature {
             await barcodeScanner.stopScanning()
           },
           .send(.loadAllTickets),
-          shouldRequestAudio && response.ticket != nil
+          shouldRequestAudio && response.ticket != nil && state.horseGreetingsEnabled
             ? .send(.requestHorseAudio(response.ticket!.id))
             : .none
         )
@@ -201,6 +203,7 @@ public struct ScanningFeature {
         return .none
 
       case .requestHorseAudio(let ticketId):
+        guard state.horseGreetingsEnabled else { return .none }
         state.horseAudio = HorseAudioState()
         return .run { send in
           @Dependency(\.apiClient) var apiClient
@@ -213,6 +216,7 @@ public struct ScanningFeature {
         }
 
       case .requestHorseAudioResponse(.success(let clip)):
+        guard state.horseGreetingsEnabled else { return .none }
         guard let data = clip.decodedAudioData else {
           state.errorMessage = "Unable to decode horse audio clip."
           return .none
@@ -231,6 +235,7 @@ public struct ScanningFeature {
 
       case .playHorseAudio:
         guard let data = state.horseAudio.audioData else { return .none }
+        guard state.horseGreetingsEnabled else { return .none }
         state.horseAudio.isToastVisible = true
         state.horseAudio.isAudioPlaying = true
         state.horseAudio.canReplay = false
@@ -250,6 +255,7 @@ public struct ScanningFeature {
 
       case .replayHorseAudio:
         guard state.horseAudio.audioData != nil else { return .none }
+        guard state.horseGreetingsEnabled else { return .none }
         return .concatenate(
           .run { _ in
             @Dependency(\.audioPlaybackClient) var audioPlaybackClient

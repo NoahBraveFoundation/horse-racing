@@ -3,7 +3,7 @@ name: TicketScannerApp
 options:
   bundleIdPrefix: org.noahbrave
   deploymentTarget:
-    iOS: "17.0"
+    iOS: "26.0"
   generateEmptyDirectories: true
 
 packages:
@@ -37,11 +37,11 @@ targets:
     info:
       path: TicketScannerApp/Resources/Info.plist
       properties:
-        CFBundleDisplayName: Ticket Scanner
+        CFBundleDisplayName: NBF Scanner
         CFBundleShortVersionString: "1.0"
         CFBundleVersion: "1"
         CFBundleURLTypes:
-          - CFBundleURLName: com.noahbravefoundation.ticketscannerapp
+          - CFBundleURLName: org.noahbrave.app.ticketscanner
             CFBundleURLSchemes:
               - ticketscanner
         UILaunchScreen: {}

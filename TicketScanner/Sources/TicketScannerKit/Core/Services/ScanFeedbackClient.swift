@@ -1,6 +1,7 @@
 import AudioToolbox
 import Dependencies
 import Logging
+import Sharing
 import UIKit
 
 struct ScanFeedbackClient {
@@ -39,6 +40,10 @@ private final class ScanFeedbackCoordinator {
 
   private var successSound: SystemSoundID = 0
   private var failureSound: SystemSoundID = 0
+  @SharedReader(.appStorage(SharedStorageKey.hapticsEnabled))
+  private var hapticsEnabled: Bool = true
+  @SharedReader(.appStorage(SharedStorageKey.audioFeedbackEnabled))
+  private var audioFeedbackEnabled: Bool = true
 
   private init() {
     successSound = loadSound(named: "success")
@@ -47,15 +52,23 @@ private final class ScanFeedbackCoordinator {
 
   func play(_ type: FeedbackType) {
     logger.debug("Playing scan feedback: \(type.debugLabel)")
-    let generator = UINotificationFeedbackGenerator()
-    generator.prepare()
+    if hapticsEnabled {
+      let generator = UINotificationFeedbackGenerator()
+      generator.prepare()
+      switch type {
+      case .success:
+        generator.notificationOccurred(.success)
+      case .failure:
+        generator.notificationOccurred(.error)
+      }
+    }
+
+    guard audioFeedbackEnabled else { return }
 
     switch type {
     case .success:
-      generator.notificationOccurred(.success)
       playSound(id: successSound)
     case .failure:
-      generator.notificationOccurred(.error)
       playSound(id: failureSound)
     }
   }

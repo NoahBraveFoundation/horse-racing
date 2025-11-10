@@ -15,6 +15,8 @@ public struct TicketDetailFeature {
     public var isManualScanInFlight = false
     public var isUnscanInFlight = false
     public var errorMessage: String?
+    public var isSeatEditorActive = false
+    public var seatAssignmentEditor: SeatAssignmentEditorFeature.State?
 
     public init(ticketID: UUID) {
       self.ticketID = ticketID
@@ -56,7 +58,8 @@ public struct TicketDetailFeature {
     }
   }
 
-  public enum Action: Equatable {
+  public enum Action: BindableAction, Equatable {
+    case binding(BindingAction<State>)
     case onAppear
     case refresh
     case refreshResponse(TaskResult<[TicketScan]>)
@@ -65,6 +68,7 @@ public struct TicketDetailFeature {
     case unscanTapped
     case unscanResponse(TaskResult<ScanTicketResponse>)
     case clearError
+    case seatAssignmentEditor(SeatAssignmentEditorFeature.Action)
   }
 
   @Dependency(\.apiClient) var apiClient
@@ -73,8 +77,30 @@ public struct TicketDetailFeature {
   public init() {}
 
   public var body: some ReducerOf<Self> {
+    BindingReducer()
+
     Reduce { state, action in
       switch action {
+      case .binding(\.isSeatEditorActive):
+        if state.isSeatEditorActive {
+          if state.seatAssignmentEditor == nil {
+            if let entry = state.entry {
+              state.seatAssignmentEditor = SeatAssignmentEditorFeature.State(
+                ticketID: state.ticketID,
+                initialSeatAssignment: entry.ticket.seatAssignment ?? ""
+              )
+            } else {
+              state.isSeatEditorActive = false
+            }
+          }
+        } else {
+          state.seatAssignmentEditor = nil
+        }
+        return .none
+
+      case .binding:
+        return .none
+
       case .onAppear:
         if state.scanHistory.isEmpty {
           return .send(.refresh)
@@ -208,7 +234,18 @@ public struct TicketDetailFeature {
       case .clearError:
         state.errorMessage = nil
         return .none
+
+      case .seatAssignmentEditor(.delegate(.finished)):
+        state.isSeatEditorActive = false
+        state.seatAssignmentEditor = nil
+        return .none
+
+      case .seatAssignmentEditor:
+        return .none
       }
+    }
+    .ifLet(\.seatAssignmentEditor, action: \.seatAssignmentEditor) {
+      SeatAssignmentEditorFeature()
     }
   }
 }

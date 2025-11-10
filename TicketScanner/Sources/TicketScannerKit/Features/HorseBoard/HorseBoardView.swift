@@ -115,12 +115,11 @@ private struct LaneCard: View {
         Text(horse.ownershipLabel)
           .font(.subheadline)
           .foregroundColor(.secondary)
-        Label(horse.ownerFullName, systemImage: "person.fill")
-          .font(.caption)
-          .foregroundColor(.secondary)
-        Label(horse.ownerEmail, systemImage: "envelope")
-          .font(.caption2)
-          .foregroundColor(.secondary)
+        if horse.ownershipLabel != horse.ownerFullName {
+          Label(horse.ownerFullName, systemImage: "person.fill")
+            .font(.caption)
+            .foregroundColor(.secondary)
+        }
         StateBadge(state: horse.state)
       } else {
         Spacer(minLength: 0)

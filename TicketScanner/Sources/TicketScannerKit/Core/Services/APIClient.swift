@@ -14,6 +14,7 @@ struct APIClient {
   var getTicketByBarcode: @Sendable (String) async throws -> Ticket?
   var getAllTickets: @Sendable () async throws -> [TicketDirectoryEntry]
   var requestHorseAudio: @Sendable (Foundation.UUID) async throws -> HorseAudioClip
+  var setTicketSeatAssignment: @Sendable (Foundation.UUID, String?) async throws -> Ticket
   var getHorseBoard: @Sendable () async throws -> [HorseBoardRound]
 }
 
@@ -164,6 +165,20 @@ extension APIClient: DependencyKey {
         throw APIClientError.invalidResponse
       }
       return clip
+    },
+
+    setTicketSeatAssignment: { ticketId, seatAssignment in
+      let mutation = SetTicketSeatAssignmentMutation(
+        ticketId: ticketId.uuidString,
+        seatAssignment: seatAssignment.map { .some($0) } ?? .null
+      )
+
+      let result = try await ApolloClientService.shared.perform(mutation: mutation)
+      guard let ticket = result.setTicketSeatAssignment.fragments.ticketFragment.toLocal() else {
+        throw APIClientError.invalidResponse
+      }
+
+      return ticket
     },
 
     getHorseBoard: {

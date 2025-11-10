@@ -40,9 +40,25 @@ public struct TicketDetailView: View {
             }
           }
 
-          if let seat = entry.ticket.seatAssignment, !seat.isEmpty {
-            LabeledContent("Seat", value: seat)
-          } else if let preference = entry.ticket.seatingPreference, !preference.isEmpty {
+          NavigationLink(isActive: $store.isSeatEditorActive) {
+            if let editorStore = store.scope(
+              state: \.seatAssignmentEditor, action: \.seatAssignmentEditor)
+            {
+              SeatAssignmentEditorView(store: editorStore)
+            } else {
+              EmptyView()
+            }
+          } label: {
+            LabeledContent("Seat Assignment") {
+              Text(seatAssignmentValue(for: entry))
+                .foregroundColor(seatAssignmentColor(for: entry))
+            }
+          }
+
+          if entry.ticket.seatAssignment?.isEmpty ?? true,
+            let preference = entry.ticket.seatingPreference,
+            !preference.isEmpty
+          {
             LabeledContent("Preference", value: preference)
           }
 
@@ -206,6 +222,16 @@ public struct TicketDetailView: View {
     }
 
     return "\(Self.timeFormatter.string(from: start)) — \(Self.timeFormatter.string(from: end))"
+  }
+
+  private func seatAssignmentValue(for entry: TicketDirectoryEntry) -> String {
+    let trimmed = entry.ticket.seatAssignment?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+    return trimmed.isEmpty ? "Not assigned" : trimmed
+  }
+
+  private func seatAssignmentColor(for entry: TicketDirectoryEntry) -> Color {
+    let trimmed = entry.ticket.seatAssignment?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+    return trimmed.isEmpty ? .secondary : .primary
   }
 }
 
