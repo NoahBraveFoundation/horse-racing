@@ -66,6 +66,26 @@ public struct AppFeature {
       case .authentication(.logout):
         state.isAuthenticated = false
         state.scanning.currentScanner = nil
+        state.scanning.isScanning = false
+        state.scanning.errorMessage = nil
+        state.scanning.result = nil
+        state.scanning.$cachedTickets.withLock { $0 = [] }
+        state.scanning.horseAudio = ScanningFeature.HorseAudioState()
+        state.scanning.requestedOrderNumbers.removeAll()
+
+        state.tickets.$tickets.withLock { $0 = [] }
+        state.tickets.searchText = ""
+        state.tickets.filter = .all
+        state.tickets.isLoading = false
+        state.tickets.errorMessage = nil
+        state.tickets.path = StackState()
+
+        state.stats.$scanningStats.withLock { $0 = nil }
+        state.stats.$recentScans.withLock { $0 = [] }
+        state.stats.isLoading = false
+        state.stats.errorMessage = nil
+        state.stats.hasLoaded = false
+        state.stats.path = StackState()
         return .none
 
       case .checkAuthentication:

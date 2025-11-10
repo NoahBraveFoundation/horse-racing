@@ -1,4 +1,4 @@
-import AudioToolbox
+import AVFoundation
 import Dependencies
 import Logging
 import Sharing
@@ -38,16 +38,17 @@ private final class ScanFeedbackCoordinator {
 
   private let logger = Logger(label: "org.noahbrave.ticket-scanner.scan-feedback")
 
-  private var successSound: SystemSoundID = 0
-  private var failureSound: SystemSoundID = 0
+  private var successPlayer: AVAudioPlayer?
+  private var failurePlayer: AVAudioPlayer?
+  private var isAudioSessionConfigured = false
   @SharedReader(.appStorage(SharedStorageKey.hapticsEnabled))
   private var hapticsEnabled: Bool = true
   @SharedReader(.appStorage(SharedStorageKey.audioFeedbackEnabled))
   private var audioFeedbackEnabled: Bool = true
 
   private init() {
-    successSound = loadSound(named: "success")
-    failureSound = loadSound(named: "failure")
+    successPlayer = loadPlayer(named: "success")
+    failurePlayer = loadPlayer(named: "failure")
   }
 
   func play(_ type: FeedbackType) {
@@ -67,35 +68,64 @@ private final class ScanFeedbackCoordinator {
 
     switch type {
     case .success:
-      playSound(id: successSound)
+      play(player: successPlayer, type: type)
     case .failure:
-      playSound(id: failureSound)
+      play(player: failurePlayer, type: type)
     }
   }
 
-  private func loadSound(named: String) -> SystemSoundID {
+  private func loadPlayer(named: String) -> AVAudioPlayer? {
     guard let url = Bundle.main.url(forResource: named, withExtension: "wav") else {
       logger.warning("Missing scan feedback sound resource: \(named).wav")
-      return 0
+      return nil
     }
 
-    var soundID: SystemSoundID = 0
-    let status = AudioServicesCreateSystemSoundID(url as CFURL, &soundID)
-    guard status == kAudioServicesNoError else {
-      logger.error("Failed to create system sound for \(named).wav with status \(status)")
-      return 0
+    do {
+      let player = try AVAudioPlayer(contentsOf: url)
+      player.prepareToPlay()
+      logger.debug("Loaded scan feedback sound \(named).wav")
+      return player
+    } catch {
+      logger.error("Failed to load scan feedback sound \(named).wav: \(error.localizedDescription)")
+      return nil
     }
-    logger.debug("Loaded scan feedback sound \(named).wav with id \(soundID)")
-    return soundID
   }
 
-  private func playSound(id: SystemSoundID) {
-    guard id != 0 else {
-      logger.error("Attempted to play scan feedback before sound was loaded")
+  private func configureAudioSessionIfNeeded() {
+    guard !isAudioSessionConfigured else { return }
+    let session = AVAudioSession.sharedInstance()
+    do {
+      try session.setCategory(.playback, mode: .default, options: [.mixWithOthers])
+      isAudioSessionConfigured = true
+    } catch {
+      logger.error(
+        "Failed to configure audio session for scan feedback: \(error.localizedDescription)")
+    }
+  }
+
+  private func play(player: AVAudioPlayer?, type: FeedbackType) {
+    guard let player else {
+      logger.error("Attempted to play scan feedback before player was loaded: \(type.debugLabel)")
       return
     }
-    logger.debug("Triggering scan feedback sound id \(id)")
-    AudioServicesPlaySystemSound(id)
+
+    configureAudioSessionIfNeeded()
+
+    if player.isPlaying {
+      player.currentTime = 0
+    }
+
+    player.volume = 1.0
+    do {
+      try AVAudioSession.sharedInstance().setActive(true, options: [.notifyOthersOnDeactivation])
+    } catch {
+      logger.error(
+        "Failed to activate audio session for scan feedback: \(error.localizedDescription)")
+    }
+
+    if !player.play() {
+      logger.error("Failed to start scan feedback playback for \(type.debugLabel)")
+    }
   }
 }
 

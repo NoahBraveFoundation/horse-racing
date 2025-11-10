@@ -3,8 +3,8 @@ import AVFoundation
 
 struct Constants {
     struct API {
-//        static let baseURL = "https://api.horses.noahbrave.org/graphql"
-        static let baseURL = "http://192.168.1.156:8080"
+        static let baseURL = "https://api.horses.noahbrave.org"
+//        static let baseURL = "http://192.168.1.156:8080"
         static let timeout: TimeInterval = 30
     }
     

@@ -32,8 +32,8 @@
 - [x] Add a TCA logger for state and actions for easier debugging.
 - [x] Add settings tab, allow turning on/off haptics, audio feedback, and audio clip greetings. Move logout button here.
 - [x] Allow user to adjust seating assignment in ticket details view. Push new view with editable text view.
+- [x] Add another state badge on horse board with ticket emoji if the owner of the horse has been scanned in. Add note about that behavior in (i) info button alert in top right nav bar.
 
 ## Phase 4
 - [ ] Publish to TestFlight on push to main branch if touches ticket sources with github actions.
 - [ ] Run `make build-ios` on CI if app source code is changed with gh actions.
-- [ ] Add another state badge on horse board with ticket emoji if the owner of the horse has been scanned in. Add note about that behavior in (i) info button alert in top right nav bar.
