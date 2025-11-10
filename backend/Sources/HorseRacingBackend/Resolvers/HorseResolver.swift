@@ -1371,3 +1371,186 @@ extension HorseResolver {
     return HorseAudioService.generateClip(for: arguments.ticketId, requestedBy: user, on: request)
   }
 }
+
+extension QueryBuilder where Model == Round {
+  @discardableResult
+  fileprivate func withGraphQLRelations() -> QueryBuilder<Round> {
+    self.with(\.$lanes) { lane in
+      lane.with(\.$round)
+      lane.with(\.$horse) { horse in
+        horse.with(\.$owner)
+        horse.with(\.$round)
+        horse.with(\.$lane)
+      }
+    }
+    self.with(\.$horses) { horse in
+      horse.with(\.$owner)
+      horse.with(\.$round)
+      horse.with(\.$lane)
+    }
+    return self
+  }
+}
+
+extension QueryBuilder where Model == Lane {
+  @discardableResult
+  fileprivate func withGraphQLRelations() -> QueryBuilder<Lane> {
+    self.with(\.$round)
+    self.with(\.$horse) { horse in
+      horse.with(\.$owner)
+      horse.with(\.$round)
+      horse.with(\.$lane)
+    }
+    return self
+  }
+}
+
+extension QueryBuilder where Model == Horse {
+  @discardableResult
+  fileprivate func withGraphQLRelations() -> QueryBuilder<Horse> {
+    self.with(\.$owner)
+    self.with(\.$round)
+    self.with(\.$lane)
+    return self
+  }
+}
+
+extension QueryBuilder where Model == Ticket {
+  @discardableResult
+  fileprivate func withGraphQLRelations() -> QueryBuilder<Ticket> {
+    self.with(\.$owner)
+    return self
+  }
+}
+
+extension QueryBuilder where Model == SponsorInterest {
+  @discardableResult
+  fileprivate func withGraphQLRelations(includeUser: Bool = true) -> QueryBuilder<SponsorInterest> {
+    if includeUser {
+      self.with(\.$user)
+    }
+    return self
+  }
+}
+
+extension QueryBuilder where Model == GiftBasketInterest {
+  @discardableResult
+  fileprivate func withGraphQLRelations(includeUser: Bool = true) -> QueryBuilder<
+    GiftBasketInterest
+  > {
+    if includeUser {
+      self.with(\.$user)
+    }
+    return self
+  }
+}
+
+extension QueryBuilder where Model == Cart {
+  @discardableResult
+  fileprivate func withGraphQLRelations(includeUser: Bool = true) -> QueryBuilder<Cart> {
+    if includeUser {
+      self.with(\.$user)
+    }
+    self.with(\.$horses) { horse in
+      horse.with(\.$owner)
+      horse.with(\.$round)
+      horse.with(\.$lane)
+    }
+    self.with(\.$tickets) { ticket in
+      ticket.with(\.$owner)
+    }
+    self.with(\.$sponsorInterests) { interest in
+      interest.with(\.$user)
+    }
+    self.with(\.$giftBasketInterests) { interest in
+      interest.with(\.$user)
+    }
+    return self
+  }
+}
+
+extension QueryBuilder where Model == User {
+  @discardableResult
+  fileprivate func withGraphQLRelations() -> QueryBuilder<User> {
+    self.with(\.$tickets) { ticket in
+      ticket.with(\.$owner)
+    }
+    self.with(\.$horses) { horse in
+      horse.with(\.$owner)
+      horse.with(\.$round)
+      horse.with(\.$lane)
+    }
+    self.with(\.$sponsorInterests) { interest in
+      interest.with(\.$user)
+    }
+    self.with(\.$giftBasketInterests) { interest in
+      interest.with(\.$user)
+    }
+    self.with(\.$payments) { payment in
+      payment.with(\.$cart) { cart in
+        cart.with(\.$horses) { horse in
+          horse.with(\.$owner)
+          horse.with(\.$round)
+          horse.with(\.$lane)
+        }
+        cart.with(\.$tickets) { ticket in
+          ticket.with(\.$owner)
+        }
+        cart.with(\.$sponsorInterests) { interest in
+          interest.with(\.$user)
+        }
+        cart.with(\.$giftBasketInterests) { interest in
+          interest.with(\.$user)
+        }
+      }
+    }
+    self.with(\.$carts) { cart in
+      cart.with(\.$horses) { horse in
+        horse.with(\.$owner)
+        horse.with(\.$round)
+        horse.with(\.$lane)
+      }
+      cart.with(\.$tickets) { ticket in
+        ticket.with(\.$owner)
+      }
+      cart.with(\.$sponsorInterests) { interest in
+        interest.with(\.$user)
+      }
+      cart.with(\.$giftBasketInterests) { interest in
+        interest.with(\.$user)
+      }
+    }
+    return self
+  }
+}
+
+extension QueryBuilder where Model == Payment {
+  @discardableResult
+  fileprivate func withGraphQLRelations(includeUser: Bool = true, includeCartUser: Bool = true)
+    -> QueryBuilder<Payment>
+  {
+    if includeUser {
+      self.with(\.$user)
+    }
+    self.with(\.$cart) { cart in
+      if includeCartUser {
+        cart.with(\.$user)
+      }
+      cart.with(\.$horses) { horse in
+        horse.with(\.$owner)
+        horse.with(\.$round)
+        horse.with(\.$lane)
+      }
+      cart.with(\.$tickets) { ticket in
+        ticket.with(\.$owner)
+      }
+      cart.with(\.$sponsorInterests) { interest in
+        interest.with(\.$user)
+      }
+      cart.with(\.$giftBasketInterests) { interest in
+        interest.with(\.$user)
+      }
+    }
+    return self
+  }
+}
