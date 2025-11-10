@@ -1,4 +1,4 @@
-# Ticket Scanner
+# Ticket Scanner App
 
 A modern iOS app built with SwiftUI and The Composable Architecture (TCA) for scanning tickets at the NoahBRAVE Foundation horse racing fundraiser event.
 
@@ -73,67 +73,21 @@ The app uses a magic link authentication system:
 ## Installation
 
 ### Prerequisites
-- Xcode 15.0+
-- Swift 6.0+
+- Xcode 16.0+
+- Swift 6.2+
 - [XcodeGen](https://github.com/yonaskolb/XcodeGen) (for project generation)
 
 ### iOS App Setup
 1. **Open the Xcode project:**
    ```bash
    cd TicketScannerApp
+   xcodegen generate
    open TicketScannerApp.xcodeproj
    ```
 
 2. **Set your development team** in Xcode project settings
 
 3. **Build and run** (⌘R)
-
-### Regenerating the Xcode Project
-If you modify `TicketScannerApp/project.yml`:
-```bash
-cd TicketScannerApp
-xcodegen generate
-```
-
-## Installation
-
-### Prerequisites
-- Xcode 15.0+
-- Swift 6.0+
-- [XcodeGen](https://github.com/yonaskolb/XcodeGen) (for project generation)
-
-### iOS App Setup
-1. **Open the Xcode project:**
-   ```bash
-   cd TicketScannerApp
-   open TicketScannerApp.xcodeproj
-   ```
-
-2. **Set your development team** in Xcode project settings
-
-3. **Build and run** (⌘R)
-
-### Regenerating the Xcode Project
-If you modify `TicketScannerApp/project.yml`:
-```bash
-cd TicketScannerApp
-xcodegen generate
-```
-
-## Development
-
-### Working with the Swift Package
-The `TicketScannerKit` package contains all business logic and can be developed independently:
-```bash
-# Build the package
-swift build
-
-# Run tests
-swift test
-
-# Open in Xcode
-open Package.swift
-```
 
 ## Usage
 
