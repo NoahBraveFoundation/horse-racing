@@ -23,7 +23,7 @@ platform :ios do
       clean: true,
       destination: "generic/platform=iOS",
       export_method: "app-store",
-      xcargs: "-allowProvisioningUpdates",
+      xcargs: "-allowProvisioningUpdates -skipMacroValidation",
       buildlog_path: "fastlane/logs",
       output_directory: "fastlane/build"
     )
