@@ -93,10 +93,11 @@ jobs:
 
       - name: Save keychain path
         run: |
-          OUTPUTS_JSON='${{ toJson(steps.import_certificate.outputs) }}'
-          KEYCHAIN_PATH=$(python3 -c "import json,sys; print(json.loads(sys.argv[1]).get('keychain-path',''))" "$OUTPUTS_JSON")
+          KEYCHAIN_PATH="${{ steps.import_certificate.outputs.keychain-path }}"
           if [ -n "$KEYCHAIN_PATH" ]; then
             echo "IMPORTED_KEYCHAIN_PATH=$KEYCHAIN_PATH" >> "$GITHUB_ENV"
+          else
+            echo "::warning::apple-actions/import-codesign-certs did not set keychain-path output."
           fi
 
       - name: Determine code signing identity
