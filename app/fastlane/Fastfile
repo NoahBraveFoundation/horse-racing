@@ -1,5 +1,6 @@
 require "base64"
 require "shellwords"
+require "tmpdir"
 
 default_platform(:ios)
 
@@ -10,59 +11,63 @@ platform :ios do
     project_path = File.expand_path(ENV.fetch("APP_PROJECT_PATH"), File.expand_path("..", __dir__))
     scheme = ENV.fetch("APP_SCHEME")
     release_notes = ENV.fetch("RELEASE_NOTES", "")
-    profile_uuid = ENV.fetch("PROFILE_UUID")
-    profile_name = ENV.fetch("PROFILE_NAME")
-    code_sign_identity = ENV.fetch("CODE_SIGN_IDENTITY", "Apple Distribution")
+    api_key_id = ENV.fetch("APP_STORE_CONNECT_API_KEY_ID")
+    api_key_issuer_id = ENV.fetch("APP_STORE_CONNECT_API_ISSUER_ID")
+    api_key_content = Base64.decode64(ENV.fetch("APP_STORE_CONNECT_API_KEY_BASE64"))
 
     xcargs_parts = [
       "-allowProvisioningUpdates",
       "-skipMacroValidation"
     ]
 
-    update_code_signing_settings(
-      use_automatic_signing: false,
+    automatic_code_signing(
+      use_automatic_signing: true,
       path: project_path,
       team_id: team_id,
       targets: [scheme],
-      profile_name: profile_name,
-      profile_uuid: profile_uuid,
-      code_sign_identity: code_sign_identity
-    )
-
-    gym(
-      project: project_path,
-      scheme: scheme,
-      configuration: "Release",
-      clean: true,
-      destination: "generic/platform=iOS",
-      export_method: "app-store",
-      xcargs: xcargs_parts.join(" "),
-      buildlog_path: "fastlane/logs",
-      output_directory: "fastlane/build",
-      codesigning_identity: code_sign_identity,
-      export_options: {
-        method: "app-store",
-        signingStyle: "manual",
-        teamID: team_id,
-        provisioningProfiles: {
-          ENV.fetch("APP_BUNDLE_ID") => profile_name
-        }
+      bundle_identifiers: {
+        scheme => ENV.fetch("APP_BUNDLE_ID")
       }
     )
 
-    ipa_path = Actions.lane_context[SharedValues::IPA_OUTPUT_PATH]
-    UI.user_error!("Failed to locate produced IPA") unless ipa_path && File.exist?(ipa_path)
+    Dir.mktmpdir do |tmp_dir|
+      api_key_path = File.join(tmp_dir, "app_store_connect_api_key.p8")
+      File.write(api_key_path, api_key_content)
 
-    api_key = app_store_connect_api_key(
-      key_id: ENV.fetch("APP_STORE_CONNECT_API_KEY_ID"),
-      issuer_id: ENV.fetch("APP_STORE_CONNECT_API_ISSUER_ID"),
-      key_content: Base64.decode64(ENV.fetch("APP_STORE_CONNECT_API_KEY_BASE64"))
-    )
+      gym(
+        project: project_path,
+        scheme: scheme,
+        configuration: "Release",
+        clean: true,
+        destination: "generic/platform=iOS",
+        export_method: "app-store",
+        xcargs: xcargs_parts.join(" "),
+        buildlog_path: "fastlane/logs",
+        output_directory: "fastlane/build",
+        authentication_key_path: api_key_path,
+        authentication_key_id: api_key_id,
+        authentication_key_issuer_id: api_key_issuer_id,
+        export_options: {
+          method: "app-store",
+          signingStyle: "automatic",
+          teamID: team_id
+        }
+      )
 
-    pilot(
-      ipa: ipa_path,
-      api_key: api_key,
-      changelog: release_notes.empty? ? nil : release_notes
-    )
+      ipa_path = Actions.lane_context[SharedValues::IPA_OUTPUT_PATH]
+      UI.user_error!("Failed to locate produced IPA") unless ipa_path && File.exist?(ipa_path)
+
+      api_key = app_store_connect_api_key(
+        key_id: api_key_id,
+        issuer_id: api_key_issuer_id,
+        key_content: api_key_content
+      )
+
+      pilot(
+        ipa: ipa_path,
+        api_key: api_key,
+        changelog: release_notes.empty? ? nil : release_notes
+      )
+    end
   end
 end
