@@ -5,6 +5,13 @@ BACKEND_URL = http://localhost:8080
 SCHEMA_FILE = schema.graphqls
 GENERATED_DIR = Generated
 INTROSPECTION_QUERY = '{"query":"query IntrospectionQuery { __schema { queryType { name } mutationType { name } subscriptionType { name } types { ...FullType } directives { name description locations args { ...InputValue } } } } fragment FullType on __Type { kind name description fields(includeDeprecated: true) { name description args { ...InputValue } type { ...TypeRef } isDeprecated deprecationReason } inputFields { ...InputValue } interfaces { ...TypeRef } enumValues(includeDeprecated: true) { name description isDeprecated deprecationReason } possibleTypes { ...TypeRef } } fragment InputValue on __InputValue { name description type { ...TypeRef } defaultValue } fragment TypeRef on __Type { kind name ofType { kind name ofType { kind name ofType { kind name ofType { kind name ofType { kind name ofType { kind name ofType { kind name } } } } } } } } }"}'
+FASTLANE_ENV_FILE = Signing/fastlane.env
+APPLE_TEAM_ID ?= VSK4YJB7D8
+APP_SCHEME ?= TicketScannerApp
+APP_PROJECT_PATH ?= TicketScannerApp/TicketScannerApp.xcodeproj
+APP_BUNDLE_ID ?= org.noahbrave.app.ticketscanner
+PROVISIONING_PROFILE_PATH ?= Signing/NBFTickets.mobileprovision
+CODE_SIGN_IDENTITY ?=
 
 # Default target
 .PHONY: help
@@ -76,6 +83,57 @@ clean-ios: ## Clean iOS build artifacts
 	@echo "Cleaning iOS build artifacts..."
 	@xcodebuild -project TicketScannerApp/TicketScannerApp.xcodeproj -scheme TicketScannerApp clean | xcbeautify
 	@echo "iOS build artifacts cleaned"
+
+.PHONY: fastlane-testflight
+fastlane-testflight: ## Build and upload a TestFlight build with fastlane (requires Signing assets)
+	@if [ ! -f Signing/AppStoreConnect.p8 ]; then \
+		echo "Error: Signing/AppStoreConnect.p8 not found."; \
+		echo "Place your App Store Connect API key in app/Signing before running this target."; \
+		exit 1; \
+	fi
+	@if [ ! -f $(PROVISIONING_PROFILE_PATH) ]; then \
+		echo "Error: Provisioning profile not found at $(PROVISIONING_PROFILE_PATH)."; \
+		echo "Place your .mobileprovision file in app/Signing or override PROVISIONING_PROFILE_PATH."; \
+		exit 1; \
+	fi
+	@if ! command -v fastlane >/dev/null 2>&1; then \
+		echo "Error: fastlane not installed. Install with: gem install fastlane"; \
+		exit 1; \
+	fi
+	@if [ -f $(FASTLANE_ENV_FILE) ]; then \
+		set -a; \
+		source $(FASTLANE_ENV_FILE); \
+		set +a; \
+	fi; \
+	if [ -z "$$APP_STORE_CONNECT_API_KEY_ID" ]; then \
+		echo "Error: APP_STORE_CONNECT_API_KEY_ID must be set (export it or add to $(FASTLANE_ENV_FILE))."; \
+		exit 1; \
+	fi; \
+	if [ -z "$$APP_STORE_CONNECT_API_ISSUER_ID" ]; then \
+		echo "Error: APP_STORE_CONNECT_API_ISSUER_ID must be set (export it or add to $(FASTLANE_ENV_FILE))."; \
+		exit 1; \
+	fi; \
+	PROFILE_PLIST=$$(mktemp); \
+	security cms -D -i $(PROVISIONING_PROFILE_PATH) > $$PROFILE_PLIST; \
+	PROFILE_UUID=$$(/usr/libexec/PlistBuddy -c 'Print UUID' $$PROFILE_PLIST); \
+	PROFILE_NAME=$$(/usr/libexec/PlistBuddy -c 'Print Name' $$PROFILE_PLIST); \
+	rm $$PROFILE_PLIST; \
+	export PROFILE_UUID="$$PROFILE_UUID"; \
+	export PROFILE_NAME="$$PROFILE_NAME"; \
+	if [ -z "$$CODE_SIGN_IDENTITY" ]; then \
+		CODE_SIGN_IDENTITY=$$(security find-identity -v -p codesigning | sed -n 's/.*"\(.*\)"/\1/p' | head -n1); \
+	fi; \
+	if [ -z "$$CODE_SIGN_IDENTITY" ]; then \
+		echo "Error: Unable to locate a code signing identity in your keychain."; \
+		exit 1; \
+	fi; \
+	export CODE_SIGN_IDENTITY="$$CODE_SIGN_IDENTITY"; \
+	export APP_SCHEME=$(APP_SCHEME); \
+	export APP_PROJECT_PATH=$(APP_PROJECT_PATH); \
+	export APP_BUNDLE_ID=$(APP_BUNDLE_ID); \
+	export APPLE_TEAM_ID=$(APPLE_TEAM_ID); \
+	export APP_STORE_CONNECT_API_KEY_BASE64="$$(base64 < Signing/AppStoreConnect.p8 | tr -d '\n')"; \
+	fastlane ios testflight
 
 # Development workflow
 .PHONY: setup

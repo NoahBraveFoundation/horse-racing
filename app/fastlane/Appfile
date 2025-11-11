@@ -1,0 +1,2 @@
+app_identifier ENV.fetch("APP_BUNDLE_ID")
+team_id ENV.fetch("APPLE_TEAM_ID")

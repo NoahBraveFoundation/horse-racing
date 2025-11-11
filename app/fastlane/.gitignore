@@ -1,0 +1,6 @@
+build/
+logs/
+report.xml
+Preview.html
+screenshots/
+test_output/

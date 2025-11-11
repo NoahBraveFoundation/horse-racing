@@ -205,6 +205,7 @@ make clean-generated    # Clean generated Apollo code
 make build-ios          # Build iOS project (requires Xcode)
 make test-ios           # Run iOS tests
 make clean-ios          # Clean iOS build artifacts
+make fastlane-testflight # Build + upload a TestFlight build with fastlane (uses Signing assets)
 
 # Validation
 make validate-schema    # Validate GraphQL schema file exists
@@ -238,6 +239,26 @@ make help               # Show all available commands
 - Unit tests for TCA features
 - Integration tests for API client
 - UI tests for critical user flows
+
+### TestFlight Builds (local)
+
+Fastlane lives in `app/fastlane`. To exercise the `testflight` lane locally:
+
+1. Copy your signing assets into `app/Signing/` (already ignored by git). You'll need the App Store Connect key (`AppStoreConnect.p8`), the distribution provisioning profile (defaults to `NBFTickets.mobileprovision`), and the distribution cert (`dist.p12`, import into your login keychain once per machine so a `Apple Distribution: …` identity appears).
+2. Create `app/Signing/fastlane.env` with your App Store Connect identifiers (format: `KEY=value` per line):
+
+  ```bash
+  APP_STORE_CONNECT_API_KEY_ID=ABC123XYZ
+  APP_STORE_CONNECT_API_ISSUER_ID=00000000-1111-2222-3333-444444444444
+  ```
+
+3. From the `app` directory run:
+
+  ```bash
+  make fastlane-testflight PROVISIONING_PROFILE_PATH=Signing/YourProfile.mobileprovision CODE_SIGN_IDENTITY="Apple Distribution: Noah Brave Foundation"
+  ```
+
+The target exports the required environment variables, decodes the provisioning profile to capture its UUID/name, locates your distribution signing identity (override with `CODE_SIGN_IDENTITY=…` if you have multiple), base64-encodes the `.p8` key on the fly, and invokes `fastlane ios testflight`. Ensure `fastlane` is installed locally (`gem install fastlane`) before running the command.
 
 ## Deployment
 
