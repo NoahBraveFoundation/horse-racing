@@ -12,6 +12,7 @@ platform :ios do
     release_notes = ENV.fetch("RELEASE_NOTES", "")
     profile_uuid = ENV.fetch("PROFILE_UUID")
     profile_name = ENV.fetch("PROFILE_NAME")
+    code_sign_identity = ENV.fetch("CODE_SIGN_IDENTITY", "Apple Distribution")
 
     xcargs_parts = [
       "-allowProvisioningUpdates",
@@ -25,7 +26,7 @@ platform :ios do
       targets: [scheme],
       profile_name: profile_name,
       profile_uuid: profile_uuid,
-      code_sign_identity: "Apple Distribution"
+      code_sign_identity: code_sign_identity
     )
 
     gym(
@@ -35,9 +36,10 @@ platform :ios do
       clean: true,
       destination: "generic/platform=iOS",
       export_method: "app-store",
-  xcargs: xcargs_parts.join(" "),
+      xcargs: xcargs_parts.join(" "),
       buildlog_path: "fastlane/logs",
       output_directory: "fastlane/build",
+      codesigning_identity: code_sign_identity,
       export_options: {
         method: "app-store",
         signingStyle: "manual",

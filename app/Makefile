@@ -11,6 +11,7 @@ APP_SCHEME ?= TicketScannerApp
 APP_PROJECT_PATH ?= TicketScannerApp/TicketScannerApp.xcodeproj
 APP_BUNDLE_ID ?= org.noahbrave.app.ticketscanner
 PROVISIONING_PROFILE_PATH ?= Signing/NBFTickets.mobileprovision
+CODE_SIGN_IDENTITY ?=
 
 # Default target
 .PHONY: help
@@ -119,6 +120,14 @@ fastlane-testflight: ## Build and upload a TestFlight build with fastlane (requi
 	rm $$PROFILE_PLIST; \
 	export PROFILE_UUID="$$PROFILE_UUID"; \
 	export PROFILE_NAME="$$PROFILE_NAME"; \
+	if [ -z "$$CODE_SIGN_IDENTITY" ]; then \
+		CODE_SIGN_IDENTITY=$$(security find-identity -v -p codesigning | sed -n 's/.*"\(.*\)"/\1/p' | head -n1); \
+	fi; \
+	if [ -z "$$CODE_SIGN_IDENTITY" ]; then \
+		echo "Error: Unable to locate a code signing identity in your keychain."; \
+		exit 1; \
+	fi; \
+	export CODE_SIGN_IDENTITY="$$CODE_SIGN_IDENTITY"; \
 	export APP_SCHEME=$(APP_SCHEME); \
 	export APP_PROJECT_PATH=$(APP_PROJECT_PATH); \
 	export APP_BUNDLE_ID=$(APP_BUNDLE_ID); \

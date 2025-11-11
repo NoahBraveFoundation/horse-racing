@@ -99,6 +99,20 @@ jobs:
             echo "IMPORTED_KEYCHAIN_PATH=$KEYCHAIN_PATH" >> "$GITHUB_ENV"
           fi
 
+      - name: Determine code signing identity
+        run: |
+          set -eo pipefail
+          if [ -z "$IMPORTED_KEYCHAIN_PATH" ] || [ ! -f "$IMPORTED_KEYCHAIN_PATH" ]; then
+            echo "::error::Imported keychain path not found."
+            exit 1
+          fi
+          IDENTITY=$(security find-identity -v -p codesigning "$IMPORTED_KEYCHAIN_PATH" | sed -n 's/.*"\(.*\)"/\1/p' | head -n1)
+          if [ -z "$IDENTITY" ]; then
+            echo "::error::No code signing identity found in imported keychain."
+            exit 1
+          fi
+          echo "CODE_SIGN_IDENTITY=$IDENTITY" >> "$GITHUB_ENV"
+
       - name: Install fastlane
         run: sudo gem install fastlane --no-document
 
@@ -112,6 +126,7 @@ jobs:
           APP_STORE_CONNECT_API_KEY_BASE64: ${{ secrets.APP_STORE_CONNECT_API_KEY_BASE64 }}
           PROFILE_UUID: ${{ steps.install_profile.outputs.uuid }}
           PROFILE_NAME: ${{ steps.install_profile.outputs.name }}
+          CODE_SIGN_IDENTITY: ${{ env.CODE_SIGN_IDENTITY }}
           RELEASE_NOTES: ${{ github.event.inputs.release_notes || '' }}
           APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
           APP_STORE_CONNECT_API_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_ISSUER_ID }}
