@@ -244,7 +244,7 @@ make help               # Show all available commands
 
 Fastlane lives in `app/fastlane`. To exercise the `testflight` lane locally:
 
-1. Copy your signing assets into `app/Signing/` (already ignored by git). At minimum you need `AppStoreConnect.p8`; importing the `.p12` distribution cert into your login keychain is also required once per machine.
+1. Copy your signing assets into `app/Signing/` (already ignored by git). You'll need the App Store Connect key (`AppStoreConnect.p8`), the distribution provisioning profile (defaults to `NBFTickets.mobileprovision`), and the distribution cert (`dist.p12`, import into your login keychain once per machine).
 2. Create `app/Signing/fastlane.env` with your App Store Connect identifiers (format: `KEY=value` per line):
 
   ```bash
@@ -255,10 +255,10 @@ Fastlane lives in `app/fastlane`. To exercise the `testflight` lane locally:
 3. From the `app` directory run:
 
   ```bash
-  make fastlane-testflight
+  make fastlane-testflight PROVISIONING_PROFILE_PATH=Signing/YourProfile.mobileprovision
   ```
 
-The target exports the required environment variables, base64-encodes the `.p8` key on the fly, and invokes `fastlane ios testflight`. Ensure `fastlane` is installed locally (`gem install fastlane`) before running the command.
+The target exports the required environment variables, decodes the provisioning profile to capture its UUID/name, base64-encodes the `.p8` key on the fly, and invokes `fastlane ios testflight`. Ensure `fastlane` is installed locally (`gem install fastlane`) before running the command.
 
 ## Deployment
 

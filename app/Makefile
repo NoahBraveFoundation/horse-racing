@@ -10,6 +10,7 @@ APPLE_TEAM_ID ?= VSK4YJB7D8
 APP_SCHEME ?= TicketScannerApp
 APP_PROJECT_PATH ?= TicketScannerApp/TicketScannerApp.xcodeproj
 APP_BUNDLE_ID ?= org.noahbrave.app.ticketscanner
+PROVISIONING_PROFILE_PATH ?= Signing/NBFTickets.mobileprovision
 
 # Default target
 .PHONY: help
@@ -89,6 +90,11 @@ fastlane-testflight: ## Build and upload a TestFlight build with fastlane (requi
 		echo "Place your App Store Connect API key in app/Signing before running this target."; \
 		exit 1; \
 	fi
+	@if [ ! -f $(PROVISIONING_PROFILE_PATH) ]; then \
+		echo "Error: Provisioning profile not found at $(PROVISIONING_PROFILE_PATH)."; \
+		echo "Place your .mobileprovision file in app/Signing or override PROVISIONING_PROFILE_PATH."; \
+		exit 1; \
+	fi
 	@if ! command -v fastlane >/dev/null 2>&1; then \
 		echo "Error: fastlane not installed. Install with: gem install fastlane"; \
 		exit 1; \
@@ -106,12 +112,19 @@ fastlane-testflight: ## Build and upload a TestFlight build with fastlane (requi
 		echo "Error: APP_STORE_CONNECT_API_ISSUER_ID must be set (export it or add to $(FASTLANE_ENV_FILE))."; \
 		exit 1; \
 	fi; \
+	PROFILE_PLIST=$$(mktemp); \
+	security cms -D -i $(PROVISIONING_PROFILE_PATH) > $$PROFILE_PLIST; \
+	PROFILE_UUID=$$(/usr/libexec/PlistBuddy -c 'Print UUID' $$PROFILE_PLIST); \
+	PROFILE_NAME=$$(/usr/libexec/PlistBuddy -c 'Print Name' $$PROFILE_PLIST); \
+	rm $$PROFILE_PLIST; \
+	export PROFILE_UUID="$$PROFILE_UUID"; \
+	export PROFILE_NAME="$$PROFILE_NAME"; \
 	export APP_SCHEME=$(APP_SCHEME); \
 	export APP_PROJECT_PATH=$(APP_PROJECT_PATH); \
 	export APP_BUNDLE_ID=$(APP_BUNDLE_ID); \
 	export APPLE_TEAM_ID=$(APPLE_TEAM_ID); \
-	export APP_STORE_CONNECT_API_KEY_BASE64="$$(base64 -i Signing/AppStoreConnect.p8 | tr -d '\n')"; \
- 	fastlane ios testflight
+	export APP_STORE_CONNECT_API_KEY_BASE64="$$(base64 < Signing/AppStoreConnect.p8 | tr -d '\n')"; \
+	fastlane ios testflight
 
 # Development workflow
 .PHONY: setup

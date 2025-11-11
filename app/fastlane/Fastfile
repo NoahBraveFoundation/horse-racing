@@ -1,4 +1,5 @@
 require "base64"
+require "shellwords"
 
 default_platform(:ios)
 
@@ -9,11 +10,22 @@ platform :ios do
     project_path = File.expand_path(ENV.fetch("APP_PROJECT_PATH"), File.expand_path("..", __dir__))
     scheme = ENV.fetch("APP_SCHEME")
     release_notes = ENV.fetch("RELEASE_NOTES", "")
+    profile_uuid = ENV.fetch("PROFILE_UUID")
+    profile_name = ENV.fetch("PROFILE_NAME")
+
+    xcargs_parts = [
+      "-allowProvisioningUpdates",
+      "-skipMacroValidation"
+    ]
 
     update_code_signing_settings(
-      use_automatic_signing: true,
+      use_automatic_signing: false,
       path: project_path,
-      team_id: team_id
+      team_id: team_id,
+      targets: [scheme],
+      profile_name: profile_name,
+      profile_uuid: profile_uuid,
+      code_sign_identity: "Apple Distribution"
     )
 
     gym(
@@ -23,9 +35,17 @@ platform :ios do
       clean: true,
       destination: "generic/platform=iOS",
       export_method: "app-store",
-      xcargs: "-allowProvisioningUpdates -skipMacroValidation",
+  xcargs: xcargs_parts.join(" "),
       buildlog_path: "fastlane/logs",
-      output_directory: "fastlane/build"
+      output_directory: "fastlane/build",
+      export_options: {
+        method: "app-store",
+        signingStyle: "manual",
+        teamID: team_id,
+        provisioningProfiles: {
+          ENV.fetch("APP_BUNDLE_ID") => profile_name
+        }
+      }
     )
 
     ipa_path = Actions.lane_context[SharedValues::IPA_OUTPUT_PATH]
