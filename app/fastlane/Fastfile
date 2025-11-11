@@ -32,6 +32,14 @@ platform :ios do
       api_key_path = File.join(tmp_dir, "app_store_connect_api_key.p8")
       File.write(api_key_path, api_key_content)
 
+      xcargs = (
+        xcargs_parts + [
+          "-authenticationKeyPath #{Shellwords.escape(api_key_path)}",
+          "-authenticationKeyID #{Shellwords.escape(api_key_id)}",
+          "-authenticationKeyIssuerID #{Shellwords.escape(api_key_issuer_id)}"
+        ]
+      ).join(" ")
+
       gym(
         project: project_path,
         scheme: scheme,
@@ -39,12 +47,9 @@ platform :ios do
         clean: true,
         destination: "generic/platform=iOS",
         export_method: "app-store",
-        xcargs: xcargs_parts.join(" "),
+        xcargs: xcargs,
         buildlog_path: "fastlane/logs",
         output_directory: "fastlane/build",
-        authentication_key_path: api_key_path,
-        authentication_key_id: api_key_id,
-        authentication_key_issuer_id: api_key_issuer_id,
         export_options: {
           method: "app-store",
           signingStyle: "automatic",
