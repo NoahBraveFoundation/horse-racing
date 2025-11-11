@@ -74,6 +74,14 @@ jobs:
           p12-file-base64: ${{ secrets.IOS_DISTRIBUTION_CERT_BASE64 }}
           p12-password: ${{ secrets.IOS_DISTRIBUTION_CERT_PASSWORD }}
 
+      - name: Save keychain path
+        run: |
+          OUTPUTS_JSON='${{ toJson(steps.import_certificate.outputs) }}'
+          KEYCHAIN_PATH=$(python3 -c "import json,sys; print(json.loads(sys.argv[1]).get('keychain-path',''))" "$OUTPUTS_JSON")
+          if [ -n "$KEYCHAIN_PATH" ]; then
+            echo "IMPORTED_KEYCHAIN_PATH=$KEYCHAIN_PATH" >> "$GITHUB_ENV"
+          fi
+
       - name: Install fastlane
         run: sudo gem install fastlane --no-document
 
@@ -92,11 +100,17 @@ jobs:
           set -eo pipefail
           fastlane ios testflight
 
+      - name: Upload fastlane logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fastlane-logs
+          path: app/fastlane/logs
+          if-no-files-found: warn
+
       - name: Clean up keychain
         if: always()
-        env:
-          KEYCHAIN_PATH: ${{ steps.import_certificate.outputs['keychain-path'] }}
         run: |
-          if [ -n "$KEYCHAIN_PATH" ] && [ -f "$KEYCHAIN_PATH" ]; then
-            security delete-keychain "$KEYCHAIN_PATH" || true
+          if [ -n "$IMPORTED_KEYCHAIN_PATH" ] && [ -f "$IMPORTED_KEYCHAIN_PATH" ]; then
+            security delete-keychain "$IMPORTED_KEYCHAIN_PATH" || true
           fi
