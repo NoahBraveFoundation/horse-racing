@@ -25,9 +25,7 @@ platform :ios do
       path: project_path,
       team_id: team_id,
       targets: [scheme],
-      bundle_identifiers: {
-        scheme => ENV.fetch("APP_BUNDLE_ID")
-      }
+      bundle_identifier: ENV.fetch("APP_BUNDLE_ID", "org.noahbrave.app.ticketscanner")
     )
 
     Dir.mktmpdir do |tmp_dir|
