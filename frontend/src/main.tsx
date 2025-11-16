@@ -11,6 +11,7 @@ import Dashboard from './components/Dashboard.tsx'
 import Account from './components/Account.tsx'
 import AdminUser from './components/admin/AdminUser'
 import SponsorFormPage from './components/SponsorFormPage.tsx'
+import RaceSchedule from './components/RaceSchedule.tsx'
 import RelayProvider from './relay/RelayProvider.tsx'
 import ErrorBoundary from './components/common/ErrorBoundary'
 import ErrorFallback from './components/common/ErrorFallback'
@@ -24,6 +25,7 @@ const router = createBrowserRouter([
   { path: '/dashboard', element: <Dashboard />, errorElement: <RootErrorBoundary /> },
   { path: '/dashboard/user/:userId', element: <AdminUser />, errorElement: <RootErrorBoundary /> },
   { path: '/account', element: <Account />, errorElement: <RootErrorBoundary /> },
+  { path: '/schedule', element: <RaceSchedule />, errorElement: <RootErrorBoundary /> },
   { path: '/sponsor', element: <SponsorFormPage />, errorElement: <RootErrorBoundary /> },
   { path: '/tickets', element: <Navigate to="/tickets/1" replace />, errorElement: <RootErrorBoundary /> },
   { path: '/tickets/:step', element: <TicketFlow />, errorElement: <TicketFlowError /> },
