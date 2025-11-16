@@ -26,12 +26,34 @@ sudo systemctl start postgresql
 sudo systemctl enable postgresql
 ```
 
-### 2. Create Database
+### 2. Create Database User & Schema
 
+Create a dedicated PostgreSQL role for Vapor and set the password to `vapor_password` (update this to something secure in production):
 
 ```bash
+psql -U postgres -d postgres <<'SQL'
+DO $$
+BEGIN
+   IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'vapor_username') THEN
+      CREATE ROLE vapor_username LOGIN PASSWORD 'vapor_password';
+   ELSE
+      ALTER ROLE vapor_username LOGIN PASSWORD 'vapor_password';
+   END IF;
+END $$;
+
+CREATE DATABASE horse_racing_db OWNER vapor_username;
+GRANT ALL PRIVILEGES ON DATABASE horse_racing_db TO vapor_username;
+SQL
+```
+
+If you prefer CLI helpers, you can run:
+
+```bash
+createuser vapor_username --pwprompt
 createdb horse_racing_db -O vapor_username
 ```
+
+When prompted for the password, enter `vapor_password`.
 
 ### 3. Environment Configuration
 
@@ -45,8 +67,8 @@ Edit `.env` with your database credentials:
 ```env
 DATABASE_HOST=localhost
 DATABASE_PORT=5432
-DATABASE_USERNAME=postgres
-DATABASE_PASSWORD=your_password
+DATABASE_USERNAME=vapor_username
+DATABASE_PASSWORD=vapor_password
 DATABASE_NAME=horse_racing_db
 ```
 

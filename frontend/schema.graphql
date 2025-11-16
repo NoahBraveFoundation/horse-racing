@@ -62,6 +62,15 @@ type Horse {
   state: HorseEntryState!
 }
 
+type HorseAudioClipPayload {
+  audioBase64: String!
+  horseNames: [String!]!
+  ownerEmail: String!
+  ownerName: String!
+  prompt: String!
+  ticketAttendeeName: String!
+}
+
 enum HorseEntryState {
   on_hold
   pending_payment
@@ -106,6 +115,7 @@ type Mutation {
   removeSponsorFromCart(sponsorId: UUID!): Boolean!
   removeTicketFromCart(ticketId: UUID!): Boolean!
   renameHorse(horseId: UUID!, horseName: String!, ownershipLabel: String!): Horse!
+  requestHorseAudio(ticketId: UUID!): HorseAudioClipPayload!
   resetDatabase: Boolean!
   runAdminCleanup: Boolean!
   scanTicket(ticketId: UUID!, scanLocation: String, deviceInfo: String): ScanTicketPayload!
@@ -183,6 +193,7 @@ type Ticket {
   attendeeFirst: String!
   attendeeLast: String!
   canRemove: Boolean!
+  cart: Cart
   costCents: Int!
   id: UUID
   owner: User!

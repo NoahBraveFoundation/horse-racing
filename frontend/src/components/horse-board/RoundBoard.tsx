@@ -30,6 +30,7 @@ interface Props {
   onRemoveHorse?: (horseId: string) => void;
   onRenameHorse?: (horse: { id: string; horseName: string; ownershipLabel: string }) => void;
   showAdminInfo?: boolean;
+  showTimes?: boolean;
 }
 
 function formatTime(value: number): string {
@@ -45,27 +46,30 @@ const RoundBoard: React.FC<Props> = ({
   cartHorseIds, 
   onRemoveHorse, 
   onRenameHorse,
-  showAdminInfo = false 
+  showAdminInfo = false,
+  showTimes = true
 }) => {
   const round = useFragment<RoundBoardFragment$key>(RoundBoardFragment, roundRef);
   const hasMine = !!meId && round.lanes.some((l: any) => l.horse && l.horse.owner?.id === meId);
   
   return (
-    <div className="rounded-2xl border border-noahbrave-200 p-4 bg-white">
-      <div className="flex items-center justify-between mb-3">
-        <h3 className="font-semibold text-gray-900">{round.name}</h3>
-        <div className="text-sm text-gray-600">
-          {formatTime(round.startAt)} — {formatTime(round.endAt)}
-        </div>
+    <div className="rounded-2xl border border-noahbrave-200 p-4 bg-white print:rounded-lg print:border-gray-300 print:p-2 print:text-xs">
+      <div className="flex items-center justify-between mb-2 print:mb-1 print:flex-wrap print:gap-y-1">
+        <h3 className="font-semibold text-gray-900 text-lg print:text-base">{round.name}</h3>
+        {showTimes && (
+          <div className="text-sm text-gray-600 print:text-xs">
+            {formatTime(round.startAt)} — {formatTime(round.endAt)}
+          </div>
+        )}
       </div>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 print:grid-cols-5 print:gap-1.5">
         {round.lanes.map((lane: any) => {
           const available = !lane.horse;
           const ownedByMe = !!lane.horse && meId && lane.horse.owner?.id === meId;
           const inCart = !!lane.horse && cartHorseIds?.has(lane.horse.id);
           const clickable = available && !hasMine && !!onLaneClick;
           const canRename = ownedByMe && !!onRenameHorse;
-          const baseClasses = 'relative text-left rounded-xl border p-3 transition';
+          const baseClasses = 'relative text-left rounded-xl border p-2.5 text-sm transition print:p-1.5 print:text-[11px] print:rounded-lg';
           const className = ownedByMe
             ? `${baseClasses} border-green-600 bg-green-100`
             : available
@@ -102,21 +106,31 @@ const RoundBoard: React.FC<Props> = ({
                   ✎
                 </span>
               )}
-              <div className="text-xs text-gray-500 mb-1">Lane {lane.number}</div>
+              <div className="text-xs text-gray-500 mb-1 print:text-[10px]">Lane {lane.number}</div>
               {lane.horse ? (
                 <div className="text-left">
-                  <div className="font-medium text-gray-900 truncate flex items-center gap-2">
-                    <span className="truncate">{lane.horse.horseName}</span>
+                  <div className="font-medium text-gray-900 flex items-center gap-2 text-sm leading-tight print:text-[11px]">
+                    <span
+                      className="overflow-hidden"
+                      style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}
+                    >
+                      {lane.horse.horseName}
+                    </span>
                   </div>
-                  <div className="text-xs text-gray-600 truncate">
+                  <div className="text-xs text-gray-600 truncate print:text-[10px]">
                     {lane.horse.ownershipLabel}
                   </div>
                   {showAdminInfo && (
                     <>
-                      <div className="text-xs text-gray-500 mt-1">
-                        {lane.horse.owner.firstName} {lane.horse.owner.lastName}
+                      <div className="text-xs text-gray-500 mt-1 print:text-[10px]">
+                        <span
+                          className="overflow-hidden"
+                          style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}
+                        >
+                          {lane.horse.owner.firstName} {lane.horse.owner.lastName}
+                        </span>
                       </div>
-                      <div className="text-xs text-gray-400 mt-1">
+                      <div className="text-xs text-gray-400 mt-1 print:text-[10px]">
                         {lane.horse.owner.email}
                       </div>
                       {lane.horse.state && (
@@ -132,7 +146,7 @@ const RoundBoard: React.FC<Props> = ({
                   )}
                 </div>
               ) : (
-                <div className="text-gray-400 text-sm">Available</div>
+                <div className="text-gray-400 text-sm print:text-[11px]">Available</div>
               )}
             </button>
           );
