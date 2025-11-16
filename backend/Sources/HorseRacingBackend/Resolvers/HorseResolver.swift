@@ -1061,16 +1061,16 @@ private extension QueryBuilder where Model == Round {
     @discardableResult
     func withGraphQLRelations() -> QueryBuilder<Round> {
         self.with(\.$lanes) { lane in
-            lane.with(\.$round)
+            // Do not load lane.round to avoid circular reference (already known from parent)
             lane.with(\.$horse) { horse in
                 horse.with(\.$owner)
-                horse.with(\.$round)
-                horse.with(\.$lane)
+                // Do not load horse.round to avoid circular reference (already known from parent)
+                // Do not load horse.lane to avoid circular reference (already known from parent)
             }
         }
         self.with(\.$horses) { horse in
             horse.with(\.$owner)
-            horse.with(\.$round)
+            // Do not load horse.round to avoid circular reference (already known from parent)
             horse.with(\.$lane)
         }
         return self
@@ -1084,7 +1084,7 @@ private extension QueryBuilder where Model == Lane {
         self.with(\.$horse) { horse in
             horse.with(\.$owner)
             horse.with(\.$round)
-            horse.with(\.$lane)
+            // Do not load horse.lane to avoid circular reference (already known from parent)
         }
         return self
     }
@@ -1156,51 +1156,51 @@ private extension QueryBuilder where Model == User {
     @discardableResult
     func withGraphQLRelations() -> QueryBuilder<User> {
         self.with(\.$tickets) { ticket in
-            ticket.with(\.$owner)
+            // Do not load ticket.owner to avoid circular reference (already known from parent User)
         }
         self.with(\.$horses) { horse in
-            horse.with(\.$owner)
+            // Do not load horse.owner to avoid circular reference (already known from parent User)
             horse.with(\.$round)
             horse.with(\.$lane)
         }
         self.with(\.$sponsorInterests) { interest in
-            interest.with(\.$user)
+            // Do not load interest.user to avoid circular reference (already known from parent User)
         }
         self.with(\.$giftBasketInterests) { interest in
-            interest.with(\.$user)
+            // Do not load interest.user to avoid circular reference (already known from parent User)
         }
         self.with(\.$payments) { payment in
             payment.with(\.$cart) { cart in
                 cart.with(\.$horses) { horse in
-                    horse.with(\.$owner)
+                    // Do not load horse.owner to avoid circular reference (owner is parent User)
                     horse.with(\.$round)
                     horse.with(\.$lane)
                 }
                 cart.with(\.$tickets) { ticket in
-                    ticket.with(\.$owner)
+                    // Do not load ticket.owner to avoid circular reference (owner is parent User)
                 }
                 cart.with(\.$sponsorInterests) { interest in
-                    interest.with(\.$user)
+                    // Do not load interest.user to avoid circular reference (user is parent User)
                 }
                 cart.with(\.$giftBasketInterests) { interest in
-                    interest.with(\.$user)
+                    // Do not load interest.user to avoid circular reference (user is parent User)
                 }
             }
         }
         self.with(\.$carts) { cart in
             cart.with(\.$horses) { horse in
-                horse.with(\.$owner)
+                // Do not load horse.owner to avoid circular reference (owner is parent User)
                 horse.with(\.$round)
                 horse.with(\.$lane)
             }
             cart.with(\.$tickets) { ticket in
-                ticket.with(\.$owner)
+                // Do not load ticket.owner to avoid circular reference (owner is parent User)
             }
             cart.with(\.$sponsorInterests) { interest in
-                interest.with(\.$user)
+                // Do not load interest.user to avoid circular reference (user is parent User)
             }
             cart.with(\.$giftBasketInterests) { interest in
-                interest.with(\.$user)
+                // Do not load interest.user to avoid circular reference (user is parent User)
             }
         }
         return self
@@ -1218,18 +1218,30 @@ private extension QueryBuilder where Model == Payment {
                 cart.with(\.$user)
             }
             cart.with(\.$horses) { horse in
-                horse.with(\.$owner)
+                // Conditionally load owner to avoid duplicating when includeUser loads payment.user
+                if !includeUser {
+                    horse.with(\.$owner)
+                }
                 horse.with(\.$round)
                 horse.with(\.$lane)
             }
             cart.with(\.$tickets) { ticket in
-                ticket.with(\.$owner)
+                // Conditionally load owner to avoid duplicating when includeUser loads payment.user
+                if !includeUser {
+                    ticket.with(\.$owner)
+                }
             }
             cart.with(\.$sponsorInterests) { interest in
-                interest.with(\.$user)
+                // Conditionally load user to avoid duplicating when includeUser loads payment.user
+                if !includeUser {
+                    interest.with(\.$user)
+                }
             }
             cart.with(\.$giftBasketInterests) { interest in
-                interest.with(\.$user)
+                // Conditionally load user to avoid duplicating when includeUser loads payment.user
+                if !includeUser {
+                    interest.with(\.$user)
+                }
             }
         }
         return self
