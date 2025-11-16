@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<placeholder>>
+ * @generated SignedSource<<caa130ecc18d97e04a14b0855522248c>>
  * @lightSyntaxTransform
  * @nogrep
  */
@@ -295,16 +295,16 @@ return {
     ]
   },
   "params": {
-    "cacheID": "raceschedule001",
+    "cacheID": "15f453140ce4fdad697f160c490e5076",
     "id": null,
     "metadata": {},
     "name": "RaceScheduleQuery",
     "operationKind": "query",
-    "text": "query RaceScheduleQuery {\n  rounds {\n    id\n    name\n    startAt\n    endAt\n    lanes {\n      id\n      number\n      horse {\n        id\n        horseName\n        ownershipLabel\n        owner {\n          id\n          firstName\n          lastName\n          email\n        }\n        state\n      }\n    }\n    ...RoundBoardFragment\n  }\n  sponsorInterests {\n    id\n    companyName\n    companyLogoBase64\n    costCents\n  }\n}\n\nfragment RoundBoardFragment on Round {\n  id\n  name\n  startAt\n  endAt\n  lanes {\n    id\n    number\n    horse {\n      id\n      horseName\n      ownershipLabel\n      owner {\n        id\n        firstName\n        lastName\n        email\n      }\n      state\n    }\n  }\n}\n"
+    "text": "query RaceScheduleQuery {\n  rounds {\n    id\n    name\n    startAt\n    endAt\n    lanes {\n      id\n      number\n      horse {\n        id\n        horseName\n        ownershipLabel\n        owner {\n          id\n          firstName\n          lastName\n        }\n      }\n    }\n    ...RoundBoardFragment\n  }\n  sponsorInterests {\n    id\n    companyName\n    companyLogoBase64\n    costCents\n  }\n}\n\nfragment RoundBoardFragment on Round {\n  id\n  name\n  startAt\n  endAt\n  lanes {\n    id\n    number\n    horse {\n      id\n      horseName\n      ownershipLabel\n      owner {\n        id\n        firstName\n        lastName\n        email\n      }\n      state\n    }\n  }\n}\n"
   }
 };
 })();
 
-(node as any).hash = "raceschedule001";
+(node as any).hash = "3f44c35f13a49027cca22e048c20624c";
 
 export default node;
