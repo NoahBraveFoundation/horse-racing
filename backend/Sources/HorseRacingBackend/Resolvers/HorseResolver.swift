@@ -282,7 +282,7 @@ final class HorseResolver: @unchecked Sendable {
   func allSponsorInterests(request: Request, _: NoArguments) throws -> EventLoopFuture<
     [SponsorInterest]
   > {
-    guard let user = request.auth.get(User.self), user.isAdmin else { throw Abort(.forbidden) }
+    // Public access - sponsors are displayed on the public schedule page
     return SponsorInterest.query(on: request.db).all()
   }
 
