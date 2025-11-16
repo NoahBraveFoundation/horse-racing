@@ -40,6 +40,7 @@ const RaceScheduleQuery = graphql`
 `;
 
 const RaceSchedule: React.FC = () => {
+  // Auto-refresh every 5 seconds to show latest race information
   const [refreshKey, setRefreshKey] = useState(0);
   
   useEffect(() => {
