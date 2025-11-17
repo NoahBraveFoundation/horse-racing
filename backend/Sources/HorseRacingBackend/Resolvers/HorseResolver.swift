@@ -270,7 +270,7 @@ final class HorseResolver: @unchecked Sendable {
 
   func adminStats(request: Request, _: NoArguments) throws -> EventLoopFuture<AdminStats> {
     guard let user = request.auth.get(User.self), user.isAdmin else { throw Abort(.forbidden) }
-    let ticketCount = Ticket.query(on: request.db).count()
+    let ticketCount = Ticket.query(on: request.db).filter(\.$state != .onHold).count()
     let sponsorCount = SponsorInterest.query(on: request.db).count()
     let giftCount = GiftBasketInterest.query(on: request.db).count()
     return ticketCount.and(sponsorCount).and(giftCount).map { ts, gift in
