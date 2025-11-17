@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<ea99d17b7ca61521367c1775dc661b91>>
+ * @generated SignedSource<<a124d6a100b6ab617873419a4c672b9a>>
  * @lightSyntaxTransform
  * @nogrep
  */
@@ -9,19 +9,19 @@
 // @ts-nocheck
 
 import { ConcreteRequest } from 'relay-runtime';
-export type DashboardUpdateSponsorLogoMutation$variables = {
+export type adminUpdateSponsorLogoMutation$variables = {
   companyLogoBase64?: string | null | undefined;
   sponsorInterestId: any;
 };
-export type DashboardUpdateSponsorLogoMutation$data = {
+export type adminUpdateSponsorLogoMutation$data = {
   readonly adminUpdateSponsorLogo: {
     readonly companyLogoBase64: string | null | undefined;
     readonly id: any | null | undefined;
   };
 };
-export type DashboardUpdateSponsorLogoMutation = {
-  response: DashboardUpdateSponsorLogoMutation$data;
-  variables: DashboardUpdateSponsorLogoMutation$variables;
+export type adminUpdateSponsorLogoMutation = {
+  response: adminUpdateSponsorLogoMutation$data;
+  variables: adminUpdateSponsorLogoMutation$variables;
 };
 
 const node: ConcreteRequest = (function(){
@@ -81,7 +81,7 @@ return {
     ],
     "kind": "Fragment",
     "metadata": null,
-    "name": "DashboardUpdateSponsorLogoMutation",
+    "name": "adminUpdateSponsorLogoMutation",
     "selections": (v2/*: any*/),
     "type": "Mutation",
     "abstractKey": null
@@ -93,20 +93,20 @@ return {
       (v0/*: any*/)
     ],
     "kind": "Operation",
-    "name": "DashboardUpdateSponsorLogoMutation",
+    "name": "adminUpdateSponsorLogoMutation",
     "selections": (v2/*: any*/)
   },
   "params": {
-    "cacheID": "69a5654627073389713c1d2eeb30b89e",
+    "cacheID": "49863ac64be0ad07a9cb9d5a1b57b8b9",
     "id": null,
     "metadata": {},
-    "name": "DashboardUpdateSponsorLogoMutation",
+    "name": "adminUpdateSponsorLogoMutation",
     "operationKind": "mutation",
-    "text": "mutation DashboardUpdateSponsorLogoMutation(\n  $sponsorInterestId: UUID!\n  $companyLogoBase64: String\n) {\n  adminUpdateSponsorLogo(sponsorInterestId: $sponsorInterestId, companyLogoBase64: $companyLogoBase64) {\n    id\n    companyLogoBase64\n  }\n}\n"
+    "text": "mutation adminUpdateSponsorLogoMutation(\n  $sponsorInterestId: UUID!\n  $companyLogoBase64: String\n) {\n  adminUpdateSponsorLogo(sponsorInterestId: $sponsorInterestId, companyLogoBase64: $companyLogoBase64) {\n    id\n    companyLogoBase64\n  }\n}\n"
   }
 };
 })();
 
-(node as any).hash = "2945e6b1b93aae7d5ad9ada16f27e238";
+(node as any).hash = "82331edce9063aaf14223cc5791a435d";
 
 export default node;

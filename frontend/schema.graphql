@@ -1,0 +1,249 @@
+"""Exposes a URL that specifies the behavior of this scalar."""
+directive @specifiedBy(
+  """The URL that specifies the behavior of this scalar."""
+  url: String!
+) on SCALAR
+
+"""
+Indicates exactly one field must be supplied and this field must not be `null`.
+"""
+directive @oneOf on INPUT_OBJECT
+
+type AdminStats {
+  giftBasketCount: Int!
+  sponsorCount: Int!
+  ticketCount: Int!
+}
+
+type Cart {
+  cost: CartCost!
+  giftBasketInterests: [GiftBasketInterest!]!
+  horses: [Horse!]!
+  id: UUID
+  orderNumber: String!
+  sponsorInterests: [SponsorInterest!]!
+  status: CartStatus!
+  tickets: [Ticket!]!
+  user: User!
+  venmoLink: String!
+  venmoUser: String!
+}
+
+type CartCost {
+  horseCents: Int!
+  sponsorCents: Int!
+  ticketsCents: Int!
+  totalCents: Int!
+}
+
+enum CartStatus {
+  open
+  checkedOut
+  abandoned
+}
+
+scalar Date
+
+type GiftBasketInterest {
+  costCents: Int!
+  description: String!
+  id: UUID
+  user: User!
+}
+
+type Horse {
+  costCents: Int!
+  horseName: String!
+  id: UUID
+  lane: Lane!
+  owner: User!
+  ownershipLabel: String!
+  round: Round!
+  state: HorseEntryState!
+}
+
+type HorseAudioClipPayload {
+  audioBase64: String!
+  horseNames: [String!]!
+  ownerEmail: String!
+  ownerName: String!
+  prompt: String!
+  ticketAttendeeName: String!
+}
+
+enum HorseEntryState {
+  on_hold
+  pending_payment
+  confirmed
+}
+
+type Lane {
+  horse: Horse
+  id: UUID
+  number: Int!
+  round: Round!
+}
+
+type LoginPayload {
+  message: String!
+  success: Boolean!
+  tokenId: String!
+}
+
+type LogoutPayload {
+  message: String!
+  success: Boolean!
+}
+
+type Mutation {
+  addGiftBasketToCart(description: String!): GiftBasketInterest!
+  addHorseToCart(roundId: UUID!, laneId: UUID!, horseName: String!, ownershipLabel: String!): Horse!
+  addSponsorToCart(companyName: String!, amountCents: Int!, companyLogoBase64: String): SponsorInterest!
+  addTicketToCart(attendeeFirst: String!, attendeeLast: String!): Ticket!
+  adminRemoveHorse(horseId: UUID!): Boolean!
+  adminRemoveSponsorInterest(sponsorInterestId: UUID!): Boolean!
+  adminRemoveTicket(ticketId: UUID!): Boolean!
+  adminUpdateSponsorLogo(sponsorInterestId: UUID!, companyLogoBase64: String): SponsorInterest!
+  checkoutCart: Payment!
+  createUser(email: String!, firstName: String!, lastName: String!): User!
+  getOrCreateCart: Cart!
+  login(email: String!, redirectTo: String): LoginPayload!
+  logout: LogoutPayload!
+  releaseCart(cartId: UUID!): Cart!
+  releaseHorse(horseId: UUID!): Boolean!
+  removeGiftBasketFromCart(giftId: UUID!): Boolean!
+  removeHorseFromCart(horseId: UUID!): Boolean!
+  removeSponsorFromCart(sponsorId: UUID!): Boolean!
+  removeTicketFromCart(ticketId: UUID!): Boolean!
+  renameHorse(horseId: UUID!, horseName: String!, ownershipLabel: String!): Horse!
+  requestHorseAudio(ticketId: UUID!): HorseAudioClipPayload!
+  resetDatabase: Boolean!
+  runAdminCleanup: Boolean!
+  scanTicket(ticketId: UUID!, scanLocation: String, deviceInfo: String): ScanTicketPayload!
+  setPaymentReceived(paymentId: UUID!, received: Boolean!): Payment!
+  setTicketSeatAssignment(ticketId: UUID!, seatAssignment: String): Ticket!
+  setTicketSeatingPreference(ticketId: UUID!, seatingPreference: String): Ticket!
+  setUserAdmin(userId: UUID!, isAdmin: Boolean!): User!
+  submitSponsorInterest(name: String!, email: String!, companyName: String!, amountUsd: Float!, companyLogoBase64: String): SponsorInterest!
+  undoScan(scanId: UUID!): ScanTicketPayload!
+  validateToken(token: String!): ValidateTokenPayload!
+}
+
+type Payment {
+  cart: Cart
+  createdAt: Date
+  id: UUID
+  paymentReceived: Boolean!
+  paymentReceivedAt: Date
+  totalCents: Int!
+  user: User!
+}
+
+type Query {
+  abandonedCarts: [Cart!]!
+  adminStats: AdminStats!
+  allHorses: [Horse!]!
+  allTickets: [Ticket!]!
+  giftBasketInterests: [GiftBasketInterest!]!
+  lanes(roundId: UUID!): [Lane!]!
+  me: User!
+  myCart: Cart
+  paymentStatus: Payment
+  payments: [Payment!]!
+  recentScans(limit: Int!): [TicketScan!]!
+  rounds: [Round!]!
+  scanningStats: ScanningStats!
+  sponsorInterests: [SponsorInterest!]!
+  ticketByBarcode(barcode: String!): Ticket
+  user(userId: UUID!): User!
+  users: [User!]!
+}
+
+type Round {
+  endAt: Date!
+  horses: [Horse!]!
+  id: UUID
+  lanes: [Lane!]!
+  name: String!
+  startAt: Date!
+}
+
+type ScanningStats {
+  recentScans: [TicketScan!]!
+  totalScanned: Int!
+  totalTickets: Int!
+}
+
+type ScanTicketPayload {
+  alreadyScanned: Boolean!
+  message: String!
+  previousScan: TicketScan
+  success: Boolean!
+  ticket: Ticket
+}
+
+type SponsorInterest {
+  companyLogoBase64: String
+  companyName: String!
+  costCents: Int!
+  id: UUID
+  user: User!
+}
+
+type Ticket {
+  attendeeFirst: String!
+  attendeeLast: String!
+  canRemove: Boolean!
+  cart: Cart
+  costCents: Int!
+  id: UUID
+  owner: User!
+  scanLocation: String
+  scannedAt: Date
+  scannedBy: User
+  scans: [TicketScan!]!
+  seatAssignment: String
+  seatingPreference: String
+  state: TicketState!
+}
+
+type TicketScan {
+  createdAt: Date
+  deviceInfo: String
+  id: UUID
+  scanLocation: String
+  scanTimestamp: Date!
+  scanner: User!
+  ticket: Ticket!
+}
+
+enum TicketState {
+  on_hold
+  pending_payment
+  confirmed
+}
+
+type User {
+  carts: [Cart!]!
+  email: String!
+  firstName: String!
+  giftBasketInterests: [GiftBasketInterest!]!
+  horses: [Horse!]!
+  id: UUID
+  isAdmin: Boolean!
+  lastName: String!
+  payments: [Payment!]!
+  scannedTickets: [Ticket!]!
+  sponsorInterests: [SponsorInterest!]!
+  ticketScans: [TicketScan!]!
+  tickets: [Ticket!]!
+}
+
+scalar UUID
+
+type ValidateTokenPayload {
+  message: String!
+  success: Boolean!
+  user: User
+}
+
