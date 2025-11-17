@@ -7,6 +7,7 @@ import { useLogout, getCurrentUser } from '../utils/auth'
 import DashboardBoard from './horse-board/DashboardBoard';
 import ErrorBoundary from './common/ErrorBoundary';
 import ErrorFallback from './common/ErrorFallback';
+import SponsorLogoEditModal from './admin/SponsorLogoEditModal';
 import type { DashboardAdminQuery } from '../__generated__/DashboardAdminQuery.graphql';
 import type { DashboardSetPaymentReceivedMutation } from '../__generated__/DashboardSetPaymentReceivedMutation.graphql';
 import type { DashboardSetAdminMutation } from '../__generated__/DashboardSetAdminMutation.graphql';
@@ -15,6 +16,7 @@ import type { DashboardReleaseCartMutation } from '../__generated__/DashboardRel
 import type { DashboardSetSeatAssignmentMutation } from '../__generated__/DashboardSetSeatAssignmentMutation.graphql';
 import type { DashboardResetDatabaseMutation } from '../__generated__/DashboardResetDatabaseMutation.graphql';
 import type { DashboardRemoveSponsorInterestMutation } from '../__generated__/DashboardRemoveSponsorInterestMutation.graphql';
+import type { DashboardUpdateSponsorLogoMutation } from '../__generated__/DashboardUpdateSponsorLogoMutation.graphql';
 
 const adminQuery = graphql`
   query DashboardAdminQuery {
@@ -85,6 +87,15 @@ const removeSponsorInterestMutation = graphql`
   }
 `;
 
+const updateSponsorLogoMutation = graphql`
+  mutation DashboardUpdateSponsorLogoMutation($sponsorInterestId: UUID!, $companyLogoBase64: String) {
+    adminUpdateSponsorLogo(sponsorInterestId: $sponsorInterestId, companyLogoBase64: $companyLogoBase64) {
+      id
+      companyLogoBase64
+    }
+  }
+`;
+
 interface LocalUser {
   id: string;
   email: string;
@@ -97,6 +108,7 @@ export const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<LocalUser | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [editingSponsor, setEditingSponsor] = useState<{ id: string; companyName: string; companyLogoBase64: string | null } | null>(null);
   const { logout } = useLogout();
 
   useEffect(() => {
@@ -197,6 +209,7 @@ export const Dashboard: React.FC = () => {
   const [commitResetDatabase] = useMutation<DashboardResetDatabaseMutation>(resetDatabaseMutation);
   const [commitSetSeatAssignment] = useMutation<DashboardSetSeatAssignmentMutation>(setSeatAssignmentMutation);
   const [commitRemoveSponsorInterest] = useMutation<DashboardRemoveSponsorInterestMutation>(removeSponsorInterestMutation);
+  const [commitUpdateSponsorLogo] = useMutation<DashboardUpdateSponsorLogoMutation>(updateSponsorLogoMutation);
 
   const refresh = () => setRefreshKey(k => k + 1);
 
@@ -232,6 +245,25 @@ export const Dashboard: React.FC = () => {
     if (window.confirm('Remove this sponsor interest?')) {
       commitRemoveSponsorInterest({ variables: { sponsorInterestId: id }, onCompleted: refresh });
     }
+  };
+
+  const onEditSponsorLogo = (sponsor: { id: string; companyName: string; companyLogoBase64: string | null }) => {
+    setEditingSponsor(sponsor);
+  };
+
+  const onUpdateSponsorLogo = (sponsorId: string, logoBase64: string | null) => {
+    return new Promise<void>((resolve, reject) => {
+      commitUpdateSponsorLogo({ 
+        variables: { sponsorInterestId: sponsorId, companyLogoBase64: logoBase64 },
+        onCompleted: () => {
+          refresh();
+          resolve();
+        },
+        onError: (error) => {
+          reject(error);
+        }
+      });
+    });
   };
 
   const onRunCleanup = () => {
@@ -313,8 +345,9 @@ export const Dashboard: React.FC = () => {
                       </td>
                       <td>{s.user.firstName} {s.user.lastName} ({s.user.email})</td>
                       <td>${(s.costCents / 100).toFixed(2)}</td>
-                      <td className="text-right">
-                        <button className="text-red-600" onClick={() => onRemoveSponsorInterest(s.id)}>Remove</button>
+                      <td className="text-right space-x-2">
+                        <button className="text-blue-600 hover:underline" onClick={() => onEditSponsorLogo({ id: s.id, companyName: s.companyName, companyLogoBase64: s.companyLogoBase64 ?? null })}>Edit Image</button>
+                        <button className="text-red-600 hover:underline" onClick={() => onRemoveSponsorInterest(s.id)}>Remove</button>
                       </td>
                     </tr>
                   ))}
@@ -555,6 +588,13 @@ export const Dashboard: React.FC = () => {
         </div>
       </div>
       <Footer />
+      {editingSponsor && (
+        <SponsorLogoEditModal
+          sponsor={editingSponsor}
+          onClose={() => setEditingSponsor(null)}
+          onUpdate={onUpdateSponsorLogo}
+        />
+      )}
     </div>
   );
 };

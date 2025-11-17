@@ -103,6 +103,7 @@ type Mutation {
   adminRemoveHorse(horseId: UUID!): Boolean!
   adminRemoveSponsorInterest(sponsorInterestId: UUID!): Boolean!
   adminRemoveTicket(ticketId: UUID!): Boolean!
+  adminUpdateSponsorLogo(sponsorInterestId: UUID!, companyLogoBase64: String): SponsorInterest!
   checkoutCart: Payment!
   createUser(email: String!, firstName: String!, lastName: String!): User!
   getOrCreateCart: Cart!

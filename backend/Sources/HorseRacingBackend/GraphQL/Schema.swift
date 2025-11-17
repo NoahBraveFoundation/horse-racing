@@ -302,6 +302,10 @@ let horseRacingSchema = try! Graphiti.Schema<HorseResolver, Request> {
     Field("adminRemoveSponsorInterest", at: HorseResolver.adminRemoveSponsorInterest) {
       Argument("sponsorInterestId", at: \.sponsorInterestId)
     }
+    Field("adminUpdateSponsorLogo", at: HorseResolver.adminUpdateSponsorLogo) {
+      Argument("sponsorInterestId", at: \.sponsorInterestId)
+      Argument("companyLogoBase64", at: \.companyLogoBase64)
+    }
 
     Field("renameHorse", at: HorseResolver.renameHorse) {
       Argument("horseId", at: \.horseId)
