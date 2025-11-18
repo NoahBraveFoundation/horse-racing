@@ -51,8 +51,8 @@ let horseRacingSchema = try! Graphiti.Schema<HorseResolver, Request> {
     Field("name", at: \.name)
     Field("startAt", at: \.startAt)
     Field("endAt", at: \.endAt)
-    Field("lanes", with: \.$lanes)
-    Field("horses", with: \.$horses)
+    Field("lanes", at: HorseResolver.roundLanes, as: [TypeReference<Lane>].self)
+    Field("horses", at: HorseResolver.roundHorses, as: [TypeReference<Horse>].self)
   }
 
   // Lane type
@@ -60,7 +60,7 @@ let horseRacingSchema = try! Graphiti.Schema<HorseResolver, Request> {
     Field("id", at: \.id)
     Field("number", at: \.number)
     Field("round", with: \.$round)
-    Field("horse", with: \.$horse)
+    Field("horse", at: HorseResolver.laneHorse, as: TypeReference<Horse>?.self)
   }
 
   // Ticket type
@@ -87,7 +87,7 @@ let horseRacingSchema = try! Graphiti.Schema<HorseResolver, Request> {
     Field("horseName", at: \.horseName)
     Field("ownershipLabel", at: \.ownershipLabel)
     Field("state", at: \.state)
-    Field("owner", with: \.$owner)
+    Field("owner", at: HorseResolver.horseOwner, as: TypeReference<User>.self)
     Field("round", with: \.$round)
     Field("lane", with: \.$lane)
     Field("costCents", at: HorseResolver.horseCost)

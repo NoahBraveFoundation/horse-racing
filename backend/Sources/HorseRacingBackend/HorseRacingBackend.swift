@@ -129,7 +129,7 @@ func configureDatabase(_ app: Application) async throws {
     tls: .prefer(try .init(configuration: .makeClientConfiguration()))
   )
 
-  app.databases.use(.postgres(configuration: postgresConfig), as: .psql)
+  app.databases.use(.postgres(configuration: postgresConfig, sqlLogLevel: .info), as: .psql)
 
   // Register migrations
   app.migrations.add(MigrateUsers())

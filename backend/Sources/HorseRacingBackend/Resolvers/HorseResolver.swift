@@ -5,11 +5,16 @@ import Vapor
 final class HorseResolver: @unchecked Sendable {
   // Rounds
   func getRounds(request: Request, _: NoArguments) throws -> EventLoopFuture<[Round]> {
-    Round.query(on: request.db).all()
+    Round.query(on: request.db)
+      .withGraphQLRelations()
+      .all()
   }
 
   func getLanes(request: Request, arguments: GetLanesArguments) throws -> EventLoopFuture<[Lane]> {
-    Lane.query(on: request.db).filter(\.$round.$id == arguments.roundId).all()
+    Lane.query(on: request.db)
+      .filter(\.$round.$id == arguments.roundId)
+      .withGraphQLRelations()
+      .all()
   }
 
   // Current user
@@ -28,7 +33,7 @@ final class HorseResolver: @unchecked Sendable {
     return Payment.query(on: request.db)
       .filter(\.$user.$id == user.id!)
       .sort(\.$createdAt, .descending)
-      .with(\.$cart)
+      .withGraphQLRelations()
       .first()
   }
 
@@ -143,14 +148,20 @@ final class HorseResolver: @unchecked Sendable {
 
   func allUsers(request: Request, _: NoArguments) throws -> EventLoopFuture<[User]> {
     guard let user = request.auth.get(User.self), user.isAdmin else { throw Abort(.forbidden) }
-    return User.query(on: request.db).all()
+    return User.query(on: request.db)
+      .withGraphQLRelations()
+      .all()
   }
 
   func userById(request: Request, arguments: UserIdArguments) throws -> EventLoopFuture<User> {
     guard let currentUser = request.auth.get(User.self), currentUser.isAdmin else {
       throw Abort(.forbidden)
     }
-    return User.find(arguments.userId, on: request.db).unwrap(or: Abort(.notFound))
+    return User.query(on: request.db)
+      .filter(\.$id == arguments.userId)
+      .withGraphQLRelations()
+      .first()
+      .unwrap(or: Abort(.notFound))
   }
 
   func setUserAdmin(request: Request, arguments: SetUserAdminArguments) throws -> EventLoopFuture<
@@ -170,8 +181,7 @@ final class HorseResolver: @unchecked Sendable {
   func payments(request: Request, _: NoArguments) throws -> EventLoopFuture<[Payment]> {
     guard let user = request.auth.get(User.self), user.isAdmin else { throw Abort(.forbidden) }
     return Payment.query(on: request.db)
-      .with(\.$user)
-      .with(\.$cart)
+      .withGraphQLRelations()
       .sort(\.$paymentReceived, .ascending)
       .sort(\.$createdAt, .descending)
       .all()
@@ -180,9 +190,7 @@ final class HorseResolver: @unchecked Sendable {
   func allHorses(request: Request, _: NoArguments) throws -> EventLoopFuture<[Horse]> {
     guard let user = request.auth.get(User.self), user.isAdmin else { throw Abort(.forbidden) }
     return Horse.query(on: request.db)
-      .with(\.$owner)
-      .with(\.$round)
-      .with(\.$lane)
+      .withGraphQLRelations()
       .all()
       .map { horses in
         // Sort horses by round start time and lane number
@@ -200,16 +208,16 @@ final class HorseResolver: @unchecked Sendable {
   func allTickets(request: Request, _: NoArguments) throws -> EventLoopFuture<[Ticket]> {
     guard let user = request.auth.get(User.self), user.isAdmin else { throw Abort(.forbidden) }
     return Ticket.query(on: request.db)
-      .with(\.$owner)
-      .with(\.$cart) { builder in
-        builder.with(\.$tickets)
-      }
+      .withGraphQLRelations()
       .all()
   }
 
   func abandonedCarts(request: Request, _: NoArguments) throws -> EventLoopFuture<[Cart]> {
     guard let user = request.auth.get(User.self), user.isAdmin else { throw Abort(.forbidden) }
-    return Cart.query(on: request.db).filter(\.$status == .abandoned).with(\.$user).all()
+    return Cart.query(on: request.db)
+      .filter(\.$status == .abandoned)
+      .withGraphQLRelations()
+      .all()
   }
 
   func releaseHorse(request: Request, arguments: ReleaseHorseArguments) throws -> EventLoopFuture<
@@ -283,7 +291,9 @@ final class HorseResolver: @unchecked Sendable {
     [SponsorInterest]
   > {
     // Public access - sponsors are displayed on the public schedule page
-    return SponsorInterest.query(on: request.db).all()
+    return SponsorInterest.query(on: request.db)
+      .withGraphQLRelations()
+      .all()
   }
 
   func adminRemoveSponsorInterest(request: Request, arguments: AdminRemoveSponsorInterestArguments)
@@ -354,7 +364,9 @@ final class HorseResolver: @unchecked Sendable {
     [GiftBasketInterest]
   > {
     guard let user = request.auth.get(User.self), user.isAdmin else { throw Abort(.forbidden) }
-    return GiftBasketInterest.query(on: request.db).all()
+    return GiftBasketInterest.query(on: request.db)
+      .withGraphQLRelations()
+      .all()
   }
 
   // MARK: - Authentication helpers
@@ -374,6 +386,7 @@ final class HorseResolver: @unchecked Sendable {
 
         return Cart.query(on: req.db)
           .filter(\.$user.$id == userId)
+          .withGraphQLRelations()
           .count()
           .flatMap { cartCount in
             let cart = Cart(userID: userId, status: .open)
@@ -884,6 +897,64 @@ final class HorseResolver: @unchecked Sendable {
   }
 
   // MARK: - Field resolvers
+
+  static func roundLanes(round: Round) -> (Request, NoArguments, EventLoopGroup) throws
+    -> EventLoopFuture<[Lane]>
+  {
+    return { req, _, _ in
+      if let loaded = round.$lanes.value {
+        return req.eventLoop.makeSucceededFuture(loaded)
+      }
+
+      return round.$lanes
+        .query(on: req.db)
+        .withGraphQLRelations()
+        .all()
+    }
+  }
+
+  static func roundHorses(round: Round) -> (Request, NoArguments, EventLoopGroup) throws
+    -> EventLoopFuture<[Horse]>
+  {
+    return { req, _, _ in
+      if let loaded = round.$horses.value {
+        return req.eventLoop.makeSucceededFuture(loaded)
+      }
+
+      return round.$horses
+        .query(on: req.db)
+        .withGraphQLRelations()
+        .all()
+    }
+  }
+
+  static func laneHorse(lane: Lane) -> (Request, NoArguments, EventLoopGroup) throws
+    -> EventLoopFuture<Horse?>
+  {
+    return { req, _, _ in
+      if let loaded = lane.$horse.value {
+        return req.eventLoop.makeSucceededFuture(loaded)
+      }
+
+      return lane.$horse
+        .query(on: req.db)
+        .withGraphQLRelations()
+        .first()
+    }
+  }
+
+  static func horseOwner(horse: Horse) -> (Request, NoArguments, EventLoopGroup) throws
+    -> EventLoopFuture<User>
+  {
+    return { req, _, _ in
+      if let loaded = horse.$owner.value {
+        return req.eventLoop.makeSucceededFuture(loaded)
+      }
+
+      return horse.$owner.get(on: req.db)
+    }
+  }
+
   static func cartCost(cart: Cart) -> (Request, NoArguments, EventLoopGroup) throws ->
     EventLoopFuture<CartCost>
   {
