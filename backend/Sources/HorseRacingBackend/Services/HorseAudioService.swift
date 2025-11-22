@@ -47,7 +47,7 @@ struct HorseAudioService {
                     owner: owner,
                     cartTickets: cartTickets,
                     horseNames: horses.map(\.horseName).sorted(),
-                    orderNumber: cart?.orderNumber
+                    logger: request.logger
                   )
                 }
                 .flatMap { context in
@@ -79,7 +79,7 @@ struct HorseAudioService {
       }
   }
 
-  private static func generateAudio(for prompt: String, logger: Logger) async throws -> Data {
+  private static func generateAudio(for script: String, logger: Logger) async throws -> Data {
     guard let apiKey = Environment.get("OPENAI_API_KEY"), !apiKey.isEmpty else {
       throw Abort(
         .internalServerError,
@@ -88,14 +88,9 @@ struct HorseAudioService {
     }
 
     let client = OpenAI(apiToken: apiKey)
-    let narrationScript = try await generateNarrationScript(
-      from: prompt,
-      client: client,
-      logger: logger
-    )
     let query = AudioSpeechQuery(
       model: .gpt_4o_mini_tts,
-      input: narrationScript,
+      input: script,
       voice: AudioSpeechQuery.AudioSpeechVoice.allCases.randomElement() ?? .alloy,
       instructions: "Sound like an arena announcer with upbeat energy",
       responseFormat: .mp3,
@@ -106,36 +101,102 @@ struct HorseAudioService {
     let response = try await client.audioCreateSpeech(query: query)
     return response.audio
   }
+}
 
-  private static func generateNarrationScript(
-    from prompt: String,
-    client: OpenAI,
-    logger: Logger
-  ) async throws -> String {
-    let systemInstructions = """
-      You craft tight, energetic arena-style announcements for the NoahBRAVE horse racing event.
-      Keep scripts between 5 and 12 seconds when spoken.
-      Highlight names with excitement, celebrate supporters.
-      """
-    let chatQuery = ChatQuery(
-      messages: [
-        .system(.init(content: .textContent(systemInstructions))),
-        .system(.init(content: .textContent(prompt))),
-      ],
-      model: .gpt5_nano
-    )
+private struct HorseAudioTemplate: Decodable {
+  let id: String
+  let text: String
 
-    logger.info("Requesting narration script from GPT-5 Nano")
-    let response = try await client.chats(query: chatQuery)
-    guard
-      let content = response.choices.first?.message.content?.trimmingCharacters(
-        in: .whitespacesAndNewlines
-      ),
-      !content.isEmpty
-    else {
-      throw Abort(.internalServerError, reason: "GPT-5 Nano returned an empty narration script.")
+  func render(ownerName: String, guestNames: [String], horseNames: [String]) -> String {
+    let guestDescription = HorseAudioTemplate.describeList(guestNames) ?? "their crew"
+    let horseDescription = HorseAudioTemplate.describeList(horseNames) ?? "their entries"
+    let partyDescription =
+      guestNames.isEmpty
+      ? ownerName
+      : "\(ownerName) with \(guestDescription)"
+
+    var script = text
+    let replacements: [String: String] = [
+      "{{owner}}": ownerName,
+      "{{guests}}": guestDescription,
+      "{{party}}": partyDescription,
+      "{{horses}}": horseDescription,
+    ]
+
+    replacements.forEach { key, value in
+      script = script.replacingOccurrences(of: key, with: value)
     }
-    return content
+
+    return script
+  }
+
+  static func describeList(_ values: [String]) -> String? {
+    guard !values.isEmpty else { return nil }
+    if values.count == 1 {
+      return values[0]
+    } else if values.count == 2 {
+      return "\(values[0]) and \(values[1])"
+    }
+    let leading = values.dropLast().joined(separator: ", ")
+    return "\(leading), and \(values.last!)"
+  }
+}
+
+private enum HorseAudioTemplates {
+  private static let templatesResult: Result<[HorseAudioTemplate], Error> = {
+    do {
+      guard
+        let url = Bundle.module.url(forResource: "horse-audio-templates", withExtension: "json")
+      else {
+        throw Abort(
+          .internalServerError, reason: "horse-audio-templates.json missing from resources.")
+      }
+
+      let data = try Data(contentsOf: url)
+      let templates = try JSONDecoder().decode([HorseAudioTemplate].self, from: data)
+      return .success(templates)
+    } catch {
+      return .failure(error)
+    }
+  }()
+
+  static func script(
+    ownerName: String,
+    guestNames: [String],
+    horseNames: [String],
+    logger: Logger?
+  ) -> String {
+    let fallback = fallbackScript(
+      ownerName: ownerName, guestNames: guestNames, horseNames: horseNames)
+    do {
+      let template = try randomTemplate()
+      return template.render(ownerName: ownerName, guestNames: guestNames, horseNames: horseNames)
+    } catch {
+      logger?.error("Horse audio template error: \(error.localizedDescription)")
+      return fallback
+    }
+  }
+
+  private static func randomTemplate() throws -> HorseAudioTemplate {
+    let templates = try loadTemplates()
+    guard let template = templates.randomElement() else {
+      throw Abort(.internalServerError, reason: "No horse audio templates configured.")
+    }
+    return template
+  }
+
+  private static func loadTemplates() throws -> [HorseAudioTemplate] {
+    try templatesResult.get()
+  }
+
+  private static func fallbackScript(
+    ownerName: String,
+    guestNames: [String],
+    horseNames: [String]
+  ) -> String {
+    let guestDescription = HorseAudioTemplate.describeList(guestNames) ?? "their cheering crew"
+    let horseDescription = HorseAudioTemplate.describeList(horseNames) ?? "their entries"
+    return "Let's make noise for \(ownerName) with \(guestDescription) backing \(horseDescription)!"
   }
 }
 
@@ -147,43 +208,40 @@ private struct HorseAudioContext {
   let prompt: String
 
   init(
-    ticket: Ticket, owner: User, cartTickets: [Ticket], horseNames: [String], orderNumber: String?
+    ticket: Ticket, owner: User, cartTickets: [Ticket], horseNames: [String], logger: Logger?
   ) {
     self.ownerName = "\(owner.firstName) \(owner.lastName)"
     self.ownerEmail = owner.email
     self.attendeeName = "\(ticket.attendeeFirst) \(ticket.attendeeLast)"
     self.horseNames = horseNames
+    let guestNames = HorseAudioContext.buildGuestList(
+      ownerName: ownerName, cartTickets: cartTickets)
     self.prompt = HorseAudioContext.buildPrompt(
       ownerName: ownerName,
-      attendeeName: attendeeName,
-      cartTickets: cartTickets,
+      guestNames: guestNames,
       horseNames: horseNames,
-      orderNumber: orderNumber
+      logger: logger
     )
   }
 
   private static func buildPrompt(
     ownerName: String,
-    attendeeName: String,
-    cartTickets: [Ticket],
+    guestNames: [String],
     horseNames: [String],
-    orderNumber: String?
+    logger: Logger?
   ) -> String {
-    // Build list of all attendees from cart
-    let attendeeNames =
-      cartTickets
+    HorseAudioTemplates.script(
+      ownerName: ownerName,
+      guestNames: guestNames,
+      horseNames: horseNames,
+      logger: logger
+    )
+  }
+
+  private static func buildGuestList(ownerName: String, cartTickets: [Ticket]) -> [String] {
+    cartTickets
       .map { "\($0.attendeeFirst) \($0.attendeeLast)" }
+      .filter { $0 != ownerName }
       .sorted()
-      .joined(separator: ", ")
-
-    let horseList = horseNames.isEmpty ? "No horses" : horseNames.joined(separator: ", ")
-    let orderInfo = orderNumber.map { "Order \($0)" } ?? ""
-
-    return """
-      Owner: \(ownerName)
-      Guests: \(attendeeNames)
-      \(orderInfo)
-      Spotlight the horses: \(horseList)
-      """
   }
 }
