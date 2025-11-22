@@ -1,0 +1,70 @@
+[
+  {
+    "id": "arena_spotlight",
+    "text": "Arena spotlight on {{party}} rallying behind {{horses}}!"
+  },
+  {
+    "id": "crew_energy",
+    "text": "Give it up for {{owner}} and crew {{guests}} as they charge the rail for {{horses}}!"
+  },
+  {
+    "id": "wave_programs",
+    "text": "Wave those programs for {{party}}, keeping the thunder rolling for {{horses}}!"
+  },
+  {
+    "id": "noahbrave_shout",
+    "text": "NoahBRAVE energy from {{owner}} with guests {{guests}} shouting loud for {{horses}}!"
+  },
+  {
+    "id": "grandstand_roar",
+    "text": "Grandstand roar for {{party}} showing mega love to {{horses}} tonight!"
+  },
+  {
+    "id": "trackside_cheers",
+    "text": "Trackside cheers from {{party}} powering every stride from {{horses}}!"
+  },
+  {
+    "id": "arena_ignite",
+    "text": "House lights dim, arena ignites for {{owner}} and guests {{guests}} backing {{horses}}!"
+  },
+  {
+    "id": "momentum_high",
+    "text": "Clock the passion from {{party}} keeping momentum high for {{horses}}!"
+  },
+  {
+    "id": "salute_owner",
+    "text": "Let's salute {{owner}} with the whole squad {{guests}} as {{horses}} break loose!"
+  },
+  {
+    "id": "rally_fire",
+    "text": "Volunteers feel it--{{party}} is on fire, rallying for {{horses}}!"
+  },
+  {
+    "id": "decibel_rise",
+    "text": "Decibels rising courtesy of {{owner}} with {{guests}}, keeping {{horses}} in the spotlight!"
+  },
+  {
+    "id": "standing_o",
+    "text": "Standing O for {{party}} reminding everyone that {{horses}} own this stretch!"
+  },
+  {
+    "id": "foundation_boost",
+    "text": "NoahBRAVE Foundation love pouring in from {{party}} as {{horses}} light up the course!"
+  },
+  {
+    "id": "foundation_energy",
+    "text": "{{owner}} and {{guests}} fuel the NoahBRAVE Foundation spirit while cheering {{horses}} down the line!"
+  },
+  {
+    "id": "victory_tunnel",
+    "text": "Create that victory tunnel—{{party}} is ready to rocket {{horses}} across the finish!"
+  },
+  {
+    "id": "laser_focus",
+    "text": "Laser focus from {{party}} keeps the pulse steady for {{horses}}—let's ride!"
+  },
+  {
+    "id": "stompers",
+    "text": "Stompers unite! {{owner}} with {{guests}} thunder for {{horses}} tonight!"
+  }
+]
