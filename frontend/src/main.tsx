@@ -2,9 +2,8 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
-import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom'
-import TicketFlow from './components/ticket-flow/TicketFlow.tsx'
-import TicketFlowError from './components/ticket-flow/TicketFlowError.tsx'
+import { createBrowserRouter, RouterProvider } from 'react-router-dom'
+import TicketsClosed from './components/TicketsClosed.tsx'
 import Login from './components/Login.tsx'
 import Auth from './components/Auth.tsx'
 import Dashboard from './components/Dashboard.tsx'
@@ -27,8 +26,8 @@ const router = createBrowserRouter([
   { path: '/account', element: <Account />, errorElement: <RootErrorBoundary /> },
   { path: '/schedule', element: <RaceSchedule />, errorElement: <RootErrorBoundary /> },
   { path: '/sponsor', element: <SponsorFormPage />, errorElement: <RootErrorBoundary /> },
-  { path: '/tickets', element: <Navigate to="/tickets/1" replace />, errorElement: <RootErrorBoundary /> },
-  { path: '/tickets/:step', element: <TicketFlow />, errorElement: <TicketFlowError /> },
+  { path: '/tickets', element: <TicketsClosed />, errorElement: <RootErrorBoundary /> },
+  { path: '/tickets/*', element: <TicketsClosed />, errorElement: <RootErrorBoundary /> },
   { path: '*', element: <NotFound /> }, // Catch-all for 404s
 ])
 

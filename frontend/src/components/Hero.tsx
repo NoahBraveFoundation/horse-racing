@@ -36,7 +36,7 @@ export const Hero: React.FC = () => {
           </div>
 
           <div className="flex flex-col sm:flex-row gap-3 mt-2">
-            <Link to="/tickets" className="cta px-6 py-3 rounded-lg font-semibold shadow-lg text-center">Buy Tickets</Link>
+            <Link to="/tickets" className="cta px-6 py-3 rounded-lg font-semibold shadow-lg text-center">Ticketing Closed — Back in 2026</Link>
             <a href="#about" className="px-6 py-3 rounded-lg font-semibold bg-white/10 hover:bg-white/15 border border-white/30 backdrop-blur text-white shadow-lg">Learn More</a>
           </div>
         </div>

@@ -7,7 +7,7 @@ export const MobileCTA: React.FC = () => (
       to="/tickets"
       className="block w-full text-center cta px-6 py-4 rounded-xl font-bold shadow-xl"
     >
-      Buy Tickets • $75
+      Ticketing Closed — Back in 2026
     </Link>
   </div>
 )
