@@ -54,7 +54,7 @@ export const Header: React.FC = () => {
             ) : (
               <Link to="/login" className="text-gray-700 hover:text-noahbrave-600 font-medium">Login</Link>
             )}
-            <Link to="/tickets" className="hidden lg:inline-flex items-center cta px-4 py-2 rounded-lg font-semibold shadow-md">Buy Tickets</Link>
+            <Link to="/tickets" className="hidden lg:inline-flex items-center cta px-4 py-2 rounded-lg font-semibold shadow-md">Ticketing Closed</Link>
           </nav>
         </div>
       </div>
@@ -70,7 +70,7 @@ export const Header: React.FC = () => {
             ) : (
               <Link to="/login" className="block px-3 py-2 text-gray-700 hover:text-noahbrave-600 font-medium">Login</Link>
             )}
-            <Link to="/tickets" className="block px-3 py-2 text-gray-700 hover:text-noahbrave-600 font-medium">Tickets</Link>
+            <Link to="/tickets" className="block px-3 py-2 text-gray-700 hover:text-noahbrave-600 font-medium">Ticketing Closed</Link>
           </div>
         </div>
       )}

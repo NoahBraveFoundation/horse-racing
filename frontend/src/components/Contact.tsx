@@ -5,7 +5,7 @@ export const Contact: React.FC = () => {
   return (
     <section id="contact" className="py-20 bg-noahbrave-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <SectionHeading title="For Information & Purchasing" />
+        <SectionHeading title="Stay Connected" />
         <div className="max-w-4xl mx-auto">
           <div className="bg-white rounded-2xl p-12 shadow-xl border border-noahbrave-200">
             <div className="grid md:grid-cols-2 gap-12">
@@ -39,10 +39,10 @@ export const Contact: React.FC = () => {
                 </div>
               </div>
               <div>
-                <h3 className="font-heading text-2xl text-gray-900 mb-6">Online Ticket Purchase</h3>
-                <p className="text-gray-700 mb-6">Purchase your tickets online for the fastest and most convenient experience.</p>
+                <h3 className="font-heading text-2xl text-gray-900 mb-6">Ticketing Closed</h3>
+                <p className="text-gray-700 mb-6">Our 2025 event has wrapped up. We&rsquo;ll share details for our 2026 return soon—stay tuned!</p>
                 <a href="/tickets" className="inline-block cta px-6 py-3 rounded-lg font-semibold hover:brightness-95 transition-colors duration-200">
-                  Buy Tickets
+                  See Ticketing Update
                 </a>
                 <div className="mt-4">
                   <a
